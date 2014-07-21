@@ -95,6 +95,7 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(TaskId taskId) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
         return fieldResult;
     }
 
@@ -102,6 +103,7 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(StagingStatus stagingStatus) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
         return fieldResult;
     }
 
@@ -109,6 +111,7 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(StagingError stagingError) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
         return fieldResult;
     }
 
@@ -116,6 +119,7 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(StagingSource stagingSource) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
         return fieldResult;
     }
 
@@ -123,6 +127,7 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(StagingBlockKey stagingBlockKey) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
         return fieldResult;
     }
 
@@ -130,6 +135,7 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(GroupSize groupSize) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
         return fieldResult;
     }
 
@@ -137,15 +143,86 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     public Result visit(IndexedField indexedField) {
         Result fieldResult = new Result();
         fieldResult.id = false;
+        fieldResult.constantValue = false;
+        return fieldResult;
+    }
+
+    @Override
+    public Result visit(StringConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(IntegerConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(DateConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(DateTimeConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(BooleanConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(BigDecimalConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(TimeConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(ShortConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(ByteConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(LongConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(DoubleConstant constant) {
+        return getConstantResult();
+    }
+
+    @Override
+    public Result visit(FloatConstant constant) {
+        return getConstantResult();
+    }
+
+    private static Result getConstantResult() {
+        Result fieldResult = new Result();
+        fieldResult.id = false;
+        fieldResult.constantValue = true;
+        fieldResult.limitJoins = false;
         return fieldResult;
     }
 
     @Override
     public Result visit(Compare condition) {
         Result conditionResult = new Result();
-        Result result = condition.getLeft().accept(this);
-        conditionResult.id = result.id && condition.getPredicate() == Predicate.EQUALS;
-        conditionResult.limitJoins = result.limitJoins;
+        Result leftResult = condition.getLeft().accept(this);
+        Result rightResult = condition.getRight().accept(this);
+        // TODO ...and left and right in reverse??
+        conditionResult.id = leftResult.id && condition.getPredicate() == Predicate.EQUALS && rightResult.constantValue;
+        conditionResult.limitJoins = leftResult.limitJoins;
         return conditionResult;
     }
 

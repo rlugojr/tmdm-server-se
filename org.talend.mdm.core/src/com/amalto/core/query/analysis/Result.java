@@ -14,5 +14,7 @@ package com.amalto.core.query.analysis;
 public class Result {
     public boolean id = false;
 
+    public boolean constantValue = true;
+
     public boolean limitJoins = false;
 }

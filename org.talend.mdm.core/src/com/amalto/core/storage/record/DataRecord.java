@@ -218,6 +218,9 @@ public class DataRecord {
     }
     
     public List<Object> find(FieldMetadata field) {
+        if (field == null) {
+            throw new IllegalArgumentException("Field cannot be null.");
+        }
         // Build path elements
         String path = field.getPath();
         StringTokenizer tokenizer = new StringTokenizer(path, "/"); //$NON-NLS-1$
