@@ -227,6 +227,14 @@ public class ConditionChecks extends VisitorAdapter<Result> {
     }
 
     @Override
+    public Result visit(ConstantCollection collection) {
+        Result conditionResult = new Result();
+        conditionResult.id = false;
+        conditionResult.limitJoins = false;
+        return conditionResult;
+    }
+
+    @Override
     public Result visit(Id id) {
         Result fieldResult = new Result();
         fieldResult.id = false;
