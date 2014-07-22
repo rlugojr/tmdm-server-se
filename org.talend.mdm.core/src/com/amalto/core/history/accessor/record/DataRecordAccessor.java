@@ -95,7 +95,8 @@ public class DataRecordAccessor implements Accessor {
                     pathElement.field = current.getType().getField(element);
                     pathElement.setter = SimpleValue.SET;
                     pathElement.getter = SimpleValue.GET;
-                    if (pathElement.field instanceof ContainedTypeFieldMetadata) {
+                    if (pathElement.field instanceof ContainedTypeFieldMetadata
+                            || pathElement.field instanceof ReferenceFieldMetadata) {
                         Object value = current.get(pathElement.field);
                         if (value instanceof DataRecord) {
                             current = (DataRecord) value;
@@ -158,7 +159,8 @@ public class DataRecordAccessor implements Accessor {
                 break;
             }
             if (!pathElement.field.isMany()) {
-                if (pathElement.field instanceof ContainedTypeFieldMetadata) {
+                if (pathElement.field instanceof ContainedTypeFieldMetadata
+                        || pathElement.field instanceof ReferenceFieldMetadata) {
                     current = (DataRecord) current.get(pathElement.field);
                 }
             } else {

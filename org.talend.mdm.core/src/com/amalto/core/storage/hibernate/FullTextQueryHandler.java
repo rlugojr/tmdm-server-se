@@ -60,7 +60,11 @@ class FullTextQueryHandler extends AbstractQueryHandler {
     public StorageResults visit(Select select) {
         // TMDM-4654: Checks if entity has a composite PK.
         Set<ComplexTypeMetadata> compositeKeyTypes = new HashSet<ComplexTypeMetadata>();
-        List<ComplexTypeMetadata> types = select.getTypes();
+        // TMDM-7496: Search should include references to reused types
+        Collection<ComplexTypeMetadata> types = new HashSet<ComplexTypeMetadata>(select.getTypes());
+        for (ComplexTypeMetadata type : select.getTypes()) {
+            types.addAll(type.accept(new SearchTransitiveClosure()));
+        }
         for (ComplexTypeMetadata type : types) {
             if (type.getKeyFields().size() > 1) {
                 compositeKeyTypes.add(type);
@@ -452,4 +456,31 @@ class FullTextQueryHandler extends AbstractQueryHandler {
             return iterator;
         }
     }
+
+    private static class SearchTransitiveClosure extends DefaultMetadataVisitor<Collection<? extends ComplexTypeMetadata>> {
+
+        private final Set<ComplexTypeMetadata> closure = new HashSet<ComplexTypeMetadata>();
+
+        @Override
+        public Collection<? extends ComplexTypeMetadata> visit(ComplexTypeMetadata complexType) {
+            super.visit(complexType);
+            return closure;
+        }
+
+        @Override
+        public Collection<? extends ComplexTypeMetadata> visit(ContainedComplexTypeMetadata containedType) {
+            super.visit(containedType);
+            return closure;
+        }
+
+        @Override
+        public Collection<? extends ComplexTypeMetadata> visit(ReferenceFieldMetadata referenceField) {
+            ComplexTypeMetadata referencedType = referenceField.getReferencedType();
+            if (!referencedType.isInstantiable()) {
+                closure.add(referencedType);
+            }
+            return closure;
+        }
+    }
+
 }

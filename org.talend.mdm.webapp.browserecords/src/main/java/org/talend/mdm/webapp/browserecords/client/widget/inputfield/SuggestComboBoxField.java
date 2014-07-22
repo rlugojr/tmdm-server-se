@@ -23,7 +23,6 @@ import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
 
-import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -145,11 +144,6 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         getInputEl().dom.setAttribute("style", "width:83%"); //$NON-NLS-1$//$NON-NLS-2$ 
     }
 
-    @Override
-    public int getWidth() {
-        return GXT.isChrome ? getOffsetWidth() + 75 : getOffsetWidth();
-    }
-
     protected void setListener() {
 
         addListener(Events.KeyUp, new Listener<FieldEvent>() {
@@ -189,8 +183,8 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         }
 
         public native BoxComponent getBoxComponent() /*-{
-                                                     return this.@com.extjs.gxt.ui.client.fx.Resizable::resize;
-                                                     }-*/;
+			return this.@com.extjs.gxt.ui.client.fx.Resizable::resize;
+        }-*/;
 
     }
 

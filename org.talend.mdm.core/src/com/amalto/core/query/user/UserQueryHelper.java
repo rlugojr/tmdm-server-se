@@ -54,7 +54,13 @@ public class UserQueryHelper {
         }
         if (whereItem instanceof WhereAnd || whereItem instanceof WhereOr) { // Handle ANDs and ORs
             List<IWhereItem> whereItems = ((WhereLogicOperator) whereItem).getItems();
-            Condition current = TRUE;
+            Condition current;
+            // TMDM-7513: Prevent incorrect conditions (choose right constant condition depending on operator).
+            if (whereItem instanceof WhereAnd) {
+                current = TRUE;
+            } else {
+                current = FALSE;
+            }
             for (IWhereItem item : whereItems) {
                 if (whereItem instanceof WhereAnd) {
                     current = and(current, buildCondition(queryBuilder, item, repository));

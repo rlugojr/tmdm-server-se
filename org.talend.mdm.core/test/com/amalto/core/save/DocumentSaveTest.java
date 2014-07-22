@@ -1086,6 +1086,26 @@ public class DocumentSaveTest extends TestCase {
 
     }
 
+    public void testUpdateFKToSuperType() throws Exception {
+        MetadataRepository repository = new MetadataRepository();
+        repository.load(DocumentSaveTest.class.getResourceAsStream("metadata18.xsd"));
+        MockMetadataRepositoryAdmin.INSTANCE.register("FKChangeTest", repository);
+
+        TestSaverSource source = new TestSaverSource(repository, true, "test66_original.xml", "metadata18.xsd");
+        source.setUserName("administrator");
+
+        SaverSession session = SaverSession.newSession(source);
+        InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test66.xml");
+        DocumentSaverContext context = session.getContextFactory().create("MDM", "FKChangeTest", "Source", recordXml, false,
+                true, true, false, false);
+        DocumentSaver saver = context.createSaver();
+        saver.save(session, context);
+        MockCommitter committer = new MockCommitter();
+        session.end(committer);
+
+        assertTrue(committer.hasSaved());
+    }
+
     public void testProductUpdate() throws Exception {
         MetadataRepository repository = new MetadataRepository();
         repository.load(DocumentSaveTest.class.getResourceAsStream("metadata1.xsd"));
@@ -2617,7 +2637,7 @@ public class DocumentSaveTest extends TestCase {
         Element committedElement = committer.getCommittedElement();
         assertEquals("[40]", evaluate(committedElement, "/Contrat/detailContrat/Perimetre/entitesPresentes/EDAs/EDA/eda"));
     }
-    
+
     public void test65() throws Exception {
         MetadataRepository repository = new MetadataRepository();
         repository.load(DocumentSaveTest.class.getResourceAsStream("metadata11.xsd"));

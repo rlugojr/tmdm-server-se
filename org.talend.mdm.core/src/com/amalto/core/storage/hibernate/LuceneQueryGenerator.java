@@ -13,7 +13,6 @@ package com.amalto.core.storage.hibernate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -81,7 +80,7 @@ class LuceneQueryGenerator extends VisitorAdapter<Query> {
 
     private boolean isBuildingNot;
 
-    LuceneQueryGenerator(List<ComplexTypeMetadata> types, RDBMSDataSource dataSource) {
+    LuceneQueryGenerator(Collection<ComplexTypeMetadata> types, RDBMSDataSource dataSource) {
         this.types = types;
         this.dataSource = dataSource;
     }

@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<ii>
+    <c>FKChangeTest</c>
+    <n>FKChangeTest</n>
+    <dmn>FKChangeTest</dmn>
+    <i>231035933</i>
+    <t>1327653438644</t>
+    <p> 
+        <FKChangeTest xmlns:tmdm="http://www.talend.com/mdm" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <Id>testR1</Id>
+            <PersonFK tmdm:type="Employee">[EmployeeR1]</PersonFK>
+        </FKChangeTest>
+    </p>
+</ii>

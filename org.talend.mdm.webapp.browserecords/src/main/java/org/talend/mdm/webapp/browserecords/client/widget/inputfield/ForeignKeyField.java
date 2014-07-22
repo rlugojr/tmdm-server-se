@@ -142,6 +142,14 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
     }
 
     @Override
+    protected void afterRender() {
+        super.afterRender();
+        if (GXT.isIE && suggestBox != null && suggestBox.getWidth() > 0) {
+            suggestBox.setWidth(suggestBox.getWidth() - 20);
+        }
+    }
+
+    @Override
     protected void onFocus(ComponentEvent be) {
         if (suggestBox != null) {
             suggestBox.focus();
@@ -150,10 +158,13 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
 
     @Override
     public int getWidth() {
-        if (suggestBox != null) {
-            suggestBox.getWidth();
+        if (GXT.isChrome) {
+            return getOffsetWidth() + 75;
+        } else if (GXT.isIE) {
+            return getOffsetWidth() + 35;
+        } else {
+            return getOffsetWidth();
         }
-        return GXT.isChrome ? getOffsetWidth() + 75 : getOffsetWidth();
     }
 
     @Override
