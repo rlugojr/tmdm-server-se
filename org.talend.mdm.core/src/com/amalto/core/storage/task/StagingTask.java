@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.amalto.core.storage.StagingStorage;
 import org.apache.log4j.Logger;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
@@ -56,7 +57,7 @@ public class StagingTask implements Task {
         this.stagingStorage = stagingStorage;
         this.stats = stats;
         this.executionId = UUID.randomUUID().toString();
-        this.executionType = stagingRepository.getComplexType("TALEND_TASK_EXECUTION"); //$NON-NLS-1$
+        this.executionType = stagingRepository.getComplexType(StagingStorage.EXECUTION_LOG_TYPE);
         this.tasks = tasks;
     }
 

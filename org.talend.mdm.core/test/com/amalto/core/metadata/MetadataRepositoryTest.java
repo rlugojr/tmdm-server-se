@@ -207,11 +207,14 @@ public class MetadataRepositoryTest extends TestCase {
         assertNotNull(entityType);
         assertTrue(entityType.hasField("string20"));
         assertTrue(entityType.hasField("string30"));
+        assertTrue(entityType.hasField("string40"));
 
         TypeMetadata string20Field = entityType.getField("string20").getType();
         assertEquals("20", string20Field.getData(MetadataRepository.DATA_MAX_LENGTH));
         TypeMetadata string30Field = entityType.getField("string30").getType();
         assertEquals("30", string30Field.getData(MetadataRepository.DATA_MAX_LENGTH));
+        TypeMetadata string40Field = entityType.getField("string40").getType();
+        assertEquals("40", string40Field.getData(MetadataRepository.DATA_MAX_LENGTH));
     }
 
     public void test19() throws Exception {

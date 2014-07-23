@@ -63,4 +63,4 @@
 &lt;/xsd:restriction&gt;
 &lt;/xsd:simpleType&gt;
 &lt;/xsd:schema&gt;
-</schema><description>SearchTemplate</description><PK><ids>SearchTemplate</ids><unique-id>SearchTemplate</unique-id></PK><last-error/><digest>d4291c4f1082b55c1a94151a7ac983c2</digest></data-model-pOJO>
+</schema><description>SearchTemplate</description><PK><ids>SearchTemplate</ids><unique-id>SearchTemplate</unique-id></PK><last-error/><digest>99647a60c3c8b34b0594ceb77b3b97fe</digest></data-model-pOJO>

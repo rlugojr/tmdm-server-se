@@ -22,6 +22,7 @@ import java.util.*;
 
 import com.amalto.core.metadata.ClassRepository;
 import com.amalto.core.save.context.DefaultSaverSource;
+import com.amalto.core.storage.StagingStorage;
 import com.amalto.core.storage.StorageType;
 import com.amalto.core.storage.record.DataRecord;
 import com.amalto.core.storage.task.*;
@@ -41,8 +42,6 @@ import com.amalto.core.util.Util;
 import com.amalto.core.util.XtentisException;
 
 public class DefaultStagingTaskService implements StagingTaskServiceDelegate {
-
-    private static final String EXECUTION_LOG_TYPE = "TALEND_TASK_EXECUTION"; //$NON-NLS-1$
 
     // SimpleDateFormat is not thread-safe
     private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); //$NON-NLS-1$
@@ -147,7 +146,7 @@ public class DefaultStagingTaskService implements StagingTaskServiceDelegate {
             throw new IllegalStateException("No staging storage available for container '" + dataContainer + "'.");
         }
         MetadataRepository stagingRepository = staging.getMetadataRepository();
-        ComplexTypeMetadata executionType = stagingRepository.getComplexType(EXECUTION_LOG_TYPE);
+        ComplexTypeMetadata executionType = stagingRepository.getComplexType(StagingStorage.EXECUTION_LOG_TYPE);
         UserQueryBuilder qb = from(executionType)
                 .select(executionType.getField("id")) //$NON-NLS-1$
                 .where(eq(executionType.getField("completed"), "true")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -248,7 +247,7 @@ public class DefaultStagingTaskService implements StagingTaskServiceDelegate {
             }
         }
         MetadataRepository stagingRepository = staging.getMetadataRepository();
-        ComplexTypeMetadata executionType = stagingRepository.getComplexType(EXECUTION_LOG_TYPE);
+        ComplexTypeMetadata executionType = stagingRepository.getComplexType(StagingStorage.EXECUTION_LOG_TYPE);
         UserQueryBuilder qb = from(executionType)
                 .where(eq(executionType.getField("id"), executionId)); //$NON-NLS-1$
         ExecutionStatistics status = new ExecutionStatistics();
@@ -286,7 +285,7 @@ public class DefaultStagingTaskService implements StagingTaskServiceDelegate {
         try {
             storage.begin();
             for (ComplexTypeMetadata currentType : repository.getUserComplexTypes()) {
-                if (currentType.isInstantiable() && !EXECUTION_LOG_TYPE.equals(currentType.getName())) {
+                if (currentType.isInstantiable() && !StagingStorage.EXECUTION_LOG_TYPE.equals(currentType.getName())) {
                     UserQueryBuilder qb = from(currentType)
                             .select(alias(UserQueryBuilder.count(), "count")); //$NON-NLS-1$
                     if (hasMatchMergeConfiguration(currentType.getName())) {
@@ -350,7 +349,7 @@ public class DefaultStagingTaskService implements StagingTaskServiceDelegate {
         try {
             storage.begin();
             for (ComplexTypeMetadata currentType : repository.getUserComplexTypes()) {
-                if (currentType.isInstantiable() && !EXECUTION_LOG_TYPE.equals(currentType.getName())) {
+                if (currentType.isInstantiable() && !StagingStorage.EXECUTION_LOG_TYPE.equals(currentType.getName())) {
                     UserQueryBuilder qb = from(currentType)
                             .select(alias(UserQueryBuilder.count(), "count")); //$NON-NLS-1$
                     if (StagingConstants.NEW.equals(status)) {
@@ -381,7 +380,7 @@ public class DefaultStagingTaskService implements StagingTaskServiceDelegate {
         try {
             storage.begin();
             for (ComplexTypeMetadata currentType : repository.getUserComplexTypes()) {
-                if (currentType.isInstantiable() && !EXECUTION_LOG_TYPE.equals(currentType.getName())) {
+                if (currentType.isInstantiable() && !StagingStorage.EXECUTION_LOG_TYPE.equals(currentType.getName())) {
                     UserQueryBuilder qb = from(currentType)
                             .select(alias(UserQueryBuilder.count(), "count")); //$NON-NLS-1$
                     if (valid) {

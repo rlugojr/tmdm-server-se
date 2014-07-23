@@ -37,6 +37,12 @@ import com.amalto.core.storage.transaction.StorageTransaction;
 
 public class StagingStorage implements Storage {
 
+    /**
+     * Name of the execution log type defined in
+     * <code>org.talend.mdm.core/src/com/amalto/core/server/stagingInternalTypes.xsd</code>.
+     */
+    public static final String EXECUTION_LOG_TYPE = "TALEND_TASK_EXECUTION"; //$NON-NLS-1$
+
     private static final StagingUpdateAction defaultUpdateAction = new StagingUpdateAction(StagingConstants.NEW, true);
 
     private final Storage delegate;
