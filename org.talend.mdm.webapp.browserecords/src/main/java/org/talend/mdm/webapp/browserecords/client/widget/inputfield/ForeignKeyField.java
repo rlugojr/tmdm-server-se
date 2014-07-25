@@ -10,6 +10,7 @@ import org.talend.mdm.webapp.browserecords.client.mvc.BrowseRecordsView;
 import org.talend.mdm.webapp.browserecords.client.resources.icon.Icons;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKeyFieldList;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsDetailPanel;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.treedetail.ForeignKeyListWindow;
 
@@ -26,7 +27,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Image;
 
-public class ForeignKeyField extends TextField<ForeignKeyBean> implements ReturnCriteriaFK {
+public class ForeignKeyField extends TextField<ForeignKeyBean> implements ReturnCriteriaFK, FKField {
 
     private SuggestComboBoxField suggestBox;
 
@@ -54,6 +55,8 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
 
     private boolean validateFlag = true;
 
+    private boolean staging;
+
     public ForeignKeyField(String currentNodeXpath, String fkFilter, String foreignKey, List<String> foreignKeyInfo,
             ItemsDetailPanel itemsDetailPanel) {
         this.validateFlag = BrowseRecords.getSession().getAppHeader().isAutoValidate();
@@ -61,6 +64,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         this.foreignKey = foreignKey;
         this.foreignKeyInfo = foreignKeyInfo;
         this.foreignKeyName = foreignKey.split("/")[0]; //$NON-NLS-1$
+        this.staging = itemsDetailPanel.isStaging();
         this.setFireChangeEventOnSetValue(true);
         this.setReturnCriteriaFK();
         fkWindow.setForeignKeyInfos(foreignKey, foreignKeyInfo);
@@ -70,7 +74,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         fkWindow.setResizable(false);
         fkWindow.setModal(true);
         fkWindow.setBlinkModal(true);
-        fkWindow.setStaging(itemsDetailPanel.isStaging());
+        fkWindow.setStaging(staging);
 
         suggestBox = new SuggestComboBoxField(this);
     }
@@ -80,6 +84,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         this(null, null, foreignKey, foreignKeyInfo, itemsDetailPanel);
         this.fkFieldList = fkFieldList;
         this.isFkList = true;
+        this.staging = itemsDetailPanel.isStaging();
     }
 
     public void initForeignKeyListWindow() {
@@ -269,11 +274,10 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
     @Override
     public void setValue(ForeignKeyBean fk) {
         if (fk != null) {
+            if (suggestBox != null) {
+                suggestBox.setValue(fk);
+            }
             super.setValue(fk);
-        }
-
-        if (suggestBox != null) {
-            suggestBox.setValue(fk);
         }
     }
 
@@ -320,15 +324,22 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         return this.suggestBox;
     }
 
+    @Override
     public String getForeignKey() {
         return this.foreignKey;
     }
 
+    @Override
     public List<String> getForeignKeyInfo() {
         return this.foreignKeyInfo;
     }
 
     public ItemsDetailPanel getItemsDetailPanel() {
         return this.itemsDetailPanel;
+    }
+
+    @Override
+    public boolean isStaging() {
+        return this.staging;
     }
 }

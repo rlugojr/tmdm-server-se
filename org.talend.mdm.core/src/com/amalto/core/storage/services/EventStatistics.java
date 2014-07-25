@@ -16,6 +16,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -23,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.amalto.core.query.user.UserQueryBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
@@ -50,14 +55,6 @@ public class EventStatistics {
 
     private static final Logger LOGGER = Logger.getLogger(EventStatistics.class);
 
-    private static final String CALL_JOB_JNDI_NAME = "amalto/local/service/callJob"; //$NON-NLS-1$
-
-    private static final String CALL_PROCESS_JNDI_NAME = "amalto/local/service/callprocess"; //$NON-NLS-1$
-
-    private static final String WORKFLOW_JNDI_NAME = "amalto/local/service/workflow"; //$NON-NLS-1$
-
-    private static final String WORKFLOW_CONTEXT_JNDI_NAME = "amalto/local/service/workflowcontext"; //$NON-NLS-1$
-
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventStatistics() {
@@ -73,16 +70,34 @@ public class EventStatistics {
         MetadataRepository repository = system.getMetadataRepository();
         try {
             system.begin();
+            // Get defined triggers
+            ComplexTypeMetadata triggerDefinition = repository.getComplexType("routing-rule-pOJO"); //$NON-NLS-1$
+            FieldMetadata triggerName = triggerDefinition.getField("name"); //$NON-NLS-1$
+            FieldMetadata triggerParameters = triggerDefinition.getField("parameters"); //$NON-NLS-1$
+            UserQueryBuilder qb = from(triggerDefinition).select(triggerName).select(triggerParameters);
+            StorageResults results = system.fetch(qb.getSelect());
+            Map<String, String> triggerNameToParameter;
+            try {
+                triggerNameToParameter = new HashMap<String, String>(results.getCount());
+                for (DataRecord result : results) {
+                    String trigger = String.valueOf(result.get(triggerName));
+                    String parameters = String.valueOf(result.get(triggerParameters));
+                    triggerNameToParameter.put(trigger, parameters);
+                }
+            } finally {
+                results.close();
+            }
+            // Get event count from failed and completed queues
             writer.object().key("events"); //$NON-NLS-1$
             {
                 writer.array();
                 {
                     // Failed events
                     ComplexTypeMetadata failedRoutingOrder = repository.getComplexType("failed-routing-order-v2-pOJO"); //$NON-NLS-1$
-                    writeTo(system, failedRoutingOrder, writer, "failed"); //$NON-NLS-1$
+                    writeTo(system, triggerNameToParameter, failedRoutingOrder, writer, "failed"); //$NON-NLS-1$
                     // Completed events
                     ComplexTypeMetadata completedRoutingOrder = repository.getComplexType("completed-routing-order-v2-pOJO"); //$NON-NLS-1$
-                    writeTo(system, completedRoutingOrder, writer, "completed"); //$NON-NLS-1$
+                    writeTo(system, triggerNameToParameter, completedRoutingOrder, writer, "completed"); //$NON-NLS-1$
                 }
                 writer.endArray();
             }
@@ -96,107 +111,31 @@ public class EventStatistics {
                 .header("Access-Control-Allow-Origin", "*").build(); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    private void writeTo(Storage system, ComplexTypeMetadata routingOrderType, JSONWriter writer, String categoryName)
-            throws JSONException {
+    private void writeTo(Storage system, Map<String, String> triggerNameToParameter, ComplexTypeMetadata routingOrderType,
+            JSONWriter writer, String categoryName) throws JSONException {
         FieldMetadata parameters = routingOrderType.getField("service-parameters"); //$NON-NLS-1$
-        FieldMetadata jndiNameField = routingOrderType.getField("service-jNDI"); //$NON-NLS-1$
-        Expression routingNames = from(routingOrderType).select(alias(distinct(parameters), parameters.getName()))
-                .select(jndiNameField).cache().getExpression();
         writer.object().key(categoryName);
         {
             writer.array();
             {
-                StorageResults routingNameResults = system.fetch(routingNames);
                 try {
-                    XMLReader reader = XMLReaderFactory.createXMLReader();
-                    for (DataRecord routingNameResult : routingNameResults) {
-                        // Get the URL called by event
-                        String parameter = String.valueOf(routingNameResult.get(parameters));
-                        String jndiName = String.valueOf(routingNameResult.get(jndiNameField));
-                        String key = null;
-                        // TMDM-7324: handle different possible values.
-                        if (jndiName.equals(CALL_JOB_JNDI_NAME)) {
-                            ParameterReader handler = new ParameterReader("url"); //$NON-NLS-1$
-                            reader.setContentHandler(handler);
-                            reader.parse(new InputSource(new StringReader(parameter)));
-                            String url = handler.getParameterValue();
-                            try {
-                                key = (new URI(url)).getHost();
-                            } catch (URISyntaxException e) {
-                                LOGGER.warn("Could not get information from '" + url + "'", e);
-                                key = url; // As fallback, put the whole parameter content.
-                            }
-                        } else if (jndiName.equals(CALL_PROCESS_JNDI_NAME)) {
-                            key = parameter.replace("process=", StringUtils.EMPTY); //$NON-NLS-1$
-                        } else if (jndiName.equals(WORKFLOW_JNDI_NAME) || jndiName.equals(WORKFLOW_CONTEXT_JNDI_NAME)) {
-                            ParameterReader handler = new ParameterReader("processId"); //$NON-NLS-1$
-                            reader.setContentHandler(handler);
-                            reader.parse(new InputSource(new StringReader(parameter)));
-                            key = handler.getParameterValue();
-                        }
-                        if (key != null && !key.isEmpty()) {
-                            // Count the number of similar events
-                            Expression routingNameCount = from(routingOrderType).select(alias(count(), "count")) //$NON-NLS-1$
-                                    .where(eq(parameters, parameter)).limit(1).cache().getExpression();
-                            StorageResults failedCountResult = system.fetch(routingNameCount);
-                            try {
-                                // ... and write count to result
-                                writer.object().key(key).value(failedCountResult.iterator().next().get("count")).endObject(); //$NON-NLS-1$
-                            } finally {
-                                failedCountResult.close();
-                            }
+                    for (Map.Entry<String, String> entry : triggerNameToParameter.entrySet()) {
+                        String key = entry.getKey();
+                        UserQueryBuilder qb = from(routingOrderType).select(count()).where(eq(parameters, entry.getValue()))
+                                .limit(1).cache();
+                        StorageResults results = system.fetch(qb.getSelect());
+                        try {
+                            writer.object().key(key).value(results.iterator().next().get("count")).endObject(); //$NON-NLS-1$
+                        } finally {
+                            results.close();
                         }
                     }
                 } catch (Exception e) {
                     throw new RuntimeException("Could not build event statistics for '" + categoryName + "' events", e);
-                } finally {
-                    routingNameResults.close();
                 }
             }
             writer.endArray();
         }
         writer.endObject();
-    }
-
-    private static class ParameterReader extends DefaultHandler {
-
-        private final String parameterName;
-
-        private final StringWriter parameterValue;
-
-        boolean accumulate;
-
-        public ParameterReader(String parameterName) {
-            this.parameterName = parameterName;
-            this.parameterValue = new StringWriter();
-            accumulate = false;
-        }
-
-        public String getParameterValue() {
-            return parameterValue.toString();
-        }
-
-        @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-            if (parameterName.equals(localName)) {
-                accumulate = true;
-            }
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-            if (parameterName.equals(localName)) {
-                accumulate = false;
-            }
-        }
-
-        @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
-            if (accumulate) {
-                for (int i = 0; i < length; i++) {
-                    parameterValue.append(ch[start + i]);
-                }
-            }
-        }
     }
 }

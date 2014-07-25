@@ -22,6 +22,7 @@ import org.talend.mdm.webapp.base.client.widget.ComboBoxEx;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -55,7 +56,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
 
     private String displayFieldName = "displayInfo"; //$NON-NLS-1$
 
-    private ForeignKeyField foreignKeyField;
+    private FKField foreignKeyField;
 
     private int getListDelay = 200;
 
@@ -68,11 +69,9 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         init();
     }
 
-    public SuggestComboBoxField(ForeignKeyField foreignKeyField) {
+    public SuggestComboBoxField(FKField foreignKeyField) {
         super();
         this.foreignKeyField = foreignKeyField;
-        foreignKey = foreignKeyField.getForeignKey();
-        foreignKeyInfo = foreignKeyField.getForeignKeyInfo();
         init();
     }
 
@@ -113,12 +112,13 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
                 config.set("language", Locale.getLanguage()); //$NON-NLS-1$
 
                 String dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
-                if (foreignKeyField.getItemsDetailPanel() != null) {
-                    if (foreignKeyField.getItemsDetailPanel().isStaging()) {
-                        dataCluster = BrowseRecords.getSession().getAppHeader().getStagingDataCluster();
-                    }
+
+                if (foreignKeyField.isStaging()) {
+                    dataCluster = BrowseRecords.getSession().getAppHeader().getStagingDataCluster();
                 }
 
+                foreignKey = foreignKeyField.getForeignKey();
+                foreignKeyInfo = foreignKeyField.getForeignKeyInfo();
                 service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, dataCluster, hasForeignKeyFilter, inputValue,
                         Locale.getLanguage(), new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
 

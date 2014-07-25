@@ -490,6 +490,12 @@ public class MappingGenerator extends DefaultMetadataVisitor<Element> {
 
             idElement.getAttributes().setNamedItem(idName);
             idElement.getAttributes().setNamedItem(columnName);
+            if (field.getType().getData(MetadataRepository.DATA_MAX_LENGTH) != null) {
+                Attr length = document.createAttribute("length"); //$NON-NLS-1$
+                String value = String.valueOf(field.getType().getData(MetadataRepository.DATA_MAX_LENGTH));
+                length.setValue(value);
+                idElement.getAttributes().setNamedItem(length);
+            }
             return idElement;
         } else {
             if (!field.isMany()) {

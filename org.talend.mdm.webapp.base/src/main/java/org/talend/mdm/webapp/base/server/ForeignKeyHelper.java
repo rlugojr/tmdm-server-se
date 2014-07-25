@@ -395,7 +395,12 @@ public class ForeignKeyHelper {
         
         if (subFKInfoList != null) {            
             ItemPOJOPK pk = new ItemPOJOPK();
-            String[] ids = CommonUtil.extractFKRefValue(value,language);
+            String[] ids = CommonUtil.extractFKRefValue(value, language);
+            for (String id : ids) {
+                if (id == null || StringUtils.EMPTY.equals(id.trim())) {
+                    return StringUtils.EMPTY;
+                }
+            }
             pk.setIds(ids);
             String conceptName = subModel.getForeignkey().split("/")[0]; //$NON-NLS-1$
             pk.setConceptName(conceptName);
@@ -403,16 +408,16 @@ public class ForeignKeyHelper {
             ItemPOJO item = com.amalto.core.util.Util.getItemCtrl2Local().getItem(pk);
             if (item != null) {
                 org.w3c.dom.Document document = item.getProjection().getOwnerDocument();
-                List<String> foreignKeyInfo = subModel.getForeignKeyInfo();  
+                List<String> foreignKeyInfo = subModel.getForeignKeyInfo();
                 for (String foreignKeyPath : foreignKeyInfo) {
                     NodeList nodes = com.amalto.core.util.Util.getNodeList(document,
                             StringUtils.substringAfter(foreignKeyPath, "/")); //$NON-NLS-1$
                     if (nodes.getLength() == 1) {
-                        String foreignKeyValue = nodes.item(0).getTextContent();      
-                                              
+                        String foreignKeyValue = nodes.item(0).getTextContent();
+
                         if (subModel.getType().equals(DataTypeConstants.MLS)) {
                             foreignKeyValue = MultilanguageMessageParser.getValueByLanguage(foreignKeyValue, language);
-                        }               
+                        }
 
                         if (subFKInfo.equals("")) { //$NON-NLS-1$
                             subFKInfo += foreignKeyValue;
@@ -420,8 +425,8 @@ public class ForeignKeyHelper {
                             subFKInfo += "-" + foreignKeyValue; //$NON-NLS-1$
                         }
                     }
-                }                
-            }           
+                }
+            }
             return subFKInfo;
         } else {
             return value;

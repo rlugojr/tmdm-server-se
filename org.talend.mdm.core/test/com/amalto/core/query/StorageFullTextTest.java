@@ -60,7 +60,7 @@ public class StorageFullTextTest extends StorageTestCase {
         allRecords.add(factory.read("1", repository, product, "<Product>\n" + "    <Id>2</Id>\n"
                 + "    <Name>Renault car</Name>\n" + "    <ShortDescription>A car</ShortDescription>\n"
                 + "    <LongDescription>Long description 2</LongDescription>\n" + "    <Price>10</Price>\n" + "    <Features>\n"
-                + "        <Sizes>\n" + "            <Size>Large</Size>\n" + "        </Sizes>\n" + "        <Colors>\n"
+                + "        <Sizes>\n" + "            <Size>Large</Size>\n" + "        <Size>Large</Size></Sizes>\n" + "        <Colors>\n"
                 + "            <Color>Blue 2</Color>\n" + "            <Color>Blue 1</Color>\n"
                 + "            <Color>Klein blue2</Color>\n" + "        </Colors>\n" + "    </Features>\n"
                 + "    <Family>[1]</Family>\n" + "    <Status>Pending</Status>\n" + "    <Supplier>[2]</Supplier>\n"
@@ -122,6 +122,30 @@ public class StorageFullTextTest extends StorageTestCase {
     public void setUp() throws Exception {
         populateData();
         super.setUp();
+    }
+
+    public void testMatchesInSameInstance() throws Exception {
+        UserQueryBuilder qb = from(country).where(fullText("2010"));
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            for (DataRecord result : results) {
+                LOG.info("result = " + result);
+            }
+            assertEquals(1, results.getCount());
+        } finally {
+            results.close();
+        }
+
+        qb = from(product).where(fullText("Large"));
+        results = storage.fetch(qb.getSelect());
+        try {
+            for (DataRecord result : results) {
+                LOG.info("result = " + result);
+            }
+            assertEquals(2, results.getCount());
+        } finally {
+            results.close();
+        }
     }
 
     public void testSimpleSearch() throws Exception {

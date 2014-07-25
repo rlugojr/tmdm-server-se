@@ -324,4 +324,20 @@ public class MetadataRepositoryTest extends TestCase {
         }
         assertTrue(hasMetAdresse);
     }
+    
+    public void test27() throws Exception {
+        MetadataRepository repository = new MetadataRepository();
+        InputStream stream = getClass().getResourceAsStream("schema27.xsd");
+        repository.load(stream);
+
+        ComplexTypeMetadata entityType = repository.getComplexType("A");
+        assertNotNull(entityType);
+        assertTrue(entityType.hasField("string20"));
+        assertTrue(entityType.hasField("id"));
+
+        TypeMetadata string20Field = entityType.getField("string20").getType();
+        assertEquals("20", string20Field.getData(MetadataRepository.DATA_MAX_LENGTH));
+        TypeMetadata string30Field = entityType.getField("id").getType();
+        assertEquals("20", string30Field.getData(MetadataRepository.DATA_MAX_LENGTH));
+    }
 }

@@ -289,10 +289,14 @@ public class StorageMetadataUtils {
 
                 @Override
                 public List<String> visit(ReferenceFieldMetadata referenceField) {
-                    StringTokenizer tokenizer = new StringTokenizer(value, "["); //$NON-NLS-1$
-                    while (tokenizer.hasMoreTokens()) {
-                        String nextToken = tokenizer.nextToken();
-                        values.add(nextToken.substring(1, nextToken.length() - 1));
+                    if (value.startsWith("[")) { //$NON-NLS-1$
+                        StringTokenizer tokenizer = new StringTokenizer(value, "["); //$NON-NLS-1$
+                        while (tokenizer.hasMoreTokens()) {
+                            String nextToken = tokenizer.nextToken();
+                            values.add(nextToken.substring(1, nextToken.length() - 1));
+                        }
+                    } else {
+                        values.add(value);
                     }
                     return values;
                 }

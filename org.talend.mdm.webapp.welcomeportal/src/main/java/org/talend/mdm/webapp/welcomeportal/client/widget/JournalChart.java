@@ -20,11 +20,13 @@ import java.util.Set;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.welcomeportal.client.WelcomePortal;
+import org.talend.mdm.webapp.welcomeportal.client.i18n.MessagesFactory;
 import org.talend.mdm.webapp.welcomeportal.client.rest.StatisticsRestServiceHandler;
 
 import com.extjs.gxt.ui.client.widget.custom.Portal;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.user.client.ui.HTML;
 import com.googlecode.gflot.client.DataPoint;
 import com.googlecode.gflot.client.PlotModel;
 import com.googlecode.gflot.client.Series;
@@ -83,24 +85,38 @@ public class JournalChart extends ChartPortlet {
     }
 
     private void initChart() {
+        String noDCAlertPrefix = "<span id=\"licenseAlert\" style=\"padding-right:8px;cursor: pointer;\" class=\"labelStyle\" title=\"" //$NON-NLS-1$
+                + MessagesFactory.getMessages().alerts_title() + "\">"; //$NON-NLS-1$
+        final String alertIcon = "<IMG SRC=\"/talendmdm/secure/img/genericUI/alert-icon.png\"/>&nbsp;"; //$NON-NLS-1$
+        final HTML alertHtml = new HTML();
+        final StringBuilder noDCAlertMsg = new StringBuilder(noDCAlertPrefix);
 
         service.getCurrentDataContainer(new SessionAwareAsyncCallback<String>() {
 
             @Override
             public void onSuccess(String dataContainer) {
 
-                dc = dataContainer;
-                dataContainerChanged = false;
+                if (dataContainer != null) {
+                    dc = dataContainer;
+                    dataContainerChanged = false;
 
-                StatisticsRestServiceHandler.getInstance().getContainerJournalStats(dataContainer,
-                        new SessionAwareAsyncCallback<JSONArray>() {
+                    StatisticsRestServiceHandler.getInstance().getContainerJournalStats(dataContainer,
+                            new SessionAwareAsyncCallback<JSONArray>() {
 
-                            @Override
-                            public void onSuccess(JSONArray jsonArray) {
-                                chartData = parseJSONData(jsonArray);
-                                initAndShow();
-                            }
-                        });
+                                @Override
+                                public void onSuccess(JSONArray jsonArray) {
+                                    chartData = parseJSONData(jsonArray);
+                                    initAndShow();
+                                }
+                            });
+                } else {
+                    noDCAlertMsg.append(alertIcon);
+                    noDCAlertMsg.append("No Data Container available!"); //$NON-NLS-1$
+                    noDCAlertMsg.append("</span>"); //$NON-NLS-1$
+                    alertHtml.setHTML(noDCAlertMsg.toString());
+                    set.add(alertHtml);
+                    set.layout(true);
+                }
             }
         });
     }

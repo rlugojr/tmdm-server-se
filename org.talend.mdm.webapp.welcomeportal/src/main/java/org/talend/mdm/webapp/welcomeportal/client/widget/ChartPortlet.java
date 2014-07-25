@@ -74,6 +74,7 @@ public abstract class ChartPortlet extends BasePortlet {
 
     protected void initAndShow() {
         initPlot();
+        set.removeAll();
         set.add(plot);
         set.layout(true);
         this.autoRefresh(autoRefreshBtn.isOn());

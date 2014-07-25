@@ -38,11 +38,21 @@ public class WelcomePortalView extends View {
 
     private static final String COOKIES_PORTLET_COLUMN = "columnNum"; //$NON-NLS-1$
 
+    private static final String COOKIES_CHARTS_ENABLED = "chartsOn"; //$NON-NLS-1$
+
+    private static final String CHARTS_ENABLED = "chartsOn"; //$NON-NLS-1$
+
     private static final int DEFAULT_COLUMN_NUM = 3;
+
+    private static final int ALTERNATIVE_COLUMN_NUM = 2;
 
     private int numColumns;
 
+    private boolean chartsOn;
+
     private Portal portal;
+
+    private boolean chartsSwitcherUpdated;
 
     public WelcomePortalView(Controller controller) {
         super(controller);
@@ -65,10 +75,12 @@ public class WelcomePortalView extends View {
 
         Map<String, Boolean> parsedConfig = parseConfig(dataString);
         Boolean defaultColConfig = parsedConfig.get(USING_DEFAULT_COLUMN_NUM);
+        chartsSwitcherUpdated = !(chartsOn == parsedConfig.get(CHARTS_ENABLED));
         ContentPanel container = GenerateContainer.getContentPanel();
-        if ((defaultColConfig && numColumns == 3) || (!defaultColConfig && numColumns == 2)) {
+        if ((!chartsSwitcherUpdated)
+                && ((defaultColConfig && numColumns == DEFAULT_COLUMN_NUM) || (!defaultColConfig && numColumns == ALTERNATIVE_COLUMN_NUM))) {
             ((MainFramePanel) (container.getItems().get(0))).refresh(parsedConfig);
-        } else {// for switching to diff column number
+        } else {// for switching to diff column number or chartsSwitherUpdated
             updatePortal(parsedConfig);
         }
     }
@@ -94,15 +106,16 @@ public class WelcomePortalView extends View {
             Log.info("Refresh with different column number... ");//$NON-NLS-1$
         }
 
-        Boolean useDefaultNumColumns = config.get(USING_DEFAULT_COLUMN_NUM);
         ContentPanel container = GenerateContainer.getContentPanel();
-        numColumns = useDefaultNumColumns ? DEFAULT_COLUMN_NUM : 2;
-        Cookies.setValue(COOKIES_PORTLET_COLUMN, numColumns);
+        numColumns = config.get(USING_DEFAULT_COLUMN_NUM) ? DEFAULT_COLUMN_NUM : ALTERNATIVE_COLUMN_NUM;
+        chartsOn = config.get(CHARTS_ENABLED);
+        if (chartsSwitcherUpdated && !chartsOn) {
+            ((MainFramePanel) portal).stopChartsAutoRefresh();
+        }
         container.remove(portal);
         portal = new MainFramePanel(numColumns, config);
         container.add(portal);
         container.layout(true);
-
     }
 
     private void onRefreshPortlet() {
@@ -120,14 +133,13 @@ public class WelcomePortalView extends View {
         container.setLayout(new FitLayout());
         container.setStyleAttribute("height", "100%");//$NON-NLS-1$ //$NON-NLS-2$
 
-        if (Cookies.getValue(COOKIES_PORTLET_COLUMN) == null) {
-            numColumns = DEFAULT_COLUMN_NUM;
-        } else {
-            numColumns = (Integer) Cookies.getValue(COOKIES_PORTLET_COLUMN);
-        }
+        Object numColumnsObj = Cookies.getValue(COOKIES_PORTLET_COLUMN);
+        numColumns = (numColumnsObj == null) ? DEFAULT_COLUMN_NUM : (Integer) numColumnsObj;
+
+        Object chartsOnObj = Cookies.getValue(COOKIES_CHARTS_ENABLED);
+        chartsOn = (chartsOnObj == null) ? true : (Boolean) chartsOnObj;
 
         portal = new MainFramePanel(numColumns);
         container.add(portal);
     }
-
 }

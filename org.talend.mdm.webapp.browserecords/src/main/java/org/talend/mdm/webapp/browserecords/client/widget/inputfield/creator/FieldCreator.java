@@ -20,7 +20,7 @@ import org.talend.mdm.webapp.base.client.model.DataTypeConstants;
 import org.talend.mdm.webapp.base.client.widget.MultiLanguageField;
 import org.talend.mdm.webapp.base.shared.SimpleTypeModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.MultipleField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.converter.BooleanConverter;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.converter.DateConverter;
@@ -53,7 +53,7 @@ public class FieldCreator {
             MultipleField multipleField = new MultipleField(dataType, language);
             field = multipleField;
         } else if (dataType.getForeignkey() != null) {
-            FKField fkField = new FKField();
+            FKSearchField fkField = new FKSearchField(dataType.getForeignkey(), dataType.getForeignKeyInfo());
             fkField.Update(dataType.getXpath(), fkField);
             fkField.setRetrieveFKinfos(dataType.isRetrieveFKinfos());
             field = fkField;
@@ -100,7 +100,7 @@ public class FieldCreator {
             } else if (field instanceof NumberField) {
                 binding = new FieldBinding(field, field.getName());
                 binding.setConverter(new NumberConverter(field));
-            } else if (field instanceof FKField) {
+            } else if (field instanceof FKSearchField) {
                 binding = new FieldBinding(field, field.getName());
                 binding.setConverter(new FKConverter());
             } else if (field instanceof MultiLanguageField) {

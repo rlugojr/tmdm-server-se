@@ -2,9 +2,12 @@ package org.talend.mdm.webapp.general.client.layout;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.talend.mdm.webapp.base.client.util.Cookies;
 import org.talend.mdm.webapp.base.client.util.UserContextUtil;
 import org.talend.mdm.webapp.general.client.i18n.MessageFactory;
 import org.talend.mdm.webapp.general.client.mvc.GeneralEvent;
@@ -14,6 +17,7 @@ import org.talend.mdm.webapp.general.model.ComboBoxModel;
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -47,6 +51,9 @@ public class ActionsPanel extends FormPanel {
     private static final List<String> DEFAULT_PORTLET_NAMES = Arrays.asList(NAME_START, NAME_PROCESS, NAME_ALERT, NAME_SEARCH,
             NAME_TASKS, NAME_CHART_DATA, NAME_CHART_ROUTING_EVENT, NAME_CHART_JOURNAL, NAME_CHART_MATCHING);
 
+    private static final Set<String> DEFAULT_CHART_NAMES = new HashSet<String>(Arrays.asList(NAME_CHART_DATA,
+            NAME_CHART_ROUTING_EVENT, NAME_CHART_JOURNAL, NAME_CHART_MATCHING));
+
     private static final Map<String, String> NAME_LABEL_MAPPER = new HashMap<String, String>(9) {
 
         {
@@ -64,6 +71,16 @@ public class ActionsPanel extends FormPanel {
 
     private static final String DEFAULT_COLUMN_NUM = "defaultColNum"; //$NON-NLS-1$
 
+    private static final String CHARTS_ENABLED = "chartsOn"; //$NON-NLS-1$
+
+    private static final String CHARTS_MESSAGE_ADD = "Enable charts"; //$NON-NLS-1$
+
+    private static final String CHARTS_MESSAGE_REMOVE = "Disable charts"; //$NON-NLS-1$
+
+    private static final String COOKIES_CHARTS = "allCharts"; //$NON-NLS-1$
+
+    private Set<String> allCharts;
+
     private ListStore<ComboBoxModel> containerStore = new ListStore<ComboBoxModel>();
 
     private ComboBox<ComboBoxModel> dataContainerBox = new ComboBox<ComboBoxModel>();
@@ -74,6 +91,10 @@ public class ActionsPanel extends FormPanel {
 
     private Map<String, CheckBox> portletCKBoxes;
 
+    private Radio chartsEnableRadio;
+
+    private Radio chartsDisableRadio;
+
     private Radio col2Radio;
 
     private Radio col3Radio;
@@ -83,6 +104,8 @@ public class ActionsPanel extends FormPanel {
     private Button saveBtn = new Button(MessageFactory.getMessages().save());
 
     private Button saveConfigBtn = new Button(MessageFactory.getMessages().save());
+
+    private boolean chartsOn;
 
     private ComboBoxModel emptyModelValue = new ComboBoxModel();
 
@@ -156,19 +179,51 @@ public class ActionsPanel extends FormPanel {
         formData.setMargins(new Margins(5, -30, 5, 30));
         portalConfig.add(checkGroup, formData);
 
-        RadioGroup radioGroup = new RadioGroup();
-        radioGroup.setFieldLabel("Welcome Columns"); //$NON-NLS-1$
+        chartsOn = true;
+
+        RadioGroup chartsRadioGroup = new RadioGroup();
+        chartsRadioGroup.setFieldLabel("Chart Portlets"); //$NON-NLS-1$
+        chartsEnableRadio = new Radio() {
+
+            @Override
+            protected void onClick(ComponentEvent be) {
+                chartsOn = true;
+                updateChartsConfig(chartsOn);
+            }
+        };
+        chartsEnableRadio.setBoxLabel("Enable"); //$NON-NLS-1$
+
+        chartsDisableRadio = new Radio() {
+
+            @Override
+            protected void onClick(ComponentEvent be) {
+                chartsOn = false;
+                updateChartsConfig(chartsOn);
+            }
+        };
+        chartsDisableRadio.setBoxLabel("Disable"); //$NON-NLS-1$
+
+        chartsRadioGroup.add(chartsEnableRadio);
+        chartsRadioGroup.add(chartsDisableRadio);
+
+        formData.setMargins(new Margins(5, -30, 5, 30));
+        portalConfig.add(chartsRadioGroup, formData);
+
+        RadioGroup colRadioGroup = new RadioGroup();
+        colRadioGroup.setFieldLabel("Welcome Columns"); //$NON-NLS-1$
         col2Radio = new Radio();
         col2Radio.setBoxLabel("Two"); //$NON-NLS-1$
 
         col3Radio = new Radio();
         col3Radio.setBoxLabel("Three"); //$NON-NLS-1$
 
-        radioGroup.add(col2Radio);
-        radioGroup.add(col3Radio);
+        colRadioGroup.add(col2Radio);
+        colRadioGroup.add(col3Radio);
 
-        portalConfig.add(radioGroup, formData);
+        portalConfig.add(colRadioGroup, formData);
+
         portalConfig.add(saveConfigBtn);
+        saveConfigBtn.disable();
         this.add(portalConfig);
     }
 
@@ -186,6 +241,9 @@ public class ActionsPanel extends FormPanel {
             public void componentSelected(ButtonEvent ce) {
                 Dispatcher dispatcher = Dispatcher.get();
                 dispatcher.dispatch(GeneralEvent.SwitchClusterAndModel);
+                if (!saveConfigBtn.isEnabled()) {
+                    saveConfigBtn.enable();
+                }
             }
         });
 
@@ -193,8 +251,6 @@ public class ActionsPanel extends FormPanel {
 
             @Override
             public void componentSelected(ButtonEvent ce) {
-                Dispatcher dispatcher = Dispatcher.get();
-                dispatcher.dispatch(GeneralEvent.SwitchClusterAndModel);
                 Map<String, Boolean> configUpdates = getPortalConfigUpdate();
                 refreshPortal(configUpdates);
 
@@ -293,6 +349,7 @@ public class ActionsPanel extends FormPanel {
 
     public void updatePortletConfig(Map<String, Boolean> portletVisibles) {
         Map<String, Boolean> parsedConfig = parseConfig(portletVisibles.toString());
+
         for (CheckBox check : portletCKBoxes.values()) {
             String name = check.getName();
             if (parsedConfig.containsKey(name)) {
@@ -300,10 +357,30 @@ public class ActionsPanel extends FormPanel {
                 check.setValue(parsedConfig.get(name));
             }
         }
+
+        boolean isChartsOn = parsedConfig.get(CHARTS_ENABLED);
+        allCharts = new HashSet<String>((List<String>) Cookies.getValue(COOKIES_CHARTS));
+        if (!isChartsOn) {
+            for (CheckBox check : portletCKBoxes.values()) {
+                String name = check.getName();
+                if (allCharts.contains(name)) {
+                    check.setVisible(false);
+                    check.setValue(false);
+                }
+            }
+            chartsDisableRadio.setValue(true);
+        } else {
+            chartsEnableRadio.setValue(true);
+        }
+
         if (parsedConfig.get(DEFAULT_COLUMN_NUM)) {
             col3Radio.setValue(true);
         } else {
             col2Radio.setValue(true);
+        }
+        
+        if (saveBtn.isEnabled()) {
+            saveConfigBtn.enable();
         }
         this.layout(true);
     }
@@ -329,8 +406,30 @@ public class ActionsPanel extends FormPanel {
         this.layout(true);
     }
 
-    private HashMap<String, Boolean> getPortalConfigUpdate() {
-        HashMap<String, Boolean> updates = new HashMap<String, Boolean>();
+    private void updateChartsConfig(boolean isChartsOn) {
+        if (isChartsOn) {
+            for (CheckBox check : portletCKBoxes.values()) {
+                String name = check.getName();
+                if (allCharts.contains(name)) {
+                    check.setVisible(true);
+                    check.setValue(true);
+                }
+            }
+        } else {
+            for (CheckBox check : portletCKBoxes.values()) {
+                String name = check.getName();
+                if (allCharts.contains(name)) {
+                    check.setVisible(false);
+                    check.setValue(false);
+                }
+            }
+        }
+
+        this.layout(true);
+    }
+
+    private Map<String, Boolean> getPortalConfigUpdate() {
+        Map<String, Boolean> updates = new HashMap<String, Boolean>();
         CheckBox check;
         for (String name : DEFAULT_PORTLET_NAMES) {
             check = portletCKBoxes.get(name);
@@ -344,10 +443,11 @@ public class ActionsPanel extends FormPanel {
             defaultColNum = false;
         }
         updates.put(DEFAULT_COLUMN_NUM, defaultColNum);
+        updates.put(CHARTS_ENABLED, chartsOn);
         return updates;
     }
 
-    // record available portlets in Actions panel
+    // call refresh in WelcomePortal
     private native void refreshPortal(Map<String, Boolean> portalConfig)/*-{
         $wnd.amalto.core.refreshPortal(portalConfig);
     }-*/;

@@ -14,6 +14,7 @@ package com.amalto.core.query.user;
 
 import org.talend.mdm.commmon.metadata.MetadataUtils;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
+import org.talend.mdm.commmon.metadata.ReferenceFieldMetadata;
 import org.talend.mdm.commmon.metadata.TypeMetadata;
 
 import java.util.Collections;
@@ -50,7 +51,13 @@ public class Field implements TypedExpression {
     }
 
     public String getTypeName() {
-        TypeMetadata type = MetadataUtils.getSuperConcreteType(fieldMetadata.getType());
+        TypeMetadata fieldType;
+        if (fieldMetadata instanceof ReferenceFieldMetadata) {
+            fieldType = ((ReferenceFieldMetadata) fieldMetadata).getReferencedField().getType();
+        } else {
+            fieldType = fieldMetadata.getType();
+        }
+        TypeMetadata type = MetadataUtils.getSuperConcreteType(fieldType);
         return type.getName();
     }
 

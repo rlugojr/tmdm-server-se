@@ -19,7 +19,7 @@ import org.talend.mdm.webapp.base.shared.ComplexTypeModel;
 import org.talend.mdm.webapp.base.shared.SimpleTypeModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.model.OperatorConstants;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
 import org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldCreateContext;
 import org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldCreator;
 import org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldSource;
@@ -36,39 +36,41 @@ public class SearchFieldCreator {
 
     public static Field<?> createField(TypeModel typeModel) {
         Field<?> field = null;
-			// when the search condition is no element of entity,the typeModel is null.For example search element/@xsi:type equals something
-            if (typeModel == null){
-                TextField<String> textField = new TextField<String>();
-                textField.setValue("*");//$NON-NLS-1$
-                field = textField;
-                cons = OperatorConstants.stringOperators;
-            } else if (typeModel.getForeignkey() != null) {
-                FKField fkField = new FKField();
-                field = fkField;
-                cons = OperatorConstants.foreignKeyOperators;
-            } else if (typeModel.hasEnumeration()) {
-                SimpleComboBox<String> comboBox = new SimpleComboBox<String>();
-                comboBox.setFireChangeEventOnSetValue(true);
-                if (typeModel.getMinOccurs() > 0)
-                    comboBox.setAllowBlank(false);
-                comboBox.setEditable(false);
-                comboBox.setForceSelection(true);
-                comboBox.setTriggerAction(TriggerAction.ALL);
-                setEnumerationValues(typeModel, comboBox);
-                field = comboBox;
-                cons = OperatorConstants.enumOperators;
-            } else if (typeModel instanceof ComplexTypeModel) {
-                TextField<String> textField = new TextField<String>();
-                textField.setValue("*");//$NON-NLS-1$
-                field = textField;
-                cons = OperatorConstants.fulltextOperators;
-            } else {
-                TypeFieldCreateContext context = new TypeFieldCreateContext(typeModel);
-                TypeFieldSource typeFieldSource = new TypeFieldSource(TypeFieldSource.SEARCH_EDITOR);
-                TypeFieldCreator typeFieldCreator = new TypeFieldCreator(typeFieldSource, context);
-                field = typeFieldCreator.createField();
-                cons = typeFieldSource.getOperatorMap();
+        // when the search condition is no element of entity,the typeModel is null.For example search element/@xsi:type
+        // equals something
+        if (typeModel == null) {
+            TextField<String> textField = new TextField<String>();
+            textField.setValue("*");//$NON-NLS-1$
+            field = textField;
+            cons = OperatorConstants.stringOperators;
+        } else if (typeModel.getForeignkey() != null) {
+            FKSearchField fkField = new FKSearchField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo());
+            field = fkField;
+            cons = OperatorConstants.foreignKeyOperators;
+        } else if (typeModel.hasEnumeration()) {
+            SimpleComboBox<String> comboBox = new SimpleComboBox<String>();
+            comboBox.setFireChangeEventOnSetValue(true);
+            if (typeModel.getMinOccurs() > 0) {
+                comboBox.setAllowBlank(false);
             }
+            comboBox.setEditable(false);
+            comboBox.setForceSelection(true);
+            comboBox.setTriggerAction(TriggerAction.ALL);
+            setEnumerationValues(typeModel, comboBox);
+            field = comboBox;
+            cons = OperatorConstants.enumOperators;
+        } else if (typeModel instanceof ComplexTypeModel) {
+            TextField<String> textField = new TextField<String>();
+            textField.setValue("*");//$NON-NLS-1$
+            field = textField;
+            cons = OperatorConstants.fulltextOperators;
+        } else {
+            TypeFieldCreateContext context = new TypeFieldCreateContext(typeModel);
+            TypeFieldSource typeFieldSource = new TypeFieldSource(TypeFieldSource.SEARCH_EDITOR);
+            TypeFieldCreator typeFieldCreator = new TypeFieldCreator(typeFieldSource, context);
+            field = typeFieldCreator.createField();
+            cons = typeFieldSource.getOperatorMap();
+        }
 
         return field;
     }

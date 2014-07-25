@@ -772,15 +772,14 @@ public class UserQueryBuilder {
             return UserQueryHelper.TRUE;
         }
         Field userField = new Field(field);
-        if (StorageMetadataUtils.isValueAssignable(value, field)) {
-            return contains(userField, value);
-        } else {
-            return UserQueryHelper.FALSE;
-        }
+        return contains(userField, value);
     }
 
     public static Condition contains(TypedExpression field, String value) {
         assertValueConditionArguments(field, value);
+        if (!StorageMetadataUtils.isValueAssignable(value, field.getTypeName())) {
+            return UserQueryHelper.FALSE;
+        }
         Expression constant = createConstant(field, value);
         if (constant instanceof StringConstant) {
             return new Compare(field, Predicate.CONTAINS, constant);

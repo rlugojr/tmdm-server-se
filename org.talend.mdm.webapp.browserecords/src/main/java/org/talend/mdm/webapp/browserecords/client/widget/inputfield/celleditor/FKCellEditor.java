@@ -3,7 +3,7 @@ package org.talend.mdm.webapp.browserecords.client.widget.inputfield.celleditor;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 import org.talend.mdm.webapp.browserecords.client.model.ItemBean;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsListPanel;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
 
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -11,7 +11,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 
 public class FKCellEditor extends CellEditor {
 
-    public FKCellEditor(FKField field) {
+    public FKCellEditor(FKSearchField field) {
         super(field);
     }
     public Object preProcessValue(Object value) {

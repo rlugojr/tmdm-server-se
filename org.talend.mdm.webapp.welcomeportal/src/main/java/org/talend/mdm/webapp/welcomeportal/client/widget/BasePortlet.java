@@ -199,7 +199,7 @@ public abstract class BasePortlet extends Portlet {
         this.setIcon(icons.get(portletName));
     }
 
-    protected void autoRefresh(boolean auto) {
+    public void autoRefresh(boolean auto) {
         if (isAuto != auto) {
             isAuto = auto;
 
