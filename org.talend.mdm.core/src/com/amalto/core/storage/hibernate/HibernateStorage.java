@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import com.amalto.core.query.optimization.*;
 import net.sf.ehcache.CacheManager;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -107,12 +108,6 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.amalto.core.query.optimization.ConfigurableContainsOptimizer;
-import com.amalto.core.query.optimization.ContainsOptimizer;
-import com.amalto.core.query.optimization.Optimizer;
-import com.amalto.core.query.optimization.RangeOptimizer;
-import com.amalto.core.query.optimization.RecommendedIndexes;
-import com.amalto.core.query.optimization.UpdateReportOptimizer;
 import com.amalto.core.query.user.Expression;
 import com.amalto.core.query.user.Select;
 import com.amalto.core.query.user.UserQueryBuilder;
@@ -1356,6 +1351,14 @@ public class HibernateStorage implements Storage {
                 LOGGER.trace("Internal query after mappings:");
                 userQuery.accept(new UserQueryDumpConsole(LOGGER, Level.TRACE));
             }
+        }
+        // Late database changes
+        if (internalExpression instanceof Select) {
+            Select select = (Select) internalExpression;
+            // Query may use operators not compatible with underlying database.
+            Optimizer incompatibleOperators = new IncompatibleOperators(dataSource);
+            incompatibleOperators.optimize(select);
+            select.normalize();
         }
         // Evaluate query
         return internalExpression.accept(queryHandler);

@@ -1560,6 +1560,26 @@ public class StorageQueryTest extends StorageTestCase {
             results.close();
         }
     }
+    
+    public void testFKSearchWithIncompatibleValueAndNot() throws Exception {
+        UserQueryBuilder qb = from(address).selectId(address).select(address.getField("country"))
+                .where(not(contains(address.getField("country"), "aaaa"))); // Id to country is integer
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(5, results.getCount());
+        } finally {
+            results.close();
+        }
+
+        qb = from(address).selectId(address).select(address.getField("country"))
+                .where(or(not(contains(address.getField("country"), "aaaa")), eq(address.getField("id"), "1")));
+        results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(5, results.getCount());
+        } finally {
+            results.close();
+        }
+    }
 
     public void testFKSearch() throws Exception {
         UserQueryBuilder qb = from(address).selectId(address).select(address.getField("country"))

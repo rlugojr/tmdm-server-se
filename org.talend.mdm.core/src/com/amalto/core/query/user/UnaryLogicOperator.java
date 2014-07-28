@@ -35,6 +35,16 @@ public class UnaryLogicOperator implements Condition {
     public Expression normalize() {
         if (predicate == Predicate.NOT) {
             return condition.accept(new VisitorAdapter<Condition>() {
+
+                @Override
+                public Condition visit(ConstantCondition constantCondition) {
+                    if (constantCondition.value()) {
+                        return UserQueryHelper.FALSE;
+                    } else {
+                        return UserQueryHelper.TRUE;
+                    }
+                }
+
                 @Override
                 public Condition visit(IsEmpty isEmpty) {
                     return new NotIsEmpty(isEmpty.getField());
