@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -26,14 +26,8 @@ import org.talend.mdm.webapp.browserecords.client.widget.ItemPanel;
 import org.talend.mdm.webapp.browserecords.shared.AppHeader;
 import org.talend.mdm.webapp.browserecords.shared.ViewBean;
 
-/**
- * DOC Starkey class global comment. Detailled comment
- */
 public class UserSession implements Serializable {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -4121455619510069503L;
 
     public static final String CURRENT_VIEW = "currentView"; //$NON-NLS-1$
@@ -42,14 +36,12 @@ public class UserSession implements Serializable {
 
     public static final String APP_HEADER = "appHeader"; //$NON-NLS-1$
 
-    public static final String ENTITY_MODEL_LIST = "entitymodellist"; //$NON-NLS-1$
-
     public static final String CUSTOMIZE_MODEL_LIST = "customizeModelList";; //$NON-NLS-1$
 
     public static final String CUSTOMIZE_MODEL_VIEW_MAP = "customizeModelViewMap"; //$NON-NLS-1$
 
     public static final String CUSTOMIZE_CRITERION_STORE = "customizeCriterionStore"; //$NON-NLS-1$
-        
+
     public static final String CUSTOMIZE_CRITERION_STORE_ADVANCE = "advanceCustomizeCriterionStore"; //$NON-NLS-1$
 
     private Map<String, Object> sessionMap = null;
@@ -57,9 +49,9 @@ public class UserSession implements Serializable {
     public static final String CURRENT_LINEAGE_ENTITY_LIST = "currentLineageEntityList"; //$NON-NLS-1$
 
     public static final String CURRENT_RUNNABLE_PROCESS_LIST = "currentRunnableProcessList"; //$NON-NLS-1$
-    
+
     public static final String CURRENT_CACHED_ENTITY = "currentCachedEntity"; //$NON-NLS-1$
-    
+
     public static final String CURRENT_CACHED_FKTABS = "currentCachedFK"; //$NON-NLS-1$
 
     public UserSession() {
@@ -67,50 +59,24 @@ public class UserSession implements Serializable {
         this.sessionMap = new HashMap<String, Object>();
     }
 
-    /**
-     * DOC Starkey Comment method "put".
-     */
     public void put(String key, Object value) {
         this.sessionMap.put(key, value);
     }
 
-    /**
-     * DOC Starkey Comment method "get".
-     */
     public Object get(String key) {
         return this.sessionMap.get(key);
     }
 
-    /**
-     * Getter for appHeader.
-     * 
-     * @return the AppHeader
-     */
     public AppHeader getAppHeader() {
         return (AppHeader) get(APP_HEADER);
     }
 
-    /**
-     * DOC HSHU Comment method "getCurrentView".
-     * 
-     * @return
-     */
     public ViewBean getCurrentView() {
         return (ViewBean) get(CURRENT_VIEW);
     }
 
-    /**
-     * DOC HSHU Comment method "getCurrentEntityModel".
-     * 
-     * @return
-     */
     public EntityModel getCurrentEntityModel() {
         return (EntityModel) get(CURRENT_ENTITY_MODEL);
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<ItemBaseModel> getEntitiyModelList() {
-        return (List<ItemBaseModel>) get(ENTITY_MODEL_LIST);
     }
 
     @SuppressWarnings("unchecked")

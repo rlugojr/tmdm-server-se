@@ -28,10 +28,12 @@ public class FKPropertyEditor implements PropertyEditor<ForeignKeyBean> {
 
     }
 
+    @Override
     public ForeignKeyBean convertStringValue(String value) {
         return this.foreignKeyBean;
     }
 
+    @Override
     public String getStringValue(ForeignKeyBean foreignKeyBean) {
         this.foreignKeyBean = foreignKeyBean;
         return foreignKeyBean.toString();

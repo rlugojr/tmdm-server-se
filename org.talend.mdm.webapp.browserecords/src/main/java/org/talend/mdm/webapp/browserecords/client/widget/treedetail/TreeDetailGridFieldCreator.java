@@ -36,9 +36,9 @@ import org.talend.mdm.webapp.browserecords.client.util.MultiOccurrenceManager;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemDetailToolBar;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsDetailPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKPropertyEditor;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeySelector;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.BooleanField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ComboBoxField;
-import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatDateField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatNumberField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatTextField;
@@ -84,8 +84,8 @@ public class TreeDetailGridFieldCreator {
         Field<?> field;
         boolean hasValue = value != null && !"".equals(value); //$NON-NLS-1$
         if (dataType.getForeignkey() != null) {
-            ForeignKeyField fkField = new ForeignKeyField(dataType.getXpath(), dataType.getFkFilter(), dataType.getForeignkey(),
-                    dataType.getForeignKeyInfo(), itemsDetailPanel);
+            ForeignKeySelector fkField = new ForeignKeySelector(dataType.getForeignkey(), dataType.getForeignKeyInfo(),
+                    dataType.getXpath(), dataType.getFkFilter(), itemsDetailPanel, node);
             if (value instanceof ForeignKeyBean) {
                 ForeignKeyBean fkBean = (ForeignKeyBean) value;
                 if (fkBean != null) {
@@ -338,8 +338,8 @@ public class TreeDetailGridFieldCreator {
             }
 
             private native void _setEl(El elem)/*-{
-		this.@com.extjs.gxt.ui.client.widget.Component::el = elem;
-    }-*/;
+                                               this.@com.extjs.gxt.ui.client.widget.Component::el = elem;
+                                               }-*/;
         };
         errorIcon.setStyleAttribute("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
         errorIcon.setStyleAttribute("float", "right"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -352,23 +352,23 @@ public class TreeDetailGridFieldCreator {
     }
 
     private static native void _setErrorIcon(Field<?> field, WidgetComponent errorIcon)/*-{
-		field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon = errorIcon;
-    }-*/;
+                                                                                       field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon = errorIcon;
+                                                                                       }-*/;
 
     private static native WidgetComponent _getErrorIcon(Field<?> field)/*-{
-		return field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon;
-    }-*/;
+                                                                       return field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon;
+                                                                       }-*/;
 
     public static native String getTemplate() /*-{
-		return [
-				'<tpl for=".">',
-				'<tpl if="text == \'\'">',
-				'<div role=\"listitem\" class="x-combo-list-item" title=""></br></div>',
-				'</tpl>',
-				'<tpl if="text != \'\'">',
-				'<div role=\"listitem\" class="x-combo-list-item" title="{text}">{text}</div>',
-				'</tpl>', '</tpl>' ].join("");
-    }-*/;
+                                              return [
+                                              '<tpl for=".">',
+                                              '<tpl if="text == \'\'">',
+                                              '<div role=\"listitem\" class="x-combo-list-item" title=""></br></div>',
+                                              '</tpl>',
+                                              '<tpl if="text != \'\'">',
+                                              '<div role=\"listitem\" class="x-combo-list-item" title="{text}">{text}</div>',
+                                              '</tpl>', '</tpl>' ].join("");
+                                              }-*/;
 
     private static void buildFacets(TypeModel typeModel, Widget w) {
         if (typeModel instanceof SimpleTypeModel) {

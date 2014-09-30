@@ -47,10 +47,6 @@ public class BrowseRecordsEvents {
 
     public static final EventType CreateForeignKeyView = new EventType(CreateForeignKeyViewCode);
 
-    public static final int SelectForeignKeyViewCode = 3006;
-
-    public static final EventType SelectForeignKeyView = new EventType(SelectForeignKeyViewCode);
-
     public static final int ViewItemCode = 3007;
 
     public static final EventType ViewItem = new EventType(ViewItemCode);

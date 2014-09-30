@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -174,7 +174,7 @@ import com.sun.xml.xsom.parser.XSOMParser;
  */
 public class BrowseRecordsAction implements BrowseRecordsService {
 
-    private final Logger LOG = Logger.getLogger(BrowseRecordsAction.class);
+    private static final Logger LOG = Logger.getLogger(BrowseRecordsAction.class);
 
     private final Messages BASEMESSAGE = MessagesFactory.getMessages(
             "org.talend.mdm.webapp.base.client.i18n.BaseMessages", this.getClass().getClassLoader()); //$NON-NLS-1$
@@ -321,12 +321,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     }
 
     @Override
-    public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String dataClusterPK, boolean ifFKFilter, String value, String language) throws ServiceException {
+    public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, String foreignKeyPath,
+            List<String> foreignKeyInfo, String foreignKeyFilter, String filterValue, TypeModel model, String dataClusterPK,
+            String language) throws ServiceException {
         try {
-            String foreignKeyConcept = model.getForeignkey().split("/")[0]; //$NON-NLS-1$
-            return ForeignKeyHelper.getForeignKeyList(config, model, getEntityModel(foreignKeyConcept, language), dataClusterPK,
-                    ifFKFilter, value);
+            String foreignKeyConcept = foreignKeyPath.split("/")[0]; //$NON-NLS-1$
+            return ForeignKeyHelper.getForeignKeyList(config, foreignKeyPath, foreignKeyInfo,
+                    org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), filterValue, model,
+                    getEntityModel(foreignKeyConcept, language), dataClusterPK);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
@@ -342,7 +344,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         model.setForeignkey(foreignKey);
         model.setForeignKeyInfo(foreignKeyInfo);
         model.setRetrieveFKinfos(true);
-        model.setFkFilter(foreignKeyFilter);
+        model.setFkFilter(org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter));
         EntityModel foreignKeyEntityModel = getEntityModel(model.getForeignkey().split("/")[0], language); //$NON-NLS-1$
         try {
             return ForeignKeyHelper.getForeignKeyBean(model, foreignKeyEntityModel, currentDataCluster, ids, xml, currentXpath,
@@ -1112,8 +1114,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         try {
             String model = getCurrentDataModel();
             MetadataRepository repository = ServerContext.INSTANCE.get().getMetadataRepositoryAdmin().get(model);
-            TreeMap<String, String> views = new TreeMap<String, String>();
-            HashSet<String> userRoles = LocalUser.getLocalUser().getRoles();
+            Map<String, String> unsortedViewsMap = new HashMap<String, String>();
+            Set<String> userRoles = LocalUser.getLocalUser().getRoles();
             // It is faster to retrieve all view then look on them (alternatives imply "search by exception").
             WSViewPKArray viewPKs = CommonUtil.getPort().getViewPKs(new WSGetViewPKs(".*")); //$NON-NLS-1$
             for (WSViewPK viewPK : viewPKs.getWsViewPK()) {
@@ -1123,25 +1125,63 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                     // Hides the entity if at least one of user's role is in the "hide" roles (i.e. "No Access" roles).
                     if (type.getHideUsers().isEmpty() || !Collections.disjoint(type.getHideUsers(), userRoles)) {
                         WSView view = CommonUtil.getPort().getView(new WSGetView(viewPK));
-                        String viewDesc = ViewHelper.getViewLabel(language, view);
-                        views.put(view.getName(), viewDesc);
+                        String viewLabel = ViewHelper.getViewLabel(language, view);
+                        unsortedViewsMap.put(view.getName(), viewLabel);
                     }
                 }
             }
             // Filter based on access roles on views
-            Util.filterAuthViews(views);
+            Util.filterAuthViews(unsortedViewsMap);
             // Build results for web UI
-            List<ItemBaseModel> viewList = new ArrayList<ItemBaseModel>();
-            for (String key : views.keySet()) {
-                ItemBaseModel bm = new ItemBaseModel();
-                bm.set("name", views.get(key)); //$NON-NLS-1$
-                bm.set("value", key); //$NON-NLS-1$
-                viewList.add(bm);
-            }
-            return viewList;
+            return getViewsListOrderedByLabels(unsortedViewsMap);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
+        }
+    }
+
+    public static List<ItemBaseModel> getViewsListOrderedByLabels(Map<String, String> unsortedViewsMap) {
+        TreeMap<String, String> sortedViewsByLabelsMap = new TreeMap<String, String>(new ViewLabelComparator(unsortedViewsMap));
+        sortedViewsByLabelsMap.putAll(unsortedViewsMap);
+
+        List<ItemBaseModel> viewsList = new ArrayList<ItemBaseModel>();
+        for (String viewName : sortedViewsByLabelsMap.keySet()) {
+            String viewLabel = unsortedViewsMap.get(viewName);
+            ItemBaseModel bm = new ItemBaseModel();
+            bm.set("name", viewLabel); //$NON-NLS-1$
+            bm.set("value", viewName); //$NON-NLS-1$
+            viewsList.add(bm);
+        }
+        return viewsList;
+    }
+
+    private static class ViewLabelComparator implements Comparator<String> {
+
+        private Map<String, String> unsortedViewsMap;
+
+        public ViewLabelComparator(Map<String, String> unsortedViewsMap) {
+            this.unsortedViewsMap = unsortedViewsMap;
+        }
+
+        public int compare(String viewName1, String viewName2) {
+        	//for some reason the first value to be inserted is compared to itself
+            //so we need to add this so we don't go into the duplicate label every time
+            //anyway the put method will always replace the value if the key already exist
+            if (viewName1.equals(viewName2)) {
+                return 0;
+            }
+            String viewLabel1 = unsortedViewsMap.get(viewName1);
+            int comparison = viewLabel1.compareTo(unsortedViewsMap.get(viewName2));
+            if (comparison > 0) {
+                return 1;
+            } else if (comparison < 0) {
+                return -1;
+            } else {
+                // Even if it should not be the case, there might be views with same label.
+                // So do not return 0, otherwise in such case the duplicated map entry would be overwritten, but log an error
+                LOG.error("Found duplicated label '" + viewLabel1 + "' defined by view '" + viewName1 + "'."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                return 1;
+            }
         }
     }
 
@@ -2309,18 +2349,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
     @Override
     public List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey,
-            List<String> foregnKeyInfo, String dataClusterPK, boolean ifFKFilter, String input, String language)
+            List<String> foregnKeyInfo, String foreignKeyFilter, String dataClusterPK, String input, String language)
             throws ServiceException {
         try {
             String keyWords = input;
             String pattern = "[^a-zA-Z0-9\\s\\@\\.\\-\\_\\'\"]"; //$NON-NLS-1$
             String foregnKeyConcept = foregnKey.split("/")[0]; //$NON-NLS-1$
             EntityModel entityModel = getEntityModel(foregnKeyConcept, language);
-
             TypeModel typeModel = entityModel.getTypeModel(foregnKeyConcept);
-            typeModel.setForeignkey(foregnKey);
-            typeModel.setForeignKeyInfo(foregnKeyInfo);
-            typeModel.setRetrieveFKinfos(true);
 
             if (input.contains(":") && input.indexOf(":") > 0) { //$NON-NLS-1$ //$NON-NLS-2$
                 String entityName = input.split(":")[0]; //$NON-NLS-1$
@@ -2335,9 +2371,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             }
 
             keyWords = keyWords.replaceAll(pattern, ""); //$NON-NLS-1$
-            ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, typeModel,
-                    entityModel, dataClusterPK, ifFKFilter, keyWords);
-
+            ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, foregnKey,
+                    foregnKeyInfo, org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), keyWords,
+                    typeModel, entityModel, dataClusterPK);
             return loadResult.getData();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

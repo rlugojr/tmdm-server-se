@@ -40,6 +40,7 @@ import org.powermock.reflect.Whitebox;
 import org.talend.mdm.commmon.util.datamodel.management.DataModelID;
 import org.talend.mdm.webapp.base.client.exception.ServiceException;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
+import org.talend.mdm.webapp.base.client.model.ItemBaseModel;
 import org.talend.mdm.webapp.base.client.model.ItemBasePageLoadResult;
 import org.talend.mdm.webapp.base.shared.ComplexTypeModel;
 import org.talend.mdm.webapp.base.shared.EntityModel;
@@ -744,6 +745,51 @@ public class BrowseRecordsActionTest extends TestCase {
         formatModel.setFormat("%s World!");
         result = action.formatValue(formatModel);
         assertEquals(result, "Hello World!");
+    }
+    
+    public void testGetViewsListOrderedByLabels() {
+    	Map<String, String> nameLabelMap = new HashMap<String, String>();
+    	nameLabelMap.put("Browse_items_Product", "produit");
+    	nameLabelMap.put("Browse_items_Product#AndFamily", "produit avec familly");
+    	nameLabelMap.put("Browse_items_Product#Unavailable", "produits non disponible");
+    	nameLabelMap.put("Browse_items_Product#Stores", "produit avec magasins");
+    	nameLabelMap.put("Browse_items_ProductFamily", "famille produit");
+    	nameLabelMap.put("Browse_items_Store", "magasin");
+    	nameLabelMap.put("Browse_items_shipped", "envoyés");
+
+    	List<ItemBaseModel> listRes = BrowseRecordsAction.getViewsListOrderedByLabels(nameLabelMap);
+    	
+    	assertEquals(7, listRes.size());
+    	assertEquals("envoyés", listRes.get(0).get("name"));
+    	assertEquals("famille produit", listRes.get(1).get("name"));
+    	assertEquals("magasin", listRes.get(2).get("name"));
+    	assertEquals("produit", listRes.get(3).get("name"));
+    	assertEquals("produit avec familly", listRes.get(4).get("name"));
+    	assertEquals("produit avec magasins", listRes.get(5).get("name"));
+    	assertEquals("produits non disponible", listRes.get(6).get("name"));
+    	
+    	//test with same value
+    	nameLabelMap = new HashMap<String, String>();
+    	nameLabelMap.put("Browse_items_Product", "produit");
+    	nameLabelMap.put("Browse_items_Product#AndFamily", "produit avec familly");
+    	nameLabelMap.put("Browse_items_Product#Unavailable", "produits non disponible");
+    	nameLabelMap.put("Browse_items_Product#Stores", "produit avec magasins");
+    	nameLabelMap.put("Browse_items_ProductFamily", "famille produit");
+    	nameLabelMap.put("Browse_items_Store", "magasin");
+    	nameLabelMap.put("Browse_items_Store2", "magasin");
+    	nameLabelMap.put("Browse_items_shipped", "envoyés");
+
+    	listRes = BrowseRecordsAction.getViewsListOrderedByLabels(nameLabelMap);
+    	
+    	assertEquals(8, listRes.size());
+    	assertEquals("envoyés", listRes.get(0).get("name"));
+    	assertEquals("famille produit", listRes.get(1).get("name"));
+    	assertEquals("magasin", listRes.get(2).get("name"));
+    	assertEquals("magasin", listRes.get(3).get("name"));
+    	assertEquals("produit", listRes.get(4).get("name"));
+    	assertEquals("produit avec familly", listRes.get(5).get("name"));
+    	assertEquals("produit avec magasins", listRes.get(6).get("name"));
+    	assertEquals("produits non disponible", listRes.get(7).get("name"));
     }
 
     private String parsingNodeValue(Document docXml, String xpath, String conceptName) throws Exception {

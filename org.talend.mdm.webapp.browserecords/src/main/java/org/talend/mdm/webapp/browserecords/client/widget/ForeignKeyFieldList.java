@@ -21,7 +21,7 @@ import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.i18n.MessagesFactory;
 import org.talend.mdm.webapp.browserecords.client.model.ItemNodeModel;
 import org.talend.mdm.webapp.browserecords.client.resources.icon.Icons;
-import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeySelector;
 
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -410,10 +410,11 @@ public class ForeignKeyFieldList extends ContentPanel {
     public Field<?> createField(Object value) {
         Field<?> field = null;
         if (typeModel.getForeignkey() != null) {
-            ForeignKeyField foreignKeyField = new ForeignKeyField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo(),
-                    ForeignKeyFieldList.this, itemsDetailPanel);
-            foreignKeyField.setValue((ForeignKeyBean) value);
-            field = foreignKeyField;
+            ForeignKeySelector foreignKeySelector = new ForeignKeySelector(typeModel.getForeignkey(),
+                    typeModel.getForeignKeyInfo(), typeModel.getXpath(), typeModel.getFkFilter(), ForeignKeyFieldList.this,
+                    itemsDetailPanel, itemNode);
+            foreignKeySelector.setValue((ForeignKeyBean) value);
+            field = foreignKeySelector;
             // ((List<ForeignKeyBean>) itemNode.getObjectValue()).add((ForeignKeyBean)value);
             addForeignKeyFieldListener(field, (ForeignKeyBean) value);
         }
