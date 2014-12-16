@@ -842,7 +842,7 @@ public class HibernateStorage implements Storage {
                                 }
                             }
                             // Delete the type instances
-                            String className = storageClassLoader.getClassFromType(typeToDelete).getName();
+                            String className = storageClassLoader.getClassFromType(typeToDelete).getSimpleName();
                             String tableName = MappingGenerator.formatSQLName(className, tableResolver.getNameMaxLength());
                             session.createQuery("delete from " + tableName).executeUpdate(); //$NON-NLS-1$
                             // Clean up full text indexes
