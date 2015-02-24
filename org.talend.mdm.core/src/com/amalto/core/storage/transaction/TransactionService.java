@@ -1,31 +1,35 @@
 /*
  * Copyright (C) 2006-2014 Talend Inc. - www.talend.com
- *
+ * 
  * This source code is available under agreement available at
  * %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
- *
- * You should have received a copy of the agreement
- * along with this program; if not, write to Talend SA
- * 9 rue Pages 92150 Suresnes, France
+ * 
+ * You should have received a copy of the agreement along with this program; if not, write to Talend SA 9 rue Pages
+ * 92150 Suresnes, France
  */
 
 package com.amalto.core.storage.transaction;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.amalto.core.server.ServerContext;
 import com.amalto.core.storage.task.staging.SerializableList;
 
-import javax.ws.rs.*;
-import java.util.List;
-
-@Path("/transactions") //$NON-NLS-1$
+@RestController
+@RequestMapping("/transactions")
 public class TransactionService {
 
     /**
      * Lists all actives transactions ({@link Transaction.Lifetime#LONG} and {@link Transaction.Lifetime#AD_HOC}).
+     * 
      * @return A space-separated list of transaction ids (as UUID).
      */
-    @GET
-    @Path("/") //$NON-NLS-1$
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     public List<String> list() {
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         List<String> list = transactionManager.list();
@@ -34,10 +38,10 @@ public class TransactionService {
 
     /**
      * Starts a new transaction and returns the id of the newly created transaction.
+     * 
      * @return A transaction id (as UUID).
      */
-    @PUT
-    @Path("/") //$NON-NLS-1$
+    @RequestMapping(value = "/", method = RequestMethod.PUT)
     public String begin() {
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         Transaction transaction = transactionManager.create(Transaction.Lifetime.LONG);
@@ -46,11 +50,11 @@ public class TransactionService {
 
     /**
      * Associate calling thread with transaction <code>transactionId</code>.
+     * 
      * @param transactionId A transaction id.
      */
-    @GET
-    @Path("{id}/") //$NON-NLS-1$
-    public void resume(@PathParam("id") String transactionId) { //$NON-NLS-1$
+    @RequestMapping(value = "{id}/", method = RequestMethod.GET)
+    public void resume(@PathVariable("id") String transactionId) { //$NON-NLS-1$
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         Transaction transaction = transactionManager.get(transactionId);
         if (transaction != null) {
@@ -60,11 +64,11 @@ public class TransactionService {
 
     /**
      * Commit the changes in transaction <code>transactionId</code>.
+     * 
      * @param transactionId A valid transaction id.
      */
-    @POST
-    @Path("{id}/") //$NON-NLS-1$
-    public void commit(@PathParam("id") String transactionId) { //$NON-NLS-1$
+    @RequestMapping(value = "{id}/", method = RequestMethod.POST)
+    public void commit(@PathVariable("id") String transactionId) { //$NON-NLS-1$
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         Transaction transaction = transactionManager.get(transactionId);
         if (transaction != null) {
@@ -74,11 +78,11 @@ public class TransactionService {
 
     /**
      * Cancels (rollback) all changes done in <code>transactionId</code>.
+     * 
      * @param transactionId A transaction id.
      */
-    @DELETE
-    @Path("{id}/") //$NON-NLS-1$
-    public void rollback(@PathParam("id") String transactionId) { //$NON-NLS-1$
+    @RequestMapping(value = "{id}/", method = RequestMethod.DELETE)
+    public void rollback(@PathVariable("id") String transactionId) { //$NON-NLS-1$
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         Transaction transaction = transactionManager.get(transactionId);
         if (transaction != null) {

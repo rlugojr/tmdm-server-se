@@ -10,76 +10,8 @@
             <list>datacluster/CONF;datacluster/Inbox;datacluster/Reporting;datacluster/UpdateReport;datacluster/SearchTemplate;datacluster/MDMItemsTrash</list>
         </item>
         <item>
-            <name>CONF</name>
-            <list></list>
-        </item>
-        <item>
-            <name>Inbox</name>
-            <list></list>
-        </item>
-        <item>
-            <name>JCAAdapters</name>
-            <list></list>
-        </item>
-        <item>
             <name>PROVISIONING</name>
             <list>PROVISIONING.User.administrator;PROVISIONING.User.user</list>
-        </item>
-        <item>
-            <name>Reporting</name>
-            <list></list>
-        </item>
-        <item>
-            <name>UpdateReport</name>
-            <list></list>
-        </item>
-        <item>
-            <name>SearchTemplate</name>
-            <list></list>
-        </item>
-        <item>
-            <name>MDMItemsTrash</name>
-            <list></list>
-        </item>
-        <item>
-            <name>MDMItemImages</name>
-            <list></list>
-        </item>
-        <item>
-            <name>MDMDomainObjects</name>
-            <list></list>
-        </item>
-        <item>
-            <name>MDMMigration</name>
-            <list></list>
-        </item>
-        <item>
-            <name>Revision</name>
-            <list></list>
-        </item>
-
-        <!--amalto objects -->
-        <item>
-            <name>amaltoOBJECTSActiveRoutingOrderV2</name>
-            <list></list>
-        </item>
-
-        <item>
-            <name>amaltoOBJECTSBackgroundJob</name>
-            <list></list>
-        </item>
-
-        <item>
-            <name>amaltoOBJECTSCompletedRoutingOrderV2</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSFailedRoutingOrderV2</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSConfigurationInfo</name>
-            <list></list>
         </item>
         <item>
             <name>amaltoOBJECTSMenu</name>
@@ -88,78 +20,6 @@
         <item>
             <name>amaltoOBJECTSRole</name>
             <list>role/System_Admin;role/System_Interactive;role/System_Web</list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSRoutingEngineV2</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSRoutingRule</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSStoredProcedure</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSSynchronizationItem</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSSynchronizationObject</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSSynchronizationPlan</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSTransformerPluginV2</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSTransformerV2</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSUniverse</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSVersionSystem</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSView</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSjcaadapters</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSroutingorders</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSroutingqueues</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSroutingservices</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSCustomForm</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSLicense</name>
-            <list></list>
-        </item>
-        <item>
-            <name>amaltoOBJECTSVersioningSystem</name>
-            <list></list>
         </item>
     </Clusters>
 </root>

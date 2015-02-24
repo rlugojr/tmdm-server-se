@@ -13,25 +13,23 @@ package com.amalto.core.storage.services;
 import static com.amalto.core.query.user.UserQueryBuilder.*;
 
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.*;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.amalto.core.query.user.UserQueryBuilder;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONWriter;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
 
+import com.amalto.core.query.user.UserQueryBuilder;
 import com.amalto.core.server.ServerContext;
 import com.amalto.core.server.StorageAdmin;
 import com.amalto.core.storage.Storage;
@@ -39,14 +37,14 @@ import com.amalto.core.storage.StorageResults;
 import com.amalto.core.storage.StorageType;
 import com.amalto.core.storage.record.DataRecord;
 
-@Path("/system/stats/events") //$NON-NLS-1$
+@RestController
+@RequestMapping("/system/stats")
 public class EventStatistics {
 
     private static final Logger LOGGER = Logger.getLogger(EventStatistics.class);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getEventStatistics(@QueryParam("timeframe") Long timeFrame, @QueryParam("top") Integer top) { //$NON-NLS-1$ //$NON-NLS-2
+    @RequestMapping(value = "/events", method = RequestMethod.GET)
+    public Response getEventStatistics(@RequestParam(value = "timeframe", required = false) Long timeFrame, @RequestParam(value = "top", required = false) Integer top) { //$NON-NLS-1$ //$NON-NLS-2
         StorageAdmin storageAdmin = ServerContext.INSTANCE.get().getStorageAdmin();
         Storage system = storageAdmin.get(StorageAdmin.SYSTEM_STORAGE, StorageType.SYSTEM);
         // Build statistics
@@ -63,7 +61,7 @@ public class EventStatistics {
             StorageResults results = system.fetch(qb.getSelect());
             Map<String, String> triggerNameToParameter;
             try {
-                triggerNameToParameter = new HashMap<String, String>(results.getCount());
+                triggerNameToParameter = new HashMap<>(results.getCount());
                 for (DataRecord result : results) {
                     String trigger = String.valueOf(result.get(triggerName));
                     String parameters = String.valueOf(result.get(triggerParameters));
@@ -82,7 +80,7 @@ public class EventStatistics {
                     writeTo(system, triggerNameToParameter, failedRoutingOrder, writer, timeFrame, "failed", top); //$NON-NLS-1$
                     // Completed events
                     ComplexTypeMetadata completedRoutingOrder = repository.getComplexType("completed-routing-order-v2-pOJO"); //$NON-NLS-1$
-                    writeTo(system, triggerNameToParameter, completedRoutingOrder, writer, timeFrame,  "completed", top); //$NON-NLS-1$
+                    writeTo(system, triggerNameToParameter, completedRoutingOrder, writer, timeFrame, "completed", top); //$NON-NLS-1$
                 }
                 writer.endArray();
             }
@@ -113,7 +111,7 @@ public class EventStatistics {
     }
 
     private void writeTo(Storage system, Map<String, String> triggerNameToParameter, ComplexTypeMetadata routingOrderType,
-                         JSONWriter writer, Long timeFrame, String categoryName, Integer top) throws JSONException {
+            JSONWriter writer, Long timeFrame, String categoryName, Integer top) throws JSONException {
         FieldMetadata parameters = routingOrderType.getField("service-parameters"); //$NON-NLS-1$
         writer.object().key(categoryName);
         {
@@ -121,7 +119,7 @@ public class EventStatistics {
             {
                 try {
                     // Build statistics
-                    SortedSet<EventEntry> entries = new TreeSet<EventEntry>(new Comparator<EventEntry>() {
+                    SortedSet<EventEntry> entries = new TreeSet<>(new Comparator<EventEntry>() {
 
                         @Override
                         public int compare(EventEntry o1, EventEntry o2) {

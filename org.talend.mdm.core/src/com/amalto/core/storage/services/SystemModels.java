@@ -10,7 +10,8 @@
 
 package com.amalto.core.storage.services;
 
-import static com.amalto.core.query.user.UserQueryBuilder.*;
+import static com.amalto.core.query.user.UserQueryBuilder.eq;
+import static com.amalto.core.query.user.UserQueryBuilder.from;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,12 +19,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.*;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -31,6 +27,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.web.bind.annotation.*;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
 import org.talend.mdm.commmon.metadata.compare.Change;
@@ -39,9 +36,7 @@ import org.talend.mdm.commmon.metadata.compare.ImpactAnalyzer;
 
 import com.amalto.commons.core.datamodel.synchronization.DMUpdateEvent;
 import com.amalto.commons.core.datamodel.synchronization.DataModelChangeNotifier;
-import com.amalto.core.objects.ObjectPOJO;
 import com.amalto.core.objects.datamodel.DataModelPOJO;
-import com.amalto.core.objects.datamodel.DataModelPOJOPK;
 import com.amalto.core.query.user.UserQueryBuilder;
 import com.amalto.core.save.SaverSession;
 import com.amalto.core.server.MetadataRepositoryAdmin;
@@ -53,7 +48,8 @@ import com.amalto.core.storage.StorageType;
 import com.amalto.core.storage.record.DataRecord;
 import com.amalto.core.util.XtentisException;
 
-@Path("/system/models")
+@RestController
+@RequestMapping("/system/models")
 public class SystemModels {
 
     private static final Logger LOGGER = Logger.getLogger(SystemModels.class);
@@ -79,10 +75,8 @@ public class SystemModels {
         session.end();
     }
 
-    @GET
-    @Path("{model}")
-    public String getSchema(@PathParam("model")
-    String modelName) {
+    @RequestMapping(value = "/{model}", method = RequestMethod.GET)
+    public String getSchema(@PathVariable("model") String modelName) {
         if (!isSystemStorageAvailable()) {
             return StringUtils.EMPTY;
         }
@@ -108,11 +102,8 @@ public class SystemModels {
         }
     }
 
-    @PUT
-    @Path("{model}")
-    public void updateModel(@PathParam("model")
-    String modelName, @QueryParam("force")
-    boolean force, InputStream dataModel) {
+    @RequestMapping(value = "/{model}", method = RequestMethod.PUT)
+    public void updateModel(@PathVariable("model") String modelName, @RequestParam("force") boolean force, InputStream dataModel) {
         if (!isSystemStorageAvailable()) { // If no system storage is available, store new schema version.
             try {
                 DataModelPOJO dataModelPOJO = new DataModelPOJO(modelName);
@@ -192,13 +183,12 @@ public class SystemModels {
         return !dataModelType.getName().isEmpty();
     }
 
-    @POST
-    @Path("{model}")
-    public String analyzeModelChange(@PathParam("model")
-    String modelName, @QueryParam("lang") String locale, InputStream dataModel) {
+    @RequestMapping(value = "/{model}", method = RequestMethod.POST)
+    public String analyzeModelChange(@PathVariable("model") String modelName, @RequestParam("lang") String locale,
+            InputStream dataModel) {
         Map<ImpactAnalyzer.Impact, List<Change>> impacts;
         if (!isSystemStorageAvailable()) {
-            impacts = new EnumMap<ImpactAnalyzer.Impact, List<Change>>(ImpactAnalyzer.Impact.class);
+            impacts = new EnumMap<>(ImpactAnalyzer.Impact.class);
             for (ImpactAnalyzer.Impact impact : impacts.keySet()) {
                 impacts.put(impact, Collections.<Change> emptyList());
             }

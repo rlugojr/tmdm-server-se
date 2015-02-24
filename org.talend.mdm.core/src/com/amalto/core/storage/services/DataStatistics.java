@@ -12,18 +12,17 @@ package com.amalto.core.storage.services;
 
 import static com.amalto.core.query.user.UserQueryBuilder.*;
 
-import java.io.StringWriter;
+import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 
-import javax.ws.rs.*;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONWriter;
+import org.springframework.web.bind.annotation.*;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
 
@@ -35,25 +34,24 @@ import com.amalto.core.storage.StorageResults;
 import com.amalto.core.storage.StorageType;
 import com.amalto.core.storage.record.DataRecord;
 
-@Path("/system/stats/data")//$NON-NLS-1$
+@RestController
+@RequestMapping("/system/stats/data/")
 public class DataStatistics {
 
     private static final Logger LOGGER = Logger.getLogger(DataStatistics.class);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{container}")//$NON-NLS-1$
-    public Response getDataStatistics(@PathParam("container")//$NON-NLS-1$
-            String containerName, @QueryParam("lang")//$NON-NLS-1$
-            String language, @QueryParam("top")//$NON-NLS-1$
-            Integer top) {
+    @RequestMapping(value = "/{container}", method = RequestMethod.GET)
+    public void getDataStatistics(@PathVariable("container")//$NON-NLS-1$
+            String containerName, @RequestParam(value = "lang", required = false) //$NON-NLS-1$
+            String language, @RequestParam(value = "top", required = false) //$NON-NLS-1$
+            Integer top, HttpServletResponse response) {
         StorageAdmin storageAdmin = ServerContext.INSTANCE.get().getStorageAdmin();
         Storage dataStorage = storageAdmin.get(containerName, StorageType.MASTER);
         if (dataStorage == null) {
             throw new IllegalArgumentException("Container '" + containerName + "' does not exist.");
         }
         // Build statistics
-        SortedSet<TypeEntry> entries = new TreeSet<TypeEntry>(new Comparator<TypeEntry>() {
+        SortedSet<TypeEntry> entries = new TreeSet<>(new Comparator<TypeEntry>() {
 
             @Override
             public int compare(TypeEntry o1, TypeEntry o2) {
@@ -112,17 +110,16 @@ public class DataStatistics {
                     LOGGER.debug("Unable to compute statistics due to storage exception.", e);
                 }
             }
-            return Response.status(Response.Status.NO_CONTENT).build();
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
         }
         // Write results
         try {
             if (top == null || top <= 0) {
                 top = Integer.MAX_VALUE; // no top parameter or top <= 0 means 'all' types.
             }
-            StringWriter stringWriter = new StringWriter();
             DecimalFormat percentageFormat = new DecimalFormat("##.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH)); //$NON-NLS-1$
-            JSONWriter writer = new JSONWriter(stringWriter);
-
+            JSONWriter writer = new JSONWriter(new OutputStreamWriter(response.getOutputStream()));
             writer.object().key("data"); //$NON-NLS-1$
             {
                 writer.array();
@@ -146,14 +143,13 @@ public class DataStatistics {
                 writer.endArray();
             }
             writer.endObject();
-            return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(stringWriter.toString())
-                    .header("Access-Control-Allow-Origin", "*").build(); //$NON-NLS-1$ //$NON-NLS-2$
-        } catch (JSONException e) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        } catch (Exception e) {
             LOGGER.warn("Unable to send statistics.");
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Unable to send statistics due to storage exception.", e);
             }
-            return Response.status(Response.Status.NO_CONTENT).build();
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         }
     }
 
