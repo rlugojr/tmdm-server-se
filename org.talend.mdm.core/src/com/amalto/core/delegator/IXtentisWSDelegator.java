@@ -2013,77 +2013,9 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             return null;
         }
     }
-
-    @Override
-    public WSBoolean putMDMJob(WSPUTMDMJob job) throws RemoteException {
-        DocumentBuilder documentBuilder;
-        try {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document doc;
-            Element jobElem, newOne;
-            String xmlData = null;
-            XmlServer xmlServerCtrlLocal = Util.getXmlServerCtrlLocal();
-            try {
-                xmlData = xmlServerCtrlLocal.getDocumentAsString(MDM_TIS_JOB, JOB);
-            } catch (Exception e) {
-                LOGGER.error("IXtentisWSDelegator.putMDMJob error.", e);
-            }
-            if (xmlData == null || xmlData.equals("")) {//$NON-NLS-1$
-                doc = documentBuilder.newDocument();
-                jobElem = doc.createElement("jobs");//$NON-NLS-1$
-                doc.appendChild(jobElem);
-            } else {
-                doc = Util.parse(xmlData);
-                jobElem = doc.getDocumentElement();
-            }
-
-            newOne = doc.createElement("job");//$NON-NLS-1$
-            newOne.setAttribute("name", job.getJobName());//$NON-NLS-1$
-            newOne.setAttribute("version", job.getJobVersion());//$NON-NLS-1$
-            jobElem.appendChild(newOne);
-
-            xmlServerCtrlLocal.start(MDM_TIS_JOB);
-            xmlServerCtrlLocal.putDocumentFromString(Util.nodeToString(doc.getDocumentElement()), JOB, MDM_TIS_JOB);
-            xmlServerCtrlLocal.commit(MDM_TIS_JOB);
-            return new WSBoolean(true);
-        } catch (Exception e) {
-            LOGGER.error("IXtentisWSDelegator.putMDMJob error.", e);
-        }
-        return new WSBoolean(false);
-    }
-
-    @Override
-    public WSBoolean deleteMDMJob(WSDELMDMJob job) throws RemoteException {
-        Document doc;
-        try {
-            String xmlData = null;
-            XmlServer xmlServerCtrlLocal = Util.getXmlServerCtrlLocal();
-            try {
-                xmlData = xmlServerCtrlLocal.getDocumentAsString(MDM_TIS_JOB, JOB);
-            } catch (Exception e) {
-                LOGGER.error("IXtentisWSDelegator.deleteMDMJob error.", e);
-            }
-            if (xmlData == null) {
-                return new WSBoolean(false);
-            }
-            doc = Util.parse(xmlData);
-            NodeList list = Util.getNodeList(doc, "/jobs/job[@name='" + job.getJobName() + "']");//$NON-NLS-1$ //$NON-NLS-2$
-            if (list.getLength() > 0) {
-                doc.getDocumentElement().removeChild(list.item(0));
-                xmlData = Util.nodeToString(doc);
-                xmlServerCtrlLocal.start(MDM_TIS_JOB);
-                xmlServerCtrlLocal.putDocumentFromString(xmlData, JOB, MDM_TIS_JOB);
-                xmlServerCtrlLocal.commit(MDM_TIS_JOB);
-                return new WSBoolean(true);
-            }
-        } catch (Exception e) {
-            LOGGER.error("IXtentisWSDelegator.deleteMDMJob error.", e);
-        }
-        return new WSBoolean(false);
-    }
-
+    
     /**
-     * get job info from jboss deploy dir
+     * get job infos deployed as war files
      */
     @Override
     public WSMDMJobArray getMDMJob(WSMDMNULL job) {

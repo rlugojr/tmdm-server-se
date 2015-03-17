@@ -613,20 +613,8 @@ public class XtentisWSBean implements XtentisPort {
     }
 
     @Override
-    @WebServiceRoles(ICoreConstants.ADMIN_PERMISSION)
-    public WSBoolean putMDMJob(WSPUTMDMJob job) throws RemoteException {
-        return delegator.putMDMJob(job);
-    }
-
-    @Override
-    @WebServiceRoles(ICoreConstants.ADMIN_PERMISSION)
-    public WSBoolean deleteMDMJob(WSDELMDMJob job) throws RemoteException {
-        return delegator.deleteMDMJob(job);
-    }
-
-    @Override
-    public WSMDMJobArray getMDMJob(WSMDMNULL job) throws RemoteException {
-        return delegator.getMDMJob(job);
+    public WSMDMJobArray getMDMJob(WSMDMNULL mdmJobRequest) throws RemoteException {
+        return delegator.getMDMJob(mdmJobRequest);
     }
 
     @Override

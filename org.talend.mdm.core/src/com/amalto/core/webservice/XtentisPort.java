@@ -253,13 +253,9 @@ public interface XtentisPort extends java.rmi.Remote {
             WSGetRoutingOrderV2ByCriteriaWithPaging wsGetRoutingOrderV2ByCriteriaWithPaging) throws RemoteException;
 
     public WSRoutingEngineV2Status routingEngineV2Action(WSRoutingEngineV2Action wsRoutingEngineAction) throws RemoteException;
-
+    
     public WSMDMJobArray getMDMJob(WSMDMNULL mdmJobRequest) throws RemoteException;
-
-    public WSBoolean putMDMJob(WSPUTMDMJob putMDMJobRequest) throws RemoteException;
-
-    public WSBoolean deleteMDMJob(WSDELMDMJob deleteMDMJobRequest) throws RemoteException;
-
+    
     public WSCategoryData getMDMCategory(WSCategoryData wsCategoryDataRequest) throws RemoteException;
 
     public WSAutoIncrement getAutoIncrement(WSAutoIncrement wsAutoIncrementRequest) throws RemoteException;

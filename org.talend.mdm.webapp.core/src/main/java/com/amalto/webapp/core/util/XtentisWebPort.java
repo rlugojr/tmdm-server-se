@@ -754,16 +754,6 @@ public class XtentisWebPort implements XtentisPort {
     }
 
     @Override
-    public WSBoolean putMDMJob(WSPUTMDMJob putMDMJobRequest) throws RemoteException {
-        return delegate.putMDMJob(putMDMJobRequest);
-    }
-
-    @Override
-    public WSBoolean deleteMDMJob(WSDELMDMJob deleteMDMJobRequest) throws RemoteException {
-        return delegate.deleteMDMJob(deleteMDMJobRequest);
-    }
-
-    @Override
     public WSCategoryData getMDMCategory(WSCategoryData wsCategoryDataRequest) throws RemoteException {
         return delegate.getMDMCategory(wsCategoryDataRequest);
     }
