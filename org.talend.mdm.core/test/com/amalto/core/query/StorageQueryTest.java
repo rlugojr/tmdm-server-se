@@ -125,6 +125,10 @@ public class StorageQueryTest extends StorageTestCase {
 
     private final String TT_Record3 = " <TT><Id>T3</Id><MUl><E1>3</E1><E2>3</E2><E3>[R3]</E3></MUl></TT>";
 
+    private final String COMPTE_Record1 = "<Compte><Level>Compte SF</Level><Code>1</Code><Label>1</Label></Compte>";
+
+    private final String COMPTE_Record2 = "<Compte><Level>Nature Comptable SF</Level><Code>11</Code><Label>11</Label><childOf>[Compte SF][1]</childOf></Compte>";
+
     private final String RepeatableElementsEntity_Record = "<RepeatableElementsEntity><id>1</id><info><name>n1</name><age>1</age></info><info><name>n2</name><age>2</age></info><info><name>n3</name><age>3</age></info></RepeatableElementsEntity>";
 
     private void populateData() {
@@ -339,6 +343,8 @@ public class StorageQueryTest extends StorageTestCase {
         allRecords.add(factory.read("1", repository, tt, TT_Record2));
         allRecords.add(factory.read("1", repository, tt, TT_Record3));
         allRecords.add(factory.read("1", repository, repeatableElementsEntity, RepeatableElementsEntity_Record));
+        allRecords.add(factory.read("1", repository, compte, COMPTE_Record1));
+        allRecords.add(factory.read("1", repository, compte, COMPTE_Record2));
 
         try {
             storage.begin();
@@ -832,6 +838,19 @@ public class StorageQueryTest extends StorageTestCase {
         int i = 0;
         for (DataRecord result : storageResults) {
             assertEquals(expected[i++], result.get("id"));
+        }
+    }
+
+    public void testOrderByCompoundField() throws Exception {
+        UserQueryBuilder qb = from(compte).select(compte.getField("Code")).select(compte.getField("Label"))
+                .select(compte.getField("childOf")).orderBy(compte.getField("childOf"), OrderBy.Direction.DESC);
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            for (DataRecord result : results) {
+                System.out.println(result.get(compte.getField("Code")) + " " + result.get(compte.getField("Label")));
+            }
+        } finally {
+            results.close();
         }
     }
 
