@@ -20,17 +20,9 @@ import org.apache.commons.httpclient.params.HttpClientParams;
  */
 public class BulkloadClientUtil {
 
-    public static void bulkload(String url,
-                                String cluster,
-                                String concept,
-                                String datamodel,
-                                boolean validate,
-                                boolean smartpk,
-                                InputStream itemdata,
-                                String username,
-                                String password,
-                                String transactionId,
-                                String universe) throws Exception {
+    public static void bulkload(String url, String cluster, String concept, String datamodel, boolean validate, boolean smartpk,
+            InputStream itemdata, String username, String password, String transactionId, String universe, String tokenKey,
+            String tokenValue) throws Exception {
         HostConfiguration config = new HostConfiguration();
         URI uri = new URI(url, false, "UTF-8"); //$NON-NLS-1$
         config.setHost(uri);
@@ -59,6 +51,10 @@ public class BulkloadClientUtil {
             if (transactionId != null) {
                 putMethod.setRequestHeader("transaction-id", transactionId); //$NON-NLS-1$
             }
+            if (tokenKey != null && tokenValue != null) {
+                putMethod.setRequestHeader(tokenKey, tokenValue);
+            }
+
             putMethod.setQueryString(parameters);
             putMethod.setContentChunked(true);
             // Set the content of the PUT request
@@ -80,31 +76,13 @@ public class BulkloadClientUtil {
         }
     }
 
-    public static InputStreamMerger bulkload(String url,
-                                             String cluster,
-                                             String concept,
-                                             String dataModel,
-                                             boolean validate,
-                                             boolean smartPK,
-                                             String username,
-                                             String password,
-                                             String transactionId,
-                                             String universe,
-                                             AtomicInteger startedBulkloadCount) {
+    public static InputStreamMerger bulkload(String url, String cluster, String concept, String dataModel, boolean validate,
+            boolean smartPK, String username, String password, String transactionId, String universe, String tokenKey,
+            String tokenValue, AtomicInteger startedBulkloadCount) {
         InputStreamMerger merger = new InputStreamMerger();
 
-        Runnable loadRunnable = new AsyncLoadRunnable(url,
-                cluster,
-                concept,
-                dataModel,
-                validate,
-                smartPK,
-                merger,
-                username,
-                password,
-                transactionId,
-                universe,
-                startedBulkloadCount);
+        Runnable loadRunnable = new AsyncLoadRunnable(url, cluster, concept, dataModel, validate, smartPK, merger, username,
+                password, transactionId, universe, tokenKey, tokenValue, startedBulkloadCount);
         Thread loadThread = new Thread(loadRunnable);
         loadThread.start();
         merger.setConsumerThread(loadThread); // Allow merger to wait for loadThread completion.
@@ -135,20 +113,15 @@ public class BulkloadClientUtil {
 
         private final String universe;
 
+        private final String tokenKey;
+
+        private final String tokenValue;
+
         private final AtomicInteger startedBulkloadCount;
 
-        public AsyncLoadRunnable(String url,
-                                 String cluster,
-                                 String concept,
-                                 String dataModel,
-                                 boolean validate,
-                                 boolean smartPK,
-                                 InputStreamMerger inputStream,
-                                 String userName,
-                                 String password,
-                                 String transactionId,
-                                 String universe,
-                                 AtomicInteger startedBulkloadCount) {
+        public AsyncLoadRunnable(String url, String cluster, String concept, String dataModel, boolean validate, boolean smartPK,
+                InputStreamMerger inputStream, String userName, String password, String transactionId, String universe,
+                String tokenKey, String tokenValue, AtomicInteger startedBulkloadCount) {
             this.url = url;
             this.cluster = cluster;
             this.concept = concept;
@@ -160,9 +133,12 @@ public class BulkloadClientUtil {
             this.password = password;
             this.transactionId = transactionId;
             this.universe = universe;
+            this.tokenKey = tokenKey;
+            this.tokenValue = tokenValue;
             this.startedBulkloadCount = startedBulkloadCount;
         }
 
+        @Override
         public void run() {
             try {
                 startedBulkloadCount.incrementAndGet();
@@ -176,7 +152,7 @@ public class BulkloadClientUtil {
                         userName,
                         password,
                         transactionId,
-                        universe);
+                        universe, tokenKey, tokenValue);
             } catch (Throwable e) {
                 inputStream.reportFailure(e);
             } finally {

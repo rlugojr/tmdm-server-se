@@ -1,6 +1,7 @@
 package org.talend.mdm.bulkload.client;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BulkloadClient {
@@ -20,6 +21,10 @@ public class BulkloadClient {
     private String dataModel;
 
     private String transactionId;
+
+    private String tokenKey;
+
+    private String tokenValue;
 
     private BulkloadOptions options = new BulkloadOptions();
 
@@ -123,6 +128,19 @@ public class BulkloadClient {
         this.transactionId = transactionId;
     }
 
+    public String getTokenKey() {
+        return this.tokenKey;
+    }
+
+    public String getTokenValue() {
+        return this.tokenValue;
+    }
+
+    public void setToken(String tokenKey, String tokenValue) {
+        this.tokenKey = tokenKey;
+        this.tokenValue = tokenValue;
+    }
+
     /**
      * load from a huge xml string
      *
@@ -152,17 +170,8 @@ public class BulkloadClient {
      * @throws Exception Thrown in case of bulk load error
      */
     public void load(InputStream xmlDocuments) throws Exception {
-        BulkloadClientUtil.bulkload(url,
-                cluster,
-                concept,
-                dataModel,
-                options.isValidate(),
-                options.isSmartpk(),
-                xmlDocuments,
-                username,
-                password,
-                transactionId,
-                universe);
+        BulkloadClientUtil.bulkload(url, cluster, concept, dataModel, options.isValidate(), options.isSmartpk(), xmlDocuments,
+                username, password, transactionId, universe, tokenKey, tokenValue);
     }
 
     /**
@@ -184,16 +193,7 @@ public class BulkloadClient {
      * @see InputStreamMerger
      */
     public InputStreamMerger load() throws Exception {
-        return BulkloadClientUtil.bulkload(url,
-                cluster,
-                concept,
-                dataModel,
-                options.isValidate(),
-                options.isSmartpk(),
-                username,
-                password,
-                transactionId,
-                universe,
-                startedBulkloadCount);
+        return BulkloadClientUtil.bulkload(url, cluster, concept, dataModel, options.isValidate(), options.isSmartpk(), username,
+                password, transactionId, universe, tokenKey, tokenValue, startedBulkloadCount);
     }
 }
