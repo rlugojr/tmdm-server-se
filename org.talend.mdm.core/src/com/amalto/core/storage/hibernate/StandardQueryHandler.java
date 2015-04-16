@@ -666,7 +666,7 @@ class StandardQueryHandler extends AbstractQueryHandler {
             Set<String> aliases = getAliases(containingType, field);
             condition.criterionFieldNames = new ArrayList<String>(aliases.size());
             for (String alias : aliases) {
-                condition.criterionFieldNames.add(alias + '.' + userFieldMetadata.getName());
+                addCondition(condition, alias, userFieldMetadata);
             }
         }
         if (orderByExpression instanceof Count) {
@@ -1435,6 +1435,17 @@ class StandardQueryHandler extends AbstractQueryHandler {
         return current;
     }
 
+    private void addCondition(FieldCondition condition, String alias, FieldMetadata fieldMetadata) {
+        if (fieldMetadata instanceof CompoundFieldMetadata) {
+            FieldMetadata[] fields = ((CompoundFieldMetadata) fieldMetadata).getFields();
+            for (FieldMetadata subFieldMetadata : fields) {
+                condition.criterionFieldNames.add(alias + '.' + subFieldMetadata.getName());
+            }
+        } else {
+            condition.criterionFieldNames.add(alias + '.' + fieldMetadata.getName());
+        }
+    }
+
     private class CriterionFieldCondition extends VisitorAdapter<FieldCondition> {
 
         private FieldCondition createInternalCondition(String fieldName) {
@@ -1536,10 +1547,10 @@ class StandardQueryHandler extends AbstractQueryHandler {
                 if (path.size() > 1) {
                     // For path with more than 1 element, the alias for the criterion is the *containing* one(s).
                     String containerAlias = pathToAlias.get(path.get(path.size() - 2).getPath());
-                    condition.criterionFieldNames.add(containerAlias + '.' + field.getFieldMetadata().getName());
+                    addCondition(condition, containerAlias, field.getFieldMetadata());
                 } else {
                     // For path with size 1, code did not generate an alias for field and returned containing alias.
-                    condition.criterionFieldNames.add(alias + '.' + field.getFieldMetadata().getName());
+                    addCondition(condition, alias, field.getFieldMetadata());
                 }
             }
             condition.fieldMetadata = field.getFieldMetadata();

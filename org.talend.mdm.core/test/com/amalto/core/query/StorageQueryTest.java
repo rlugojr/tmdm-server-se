@@ -842,16 +842,37 @@ public class StorageQueryTest extends StorageTestCase {
     }
 
     public void testOrderByCompoundField() throws Exception {
+        FieldMetadata code = compte.getField("Code");
+        String[] ascExpectedValues = { "1", "11" };
         UserQueryBuilder qb = from(compte).select(compte.getField("Code")).select(compte.getField("Label"))
-                .select(compte.getField("childOf")).orderBy(compte.getField("childOf"), OrderBy.Direction.DESC);
+                .select(compte.getField("childOf")).orderBy(compte.getField("childOf"), OrderBy.Direction.ASC);
         StorageResults results = storage.fetch(qb.getSelect());
         try {
+            assertEquals(2, results.getSize());
+            assertEquals(2, results.getCount());
+            int i = 0;
             for (DataRecord result : results) {
-                System.out.println(result.get(compte.getField("Code")) + " " + result.get(compte.getField("Label")));
+                assertEquals(ascExpectedValues[i++], result.get(code));
             }
         } finally {
             results.close();
         }
+
+        String[] descExpectedValues = { "11", "1" };
+        qb = from(compte).select(compte.getField("Code")).select(compte.getField("Label")).select(compte.getField("childOf"))
+                .orderBy(compte.getField("childOf"), OrderBy.Direction.DESC);
+        results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(2, results.getSize());
+            assertEquals(2, results.getCount());
+            int i = 0;
+            for (DataRecord result : results) {
+                assertEquals(descExpectedValues[i++], result.get(code));
+            }
+        } finally {
+            results.close();
+        }
+
     }
 
     public void testOrderByPK() throws Exception {
