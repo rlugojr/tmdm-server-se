@@ -137,21 +137,26 @@ public class SaverSession {
             boolean needResetAutoIncrement = false;
             for (Map.Entry<String, List<Document>> currentTransaction : itemsPerDataCluster.entrySet()) {
                 String dataCluster = currentTransaction.getKey();
-                committer.begin(dataCluster);
-                Iterator<Document> iterator = currentTransaction.getValue().iterator();
-                while (iterator.hasNext()) {
-                    Document currentItemToCommit = iterator.next();
-                    if (!needResetAutoIncrement) {
-                        needResetAutoIncrement = isAutoIncrementItem(currentItemToCommit);
+                try {
+                    committer.begin(dataCluster);
+                    Iterator<Document> iterator = currentTransaction.getValue().iterator();
+                    while (iterator.hasNext()) {
+                        Document currentItemToCommit = iterator.next();
+                        if (!needResetAutoIncrement) {
+                            needResetAutoIncrement = isAutoIncrementItem(currentItemToCommit);
+                        }
+                        // Don't do clean up in case of exception here: rollback (abort()) takes care of the clean up.
+                        committer.save(currentItemToCommit);
+                        // Keep update reports for routeItem (see below).
+                        if (!XSystemObjects.DC_UPDATE_PREPORT.getName().equals(dataCluster)) {
+                            iterator.remove();
+                        }
                     }
-                    // Don't do clean up in case of exception here: rollback (abort()) takes care of the clean up.
-                    committer.save(currentItemToCommit);
-                    // Keep update reports for routeItem (see below).
-                    if (!XSystemObjects.DC_UPDATE_PREPORT.getName().equals(dataCluster)) {
-                        iterator.remove();
-                    }
+                    committer.commit(dataCluster);
+                } catch (Exception e) {
+                    committer.rollback(dataCluster);
+                    throw new RuntimeException("Could not commit changes to '" + dataCluster + "'.", e);
                 }
-                committer.commit(dataCluster);
             }
             // If any change was made to data cluster "UpdateReport", route committed update reports.
             List<Document> updateReport = itemsPerDataCluster.get(XSystemObjects.DC_UPDATE_PREPORT.getName());

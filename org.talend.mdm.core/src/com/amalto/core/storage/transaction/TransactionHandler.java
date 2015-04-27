@@ -161,10 +161,20 @@ public class TransactionHandler implements Handler {
 
         @Override
         public void postRequest() {
+            TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
+            if (transactionManager.hasTransaction()) {
+                throw new IllegalStateException("A non-transactional (auto-commit) operation has an active " +
+                        "transaction after operation completion.");
+            }
         }
 
         @Override
         public void cancelRequest() {
+            TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
+            if (transactionManager.hasTransaction()) {
+                throw new IllegalStateException("A non-transactional (auto-commit) operation has an active " +
+                        "transaction after operation completion.");
+            }
         }
     }
 }
