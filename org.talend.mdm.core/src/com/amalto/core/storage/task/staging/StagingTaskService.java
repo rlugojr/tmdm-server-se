@@ -37,6 +37,7 @@ import com.amalto.core.storage.task.Filter;
 import com.amalto.core.util.Util;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 @Path(StagingTaskService.TASKS)
 @Api(value = StagingTaskService.TASKS, description = "Operations about staging tasks")
@@ -50,27 +51,30 @@ public class StagingTaskService {
 
     @GET
     @Path("/")
-    @ApiOperation(value="list staging tasks", response=StagingContainerSummary.class)
+    @ApiOperation(value="Lists staging tasks for user's current container and model", response=StagingContainerSummary.class)
     public StagingContainerSummary getContainerSummary() {
         return delegate.getContainerSummary();
     }
 
     @POST
     @Path("/")
+    @ApiOperation(value="start a new validation and returns the validation task id")
     public String startValidation() {
         return delegate.startValidation();
     }
 
     @GET
     @Path("{container}/")
-    public StagingContainerSummary getContainerSummary(@PathParam("container") String dataContainer,
-                                                       @QueryParam("model") String dataModel) {
+    @ApiOperation(value="Lists staging tasks for provided container and model", response=StagingContainerSummary.class)
+    public StagingContainerSummary getContainerSummary(@PathParam("container") @ApiParam("Container name") String dataContainer,
+                                                       @QueryParam("model") @ApiParam("Model name") String dataModel) {
         return delegate.getContainerSummary(dataContainer, dataModel);
     }
 
     @POST
     @Path("{container}/")
     @Consumes("application/xml")
+    @ApiOperation(value="start a new validation on provided container and model and returns the validation task id")
     public String startValidation(@PathParam("container") String dataContainer,
                                   @QueryParam("model") String dataModel,
                                   InputStream body) {

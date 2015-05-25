@@ -14,7 +14,11 @@ package com.amalto.core.storage.task.staging;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
 @XmlRootElement(name = "staging")
+@ApiModel(value="staging", description="Overview of a ...")
 public class StagingContainerSummary {
 
     private int totalRecord = 0;
@@ -32,6 +36,7 @@ public class StagingContainerSummary {
     public StagingContainerSummary() {
     }
 
+    @ApiModelProperty(name="total_records")
     @XmlElement(name = "total_records")
     public int getTotalRecord() {
         return totalRecord;
@@ -42,6 +47,7 @@ public class StagingContainerSummary {
     }
 
     @XmlElement(name = "waiting_validation_records")
+    @ApiModelProperty(name="waiting_validation_records")
     public int getWaitingForValidation() {
         return waitingForValidation;
     }
@@ -60,6 +66,7 @@ public class StagingContainerSummary {
     }
 
     @XmlElement(name = "invalid_records")
+    @ApiModelProperty(name="invalid_records")
     public int getInvalidRecords() {
         return invalidRecords;
     }
@@ -73,6 +80,7 @@ public class StagingContainerSummary {
     }
 
     @XmlElement(name = "data_container")
+    @ApiModelProperty(name="data_container")
     public String getDataContainer() {
         return dataContainer;
     }
@@ -82,6 +90,7 @@ public class StagingContainerSummary {
     }
 
     @XmlElement(name = "data_model")
+    @ApiModelProperty(name="data_container")
     public String getDataModel() {
         return dataModel;
     }
