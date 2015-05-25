@@ -35,8 +35,11 @@ import com.amalto.core.storage.task.ConfigurableFilter;
 import com.amalto.core.storage.task.DefaultFilter;
 import com.amalto.core.storage.task.Filter;
 import com.amalto.core.util.Util;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 @Path(StagingTaskService.TASKS)
+@Api(value = StagingTaskService.TASKS, description = "Operations about staging tasks")
 public class StagingTaskService {
 
     private static final Logger LOGGER = Logger.getLogger(StagingTaskService.class);
@@ -47,6 +50,7 @@ public class StagingTaskService {
 
     @GET
     @Path("/")
+    @ApiOperation(value="list staging tasks", response=StagingContainerSummary.class)
     public StagingContainerSummary getContainerSummary() {
         return delegate.getContainerSummary();
     }
