@@ -27,6 +27,16 @@ public class UpdateReportPOJO {
     public static final String                OPERATION_TYPE_RESTORED        = "RESTORED";           //$NON-NLS-1$
 
     public static final String                OPERATION_TYPE_ACTION          = "ACTION";             //$NON-NLS-1$
+    
+    /**
+     * source value for genericUI
+     */
+    public static final String                GENERIC_UI_SOURCE              = "genericUI";
+    
+    /**
+     * source value for service
+     */
+    public static final String                SERVICE_SOURCE                 = "service";
 
     private String                            source;
 

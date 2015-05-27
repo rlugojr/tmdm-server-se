@@ -1450,7 +1450,7 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             String dataModelName = clusterName;
             String conceptName = itemPK.getConceptName();
             String[] ids = itemPK.getIds();
-            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, "genericUI", operationType, null); //$NON-NLS-1$
+            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, UpdateReportPOJO.GENERIC_UI_SOURCE, operationType, null); //$NON-NLS-1$
             return XConverter.POJO2WS(itemPOJOPK);
         } catch (XtentisException e) {
             throw (new RemoteException(e.getLocalizedMessage(), e));
@@ -1475,7 +1475,7 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             }
             // Generate physical delete event in journal
             WSDroppedItemPK droppedItemPK = wsRemoveDroppedItem.getWsDroppedItemPK();
-            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, "genericUI", operationType, null); //$NON-NLS-1$ 
+            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, UpdateReportPOJO.GENERIC_UI_SOURCE, operationType, null); //$NON-NLS-1$ 
             // Removes item from recycle bin
             DroppedItem droppedItemCtrl = Util.getDroppedItemCtrlLocal();
             DroppedItemPOJOPK droppedItemPOJOPK = droppedItemCtrl.removeDroppedItem(XConverter.WS2POJO(droppedItemPK));

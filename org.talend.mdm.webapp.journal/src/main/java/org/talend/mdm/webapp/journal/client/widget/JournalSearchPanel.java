@@ -119,7 +119,7 @@ public class JournalSearchPanel extends FormPanel {
         left.add(entityField, formData);
 
         List<String> list = new ArrayList<String>();
-        list.add("genericUI"); //$NON-NLS-1$
+        list.add(UpdateReportPOJO.GENERIC_UI_SOURCE); //$NON-NLS-1$
         list.add("adminWorkbench"); //$NON-NLS-1$
         list.add("dataSynchronization"); //$NON-NLS-1$
         list.add("workflow"); //$NON-NLS-1$

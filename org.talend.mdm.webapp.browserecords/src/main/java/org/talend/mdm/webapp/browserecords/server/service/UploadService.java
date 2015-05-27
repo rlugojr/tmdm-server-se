@@ -43,6 +43,7 @@ import org.talend.mdm.webapp.browserecords.server.exception.UploadException;
 import org.talend.mdm.webapp.browserecords.server.util.CSVReader;
 import org.talend.mdm.webapp.browserecords.shared.Constants;
 
+import com.amalto.core.objects.UpdateReportPOJO;
 import com.amalto.core.util.Messages;
 import com.amalto.core.util.MessagesFactory;
 import com.amalto.core.webservice.WSDataClusterPK;
@@ -262,7 +263,7 @@ public class UploadService {
 
     protected WSPutItemWithReport buildWSPutItemWithReport(Document document) throws Exception {
         return new WSPutItemWithReport(new WSPutItem(new WSDataClusterPK(getCurrentDataCluster()), document.asXML(),
-                new WSDataModelPK(getCurrentDataModel()), false), "genericUI", true); //$NON-NLS-1$
+                new WSDataModelPK(getCurrentDataModel()), false), UpdateReportPOJO.GENERIC_UI_SOURCE, true); //$NON-NLS-1$
     }
 
     /*

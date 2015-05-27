@@ -2413,7 +2413,7 @@ public class DocumentSaveTest extends TestCase {
 
         SaverSession session = SaverSession.newSession(source);
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test60.xml");
-        DocumentSaverContext context = session.getContextFactory().createPartialUpdate("Vinci", "Test60", "genericUI", recordXml,
+        DocumentSaverContext context = session.getContextFactory().createPartialUpdate("Vinci", "Test60", UpdateReportPOJO.GENERIC_UI_SOURCE, recordXml,
                 true, false, "/Societe/ListeEtablissements/CodeOSMOSE", // Loop (Pivot)
                 null, // Key
                 -1, true);
@@ -2442,7 +2442,7 @@ public class DocumentSaveTest extends TestCase {
 
         SaverSession session = SaverSession.newSession(source);
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test60Ex1.xml");
-        DocumentSaverContext context = session.getContextFactory().createPartialUpdate("Vinci", "Test60Ex1", "genericUI",
+        DocumentSaverContext context = session.getContextFactory().createPartialUpdate("Vinci", "Test60Ex1", UpdateReportPOJO.GENERIC_UI_SOURCE,
                 recordXml, true, false, "/Societe/ListeEtablissements/CodeOSMOSE", // Loop (Pivot)
                 null, // Key
                 -1, true);
@@ -2469,7 +2469,7 @@ public class DocumentSaveTest extends TestCase {
 
         SaverSession session = SaverSession.newSession(source);
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test60Ex2.xml");
-        DocumentSaverContext context = session.getContextFactory().createPartialUpdate("Vinci", "Test60Ex2", "genericUI",
+        DocumentSaverContext context = session.getContextFactory().createPartialUpdate("Vinci", "Test60Ex2", UpdateReportPOJO.GENERIC_UI_SOURCE,
                 recordXml, true, false, "/Societe/ListeEtablissements/CodeOSMOSE", // Loop (Pivot)
                 null, // Key
                 -1, false);
@@ -2725,7 +2725,7 @@ public class DocumentSaveTest extends TestCase {
 
         SaverSession session = SaverSession.newSession(source);
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test67.xml");
-        DocumentSaverContext context = session.getContextFactory().create("test", "test", "genericUI", recordXml, false, true,
+        DocumentSaverContext context = session.getContextFactory().create("test", "test", UpdateReportPOJO.GENERIC_UI_SOURCE, recordXml, false, true,
                 true, false, false);
         DocumentSaver saver = context.createSaver();
         saver.save(session, context);
@@ -2746,7 +2746,7 @@ public class DocumentSaveTest extends TestCase {
 
         SaverSession session = SaverSession.newSession(source);
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test70.xml");
-        DocumentSaverContext context = session.getContextFactory().create("metadata21.xsd", "metadata21.xsd", "genericUI", recordXml, false, true,
+        DocumentSaverContext context = session.getContextFactory().create("metadata21.xsd", "metadata21.xsd", UpdateReportPOJO.GENERIC_UI_SOURCE, recordXml, false, true,
                 false, false, false);
         DocumentSaver saver = context.createSaver();
         saver.save(session, context);
@@ -2769,7 +2769,7 @@ public class DocumentSaveTest extends TestCase {
         SaverSession session = SaverSession.newSession(source);
 
         InputStream recordXml2 = DocumentSaveTest.class.getResourceAsStream("test71.xml");
-        DocumentSaverContext context2 = session.getContextFactory().create("metadata21.xsd", "metadata21.xsd", "genericUI", recordXml2, false, false,
+        DocumentSaverContext context2 = session.getContextFactory().create("metadata21.xsd", "metadata21.xsd", UpdateReportPOJO.GENERIC_UI_SOURCE, recordXml2, false, false,
                 false, false, false);
         DocumentSaver saver2 = context2.createSaver();
         saver2.save(session, context2);

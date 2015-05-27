@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.amalto.core.storage.*;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -43,6 +44,7 @@ import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.ContainedTypeFieldMetadata;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
 
+import com.amalto.core.objects.UpdateReportPOJO;
 import com.amalto.core.query.optimization.ConfigurableContainsOptimizer;
 import com.amalto.core.query.optimization.RangeOptimizer;
 import com.amalto.core.query.optimization.UpdateReportOptimizer;
@@ -2397,7 +2399,7 @@ public class StorageQueryTest extends StorageTestCase {
         }
 
         UserQueryBuilder qb = from(updateReport).where(
-                and(eq(updateReport.getField("Source"), "genericUI"),
+                and(eq(updateReport.getField("Source"), UpdateReportPOJO.GENERIC_UI_SOURCE),
                         eq(updateReport.getField("TimeInMillis"), String.valueOf(1307525701796L))));
         storage.begin();
         StorageResults results = storage.fetch(qb.getSelect());

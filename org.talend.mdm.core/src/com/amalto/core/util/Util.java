@@ -76,6 +76,7 @@ import com.amalto.core.objects.DroppedItemPOJOPK;
 import com.amalto.core.objects.ItemPOJO;
 import com.amalto.core.objects.ItemPOJOPK;
 import com.amalto.core.objects.Service;
+import com.amalto.core.objects.UpdateReportPOJO;
 import com.amalto.core.objects.datacluster.DataClusterPOJOPK;
 import com.amalto.core.objects.transformers.TransformerV2POJOPK;
 import com.amalto.core.objects.transformers.util.TransformerCallBack;
@@ -749,7 +750,7 @@ public class Util {
                     }
                 }
                 String resultUpdateReport = "" + "<Update>" + "<UserName>" + username + "</UserName>"
-                        + "<Source>genericUI</Source>" + "<TimeInMillis>" + System.currentTimeMillis() + "</TimeInMillis>"
+                        + "<Source>" + UpdateReportPOJO.GENERIC_UI_SOURCE +"</Source>" + "<TimeInMillis>" + System.currentTimeMillis() + "</TimeInMillis>"
                         + "<OperationType>" + StringEscapeUtils.escapeXml(operationType) + "</OperationType>" + "<DataCluster>"
                         + clusterName + "</DataCluster>" + "<DataModel>" + StringUtils.EMPTY + "</DataModel>" + "<Concept>"
                         + StringEscapeUtils.escapeXml(concept) + "</Concept>" + "<Key>" + StringEscapeUtils.escapeXml(key)

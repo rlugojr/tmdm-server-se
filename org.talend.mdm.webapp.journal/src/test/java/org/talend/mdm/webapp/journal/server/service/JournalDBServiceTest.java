@@ -47,7 +47,7 @@ public class JournalDBServiceTest extends TestCase{
         criteria.setEndDate(dateFormat.parse("2012-09-30")); //$NON-NLS-1$
         criteria.setKey("1"); //$NON-NLS-1$
         criteria.setOperationType(UpdateReportPOJO.OPERATION_TYPE_CREATE);
-        criteria.setSource("genericUI"); //$NON-NLS-1$
+        criteria.setSource(UpdateReportPOJO.GENERIC_UI_SOURCE); //$NON-NLS-1$
         
         Object[] result = null;
         List<JournalGridModel> journalGridModelList = null;
