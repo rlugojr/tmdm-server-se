@@ -15,7 +15,10 @@ package com.amalto.core.query.user;
 
 import static com.amalto.core.query.user.UserQueryBuilder.*;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -122,7 +125,7 @@ public class UserQueryHelper {
             Condition condition = null;
             for (TypedExpression field : fields) {
                 // Field comparisons
-                if (!whereCondition.isRightValueXPath()) { // Value based comparison
+                if (!isRealXpath(repository, whereCondition.getRightValueOrPath())) { // Value based comparison
                     if (isPerformingTypeCheck) {
                         if (!WhereCondition.EMPTY_NULL.equals(whereCondition.getOperator())) {
                             if (!(field instanceof Alias)) {
@@ -232,6 +235,20 @@ public class UserQueryHelper {
         }
     }
 
+    private static Boolean isRealXpath(MetadataRepository repository, String rightValueOrPath) {
+        if (rightValueOrPath.contains("/")) { //$NON-NLS-1$
+            String rightTypeName = StringUtils.substringBefore(rightValueOrPath, "/"); //$NON-NLS-1$
+            ComplexTypeMetadata metaData = repository.getComplexType(rightTypeName);
+            if (repository.getComplexType(rightTypeName) != null) {
+                String rightFieldName = StringUtils.substringAfter(rightValueOrPath, "/"); //$NON-NLS-1$
+                if (metaData.getField(rightFieldName) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static Condition add(Condition condition, Condition newCondition) {
         if (condition == null) {
             condition = newCondition;
@@ -251,7 +268,7 @@ public class UserQueryHelper {
 
     public static List<TypedExpression> getFields(ComplexTypeMetadata type, String fieldName) {
         if (type == null) {
-            throw new IllegalArgumentException("Type cannot be null."); //$NON-NLS-1$ //$NON-NLS-2$
+            throw new IllegalArgumentException("Type cannot be null."); //$NON-NLS-1$ 
         }
         // Considers attributes as elements
         // TODO This is assuming attributes are elements... which is true when these line were written.
