@@ -17,7 +17,12 @@ import java.util.Locale;
 
 import junit.framework.TestCase;
 
-import org.talend.mdm.commmon.metadata.*;
+import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
+import org.talend.mdm.commmon.metadata.ConsoleDumpMetadataVisitor;
+import org.talend.mdm.commmon.metadata.FieldMetadata;
+import org.talend.mdm.commmon.metadata.MetadataRepository;
+import org.talend.mdm.commmon.metadata.MetadataUtils;
+import org.talend.mdm.commmon.metadata.TypeMetadata;
 
 /**
  * Schema parsing <br>
@@ -271,7 +276,7 @@ public class MetadataRepositoryTest extends TestCase {
         assertNotNull(field);
         assertEquals("Box/FieldCTFK/Name", field.getEntityTypeName() + "/" + field.getPath());
     }
-    
+
     public void test23() throws Exception {
         MetadataRepository repository = new MetadataRepository();
         InputStream stream = getClass().getResourceAsStream("schema23.xsd");
@@ -283,7 +288,7 @@ public class MetadataRepositoryTest extends TestCase {
         }
         // repository.accept(visitor);
     }
-    
+
     public void test24() throws Exception {
         MetadataRepository repository = new MetadataRepository();
         InputStream stream = getClass().getResourceAsStream("schema24.xsd");
@@ -295,7 +300,7 @@ public class MetadataRepositoryTest extends TestCase {
         }
         // repository.accept(visitor);
     }
-    
+
     public void test25() throws Exception { // See TMDM-7235
         MetadataRepository repository = new MetadataRepository();
         InputStream stream = getClass().getResourceAsStream("schema25.xsd");
@@ -305,7 +310,7 @@ public class MetadataRepositoryTest extends TestCase {
         List<ComplexTypeMetadata> sort = MetadataUtils.sortTypes(repository, Arrays.asList(test, containedType));
         assertEquals("Test", sort.get(0).getName());
     }
-    
+
     public void test26() throws Exception { // See TMDM-7235
         MetadataRepository repository = new MetadataRepository();
         InputStream stream = getClass().getResourceAsStream("schema26.xsd");
@@ -324,7 +329,7 @@ public class MetadataRepositoryTest extends TestCase {
         }
         assertTrue(hasMetAdresse);
     }
-    
+
     public void test27() throws Exception {
         MetadataRepository repository = new MetadataRepository();
         InputStream stream = getClass().getResourceAsStream("schema27.xsd");
@@ -367,6 +372,20 @@ public class MetadataRepositoryTest extends TestCase {
         // Assert order is same
         for (int j = 0; j < names.length; j++) {
             assertEquals(names[j], copyNames[j]);
+        }
+    }
+
+    public void test30() throws Exception {
+        String[] keyNames = { "NumeroBdd", "BddSource", "NomApplication", "IdMDM" };
+        MetadataRepository repository = new MetadataRepository();
+        InputStream stream = getClass().getResourceAsStream("schema30.xsd");
+        repository.load(stream);
+        ComplexTypeMetadata entityType = repository.getComplexType("XrefAgence");
+        assertNotNull(entityType);
+        assertEquals(4, entityType.getKeyFields().size());
+        int i = 0;
+        for (FieldMetadata keyField : entityType.getKeyFields()) {
+            assertEquals(keyNames[i++], keyField.getName());
         }
     }
 }
