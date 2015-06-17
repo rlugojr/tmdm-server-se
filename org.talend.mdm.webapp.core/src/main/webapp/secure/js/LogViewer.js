@@ -4,7 +4,7 @@ amalto.logviewer.LogViewer = function() {
 
 	function initUIAndData() {
 		var baseCurrentUrl = stripQueryStringAndHashFromPath(this.location.toString());
-		var theWindow = window.open(baseCurrentUrl + "/../logviewer/logviewer.html", "Talend MDM Log Viewer");
+		var theWindow = window.open(baseCurrentUrl + "/../logviewer/logviewer.html", "TalendMDMLogViewer");
 		theWindow.focus();
 	};
 
