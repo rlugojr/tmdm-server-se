@@ -1,6 +1,10 @@
 package com.amalto.core.server;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -18,7 +22,6 @@ import com.amalto.core.util.LocalUser;
 import com.amalto.core.util.Util;
 import com.amalto.core.util.XtentisException;
 
-
 public class DefaultDataCluster implements DataCluster {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultDataCluster.class);
@@ -33,14 +36,15 @@ public class DefaultDataCluster implements DataCluster {
             if (pk == null) {
                 throw new XtentisException("Unable to create the Data Cluster. Please check the XML Server logs");
             }
-            //create the actual physical cluster
+            // create the actual physical cluster
             try {
-                //get the xml server wrapper
+                // get the xml server wrapper
                 XmlServer server;
                 try {
                     server = Util.getXmlServerCtrlLocal();
                 } catch (Exception e) {
-                    String err = "Error creating cluster '" + dataCluster.getName() + "' : unable to access the XML Server wrapper";
+                    String err = "Error creating cluster '" + dataCluster.getName()
+                            + "' : unable to access the XML Server wrapper";
                     LOGGER.error(err, e);
                     throw new XtentisException(err, e);
                 }
@@ -62,8 +66,8 @@ public class DefaultDataCluster implements DataCluster {
         } catch (XtentisException e) {
             throw (e);
         } catch (Exception e) {
-            String err = "Unable to create/update the datacluster " + dataCluster.getName()
-                    + ": " + e.getClass().getName() + ": " + e.getLocalizedMessage();
+            String err = "Unable to create/update the datacluster " + dataCluster.getName() + ": " + e.getClass().getName()
+                    + ": " + e.getLocalizedMessage();
             LOGGER.error(err, e);
             throw new XtentisException(err, e);
         }
@@ -91,8 +95,8 @@ public class DefaultDataCluster implements DataCluster {
         } catch (XtentisException e) {
             throw (e);
         } catch (Exception e) {
-            String err = "Unable to get the Data Cluster " + pk.toString()
-                    + ": " + e.getClass().getName() + ": " + e.getLocalizedMessage();
+            String err = "Unable to get the Data Cluster " + pk.toString() + ": " + e.getClass().getName() + ": "
+                    + e.getLocalizedMessage();
             LOGGER.error(err, e);
             throw new XtentisException(err);
         }
@@ -113,17 +117,15 @@ public class DefaultDataCluster implements DataCluster {
         if (pk.getUniqueId().endsWith(StorageAdmin.STAGING_SUFFIX)) {
             String cluster = StringUtils.substringBeforeLast(pk.getUniqueId(), "#");
             if (!Util.getXmlServerCtrlLocal().supportStaging(cluster)) {
-                throw new XtentisException("Cluster '" + pk.getUniqueId() + "' (revision: 'null') does not exist");  //$NON-NLS-1$//$NON-NLS-2$
+                throw new XtentisException("Cluster '" + pk.getUniqueId() + "' (revision: 'null') does not exist"); //$NON-NLS-1$//$NON-NLS-2$
             }
             pk = new DataClusterPOJOPK(cluster);
         }
         try {
             ILocalUser user = LocalUser.getLocalUser();
             if (user != null && !user.userCanRead(DataClusterPOJO.class, pk.getUniqueId())) {
-                String err = "Unauthorized read access by "
-                        + "user '" + user.getUsername()
-                        + "' on object " + ObjectPOJO.getObjectName(DataClusterPOJO.class)
-                        + " [" + pk.getUniqueId() + "] ";
+                String err = "Unauthorized read access by " + "user '" + user.getUsername() + "' on object "
+                        + ObjectPOJO.getObjectName(DataClusterPOJO.class) + " [" + pk.getUniqueId() + "] ";
                 LOGGER.error(err);
                 throw new XtentisException(err);
             }
@@ -134,28 +136,27 @@ public class DefaultDataCluster implements DataCluster {
             }
             return null;
         } catch (Exception e) {
-            String info = "Could not check whether this Data Cluster \"" + pk.getUniqueId() + "\" exists:  "
-                    + ": " + e.getClass().getName() + ": " + e.getLocalizedMessage();
+            String info = "Could not check whether this Data Cluster \"" + pk.getUniqueId() + "\" exists:  " + ": "
+                    + e.getClass().getName() + ": " + e.getLocalizedMessage();
             LOGGER.debug("existsDataCluster() " + info, e);
             return null;
         }
     }
 
     /**
-     * Remove a Data Cluster
-     * The physical remove is performed on a separate Thred
+     * Remove a Data Cluster The physical remove is performed on a separate Thred
      */
     @Override
     public DataClusterPOJOPK removeDataCluster(DataClusterPOJOPK pk) throws XtentisException {
-        //remove the actual physical cluster - do it asynchronously
+        // remove the actual physical cluster - do it asynchronously
         try {
             String dataClusterName = pk.getUniqueId();
-            //get the xml server wrapper
+            // get the xml server wrapper
             XmlServer server = Util.getXmlServerCtrlLocal();
             server.deleteCluster(dataClusterName);
         } catch (Exception e) {
-            String err = "Unable to physically delete the data cluster " + pk.getUniqueId() +
-                    ": " + e.getClass().getName() + ": " + e.getLocalizedMessage();
+            String err = "Unable to physically delete the data cluster " + pk.getUniqueId() + ": " + e.getClass().getName()
+                    + ": " + e.getLocalizedMessage();
             try {
                 ObjectPOJO.remove(DataClusterPOJO.class, new ObjectPOJOPK(pk.getUniqueId()));
             } catch (Exception x) {
@@ -179,9 +180,10 @@ public class DefaultDataCluster implements DataCluster {
         List<DataClusterPOJOPK> clusterNames = new ArrayList<>(names.size() + 1);
         ILocalUser user = LocalUser.getLocalUser();
         for (String name : names) {
+            DataClusterPOJOPK dataClusterPOJOPK = new DataClusterPOJOPK(name);
             boolean hasMatch = "*".equals(regex) || ".*".equals(regex) || Pattern.compile(regex).matcher(regex).matches(); //$NON-NLS-1$ //$NON-NLS-2$
-            if (hasMatch && user.userCanRead(DataClusterPOJO.class, name)) {
-                clusterNames.add(new DataClusterPOJOPK(name));
+            if (hasMatch && user.userCanRead(DataClusterPOJO.class, name) && existsDataCluster(dataClusterPOJOPK) != null) {
+                clusterNames.add(dataClusterPOJOPK);
             }
         }
         return clusterNames;
@@ -199,7 +201,8 @@ public class DefaultDataCluster implements DataCluster {
      * Spell checks a sentence and return possible spellings
      */
     @Override
-    public Collection<String> spellCheck(DataClusterPOJOPK dcpk, String sentence, int treshold, boolean ignoreNonExistantWords) throws XtentisException {
+    public Collection<String> spellCheck(DataClusterPOJOPK dcpk, String sentence, int treshold, boolean ignoreNonExistantWords)
+            throws XtentisException {
         return Collections.emptyList();
     }
 }
