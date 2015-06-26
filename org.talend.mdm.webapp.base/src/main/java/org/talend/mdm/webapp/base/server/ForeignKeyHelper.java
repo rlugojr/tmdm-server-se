@@ -19,9 +19,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.amalto.core.objects.ItemPOJO;
-import com.amalto.core.objects.ItemPOJOPK;
-import com.amalto.core.objects.datacluster.DataClusterPOJOPK;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -42,6 +39,9 @@ import org.talend.mdm.webapp.base.shared.XpathUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.amalto.core.objects.ItemPOJO;
+import com.amalto.core.objects.ItemPOJOPK;
+import com.amalto.core.objects.datacluster.DataClusterPOJOPK;
 import com.amalto.core.webservice.WSDataClusterPK;
 import com.amalto.core.webservice.WSGetItemsByCustomFKFilters;
 import com.amalto.core.webservice.WSInt;
@@ -301,22 +301,20 @@ public class ForeignKeyHelper {
 
         String initxpathForeignKey = Util.getForeignPathFromPath(xpathForeignKey);
 
+        List<WSWhereItem> conditions = new ArrayList<WSWhereItem>();
         WSWhereCondition whereCondition = Util.getConditionFromPath(xpathForeignKey);
-        WSWhereItem whereItem = null;
         if (whereCondition != null) {
-            whereItem = new WSWhereItem(whereCondition, null, null);
+            conditions.add(new WSWhereItem(whereCondition, null, null));
         }
-
         if (!Util.isCustomFilter(fkFilter)) {
             // get FK filter
-            WSWhereItem fkFilterWi = Util.getConditionFromFKFilter(xpathForeignKey, xpathInfoForeignKey, fkFilter, false);
-            if (fkFilterWi != null) {
-                whereItem = fkFilterWi;
+            WSWhereItem filterWhereItem = Util.getConditionFromFKFilter(xpathForeignKey, xpathInfoForeignKey, fkFilter, false);
+            if (filterWhereItem != null) {
+                conditions.add(filterWhereItem);
             }
         }
 
         initxpathForeignKey = initxpathForeignKey.split("/")[0]; //$NON-NLS-1$
-
         if (xpathInfoForeignKey == null) {
             xpathInfoForeignKey = ""; //$NON-NLS-1$
         }
@@ -332,10 +330,20 @@ public class ForeignKeyHelper {
                 xpathInfos[0] = initxpathForeignKey;
             }
             value = value == null ? "" : value; //$NON-NLS-1$
-
             // build query - add a content condition on the pivot if we search for a particular value
             if (value != null && !"".equals(value.trim()) && !".*".equals(value.trim()) && !"'*'".equals(value.trim())) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                whereItem = getFKQueryCondition(whereCondition, xpathForeignKey, xpathInfoForeignKey, value);
+                WSWhereItem queryWhereItem = getFKQueryCondition(xpathForeignKey, xpathInfoForeignKey, value);
+                if (queryWhereItem != null) {
+                    conditions.add(queryWhereItem);
+                }
+            }
+
+            WSWhereItem whereItem = null;
+            if (conditions.size() > 1) {
+                WSWhereAnd and = new WSWhereAnd(conditions.toArray(new WSWhereItem[conditions.size()]));
+                whereItem = new WSWhereItem(null, and, null);
+            } else if (conditions.size() == 1) {
+                whereItem = conditions.get(0);
             }
 
             // add the xPath Infos Path
@@ -368,8 +376,8 @@ public class ForeignKeyHelper {
         return null;
     }
 
-    protected static WSWhereItem getFKQueryCondition(WSWhereCondition whereCondition, String xpathForeignKey,
-            String xpathInfoForeignKey, String keyValue) throws Exception {
+    protected static WSWhereItem getFKQueryCondition(String xpathForeignKey, String xpathInfoForeignKey, String keyValue)
+            throws Exception {
         String initxpathForeignKey = Util.getForeignPathFromPath(xpathForeignKey);
         initxpathForeignKey = initxpathForeignKey.split("/")[0]; //$NON-NLS-1$
         String[] xpathInfos = new String[1];
@@ -378,15 +386,6 @@ public class ForeignKeyHelper {
             xpathInfos = xpathInfoForeignKey.split(","); //$NON-NLS-1$
         } else {
             xpathInfos[0] = initxpathForeignKey;
-        }
-
-        WSWhereItem whereItem = null;
-        if (whereCondition != null) {
-            whereItem = new WSWhereItem(whereCondition, null, null);
-        }
-        List<WSWhereItem> condition = new ArrayList<WSWhereItem>();
-        if (whereItem != null) {
-            condition.add(whereItem);
         }
 
         String fkWhere = initxpathForeignKey + "/../* CONTAINS " + keyValue; //$NON-NLS-1$
@@ -420,14 +419,7 @@ public class ForeignKeyHelper {
             }
             fkWhere = sb.toString();
         }
-        WSWhereItem wc = Util.buildWhereItems(fkWhere);
-        condition.add(wc);
-        WSWhereAnd and = new WSWhereAnd(condition.toArray(new WSWhereItem[condition.size()]));
-        WSWhereItem whand = new WSWhereItem(null, and, null);
-        if (whand != null) {
-            whereItem = whand;
-        }
-        return whereItem;
+        return Util.buildWhereItems(fkWhere);
     }
 
     protected static void initFKBean(String dataClusterPK, EntityModel entityModel, Element ele, ForeignKeyBean bean, String fk,
