@@ -54,7 +54,7 @@ public class StorageLogger implements Storage {
 
     private void handlePrepareError(MetadataRepository repository, boolean force, Exception e) {
         // Dumps types to console
-        LOGGER.error("##### Error during storage preparation (force = " + force + ") #####");
+        LOGGER.error("##### Error during storage preparation (force = " + force + ") #####", e);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Types:");
             repository.accept(new ConsoleDumpMetadataVisitor());

@@ -1,11 +1,7 @@
 package com.amalto.core.save.generator;
 
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.talend.mdm.commmon.util.core.MDMConfiguration;
-
-import com.amalto.core.server.Server;
 
 @SuppressWarnings("nls")
 public class AutoIncrementGenerator {
@@ -20,8 +16,7 @@ public class AutoIncrementGenerator {
 
     static {
         // Enable concurrent auto increment generator
-        Properties properties = MDMConfiguration.getConfiguration();
-        boolean enableConcurrentIncrement = Boolean.parseBoolean(properties.getProperty(Server.SYSTEM_CLUSTER, Boolean.FALSE.toString()));
+        boolean enableConcurrentIncrement = MDMConfiguration.isClusterEnabled();
         if (enableConcurrentIncrement) {
             LOGGER.info("Enable concurrent access support for auto increment generator.");
         } else {

@@ -63,6 +63,10 @@ http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/ac
         <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
     </bean>
     
+    <bean id="indexReplicationTopic" class="org.apache.activemq.command.ActiveMQTopic">
+    	<constructor-arg value="org.talend.mdm.server.index.replication"/>
+    </bean>
+    
     <!-- Listener for expired messages (needs to be captured as failed events by MDM) -->
     <bean id="expiredRoutingOrderListener" class="com.amalto.core.server.routing.ExpiredMessageListener"/>
     
@@ -237,4 +241,7 @@ http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/ac
     <bean id="mdmCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager" p:cacheManager-ref="mdmEhcache" />
     <bean id="mdmEhcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" p:configLocation="classpath:META-INF/mdm-ehcache.xml"
         p:shared="true" p:cacheManagerName="mdmCacheManager" />
+        
+    <!-- ApplicationContext accessor -->
+    <bean class="com.amalto.core.server.MDMContextAccessor"/>
 </beans>
