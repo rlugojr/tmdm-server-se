@@ -49,13 +49,13 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
 
     private String foreignKey;
 
-    private String foreignKeyField;
+    private String xpath;
 
     private ReturnCriteriaFK returnCriteriaFK;
 
     private boolean staging;
 
-    private BrowseRecordsServiceAsync service = (BrowseRecordsServiceAsync) Registry.get(BrowseRecords.BROWSERECORDS_SERVICE);;
+    private BrowseRecordsServiceAsync service = (BrowseRecordsServiceAsync) Registry.get(BrowseRecords.BROWSERECORDS_SERVICE);
 
     private String concept;
 
@@ -79,9 +79,11 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         this.setFireChangeEventOnSetValue(true);
     }
 
-    public FKSearchField(String foreignKey, List<String> foreignKeyInfo) {
+    public FKSearchField(String foreignKey, List<String> foreignKeyInfo, String foreignKeyFilter, String xpath) {
         this.foreignKey = foreignKey;
         this.foreignKeyInfo = foreignKeyInfo;
+        this.foreignKeyFilter = foreignKeyFilter;
+        this.xpath = xpath;
         this.setFireChangeEventOnSetValue(true);
         suggestBox = new SuggestComboBoxField(this);
     }
@@ -105,8 +107,8 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
                     }
                     relWindow.show();
                 } else {
-                    if (foreignKeyField != null && currentEntityModel != null) {
-                        concept = currentEntityModel.getTypeModel(foreignKeyField).getForeignkey().split("/")[0]; //$NON-NLS-1$
+                    if (xpath != null && currentEntityModel != null) {
+                        concept = currentEntityModel.getTypeModel(xpath).getForeignkey().split("/")[0]; //$NON-NLS-1$
                         service.getEntityModel(concept, Locale.getLanguage(), new SessionAwareAsyncCallback<EntityModel>() {
 
                             @Override
@@ -149,7 +151,6 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
                     relWindow.hide();
                 }
             }
-
         };
 
         setElement(wrap.dom, target, index);
@@ -170,7 +171,7 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         relWindow.setStaging(staging);
         relWindow.setForeignKeyInfos(this.foreignKey, this.foreignKeyInfo);
         relWindow.setForeignKeyFilter(this.foreignKeyFilter);
-        relWindow.setCurrentXpath(this.foreignKeyField);
+        relWindow.setCurrentXpath(this.xpath);
         relWindow.show();
     }
 
@@ -198,8 +199,8 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         ComponentHelper.doDetach(suggestBox);
     }
 
-    public void Update(String foreignKeyField, ReturnCriteriaFK returnCriteriaFK) {
-        this.foreignKeyField = foreignKeyField;
+    public void Update(String xpath, ReturnCriteriaFK returnCriteriaFK) {
+        this.xpath = xpath;
         this.returnCriteriaFK = returnCriteriaFK;
     }
 
@@ -258,14 +259,6 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         return this.foreignKeyInfo;
     }
 
-    public String getForeignKeyFilter() {
-        return this.foreignKeyFilter;
-    }
-
-    public void setForeignKeyFilter(String foreignKeyFilter) {
-        this.foreignKeyFilter = foreignKeyFilter;
-    }
-
     public void setStaging(boolean staging) {
         this.staging = staging;
     }
@@ -277,5 +270,15 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
 
     public void setUsageField(String usageField) {
         this.usageField = usageField;
+    }
+
+    @Override
+    public String getForeignKeyFilter() {
+        return this.foreignKeyFilter;
+    }
+
+    @Override
+    public String getXpath() {
+        return xpath;
     }
 }

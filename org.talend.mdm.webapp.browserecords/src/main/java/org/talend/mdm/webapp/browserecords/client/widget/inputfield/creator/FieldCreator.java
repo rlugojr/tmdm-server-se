@@ -53,9 +53,9 @@ public class FieldCreator {
             MultipleField multipleField = new MultipleField(dataType, language);
             field = multipleField;
         } else if (dataType.getForeignkey() != null) {
-            FKSearchField fkField = new FKSearchField(dataType.getForeignkey(), dataType.getForeignKeyInfo());
+            FKSearchField fkField = new FKSearchField(dataType.getForeignkey(), dataType.getForeignKeyInfo(),
+                    dataType.getFkFilter(), dataType.getXpath());
             fkField.Update(dataType.getXpath(), fkField);
-            fkField.setForeignKeyFilter(dataType.getFkFilter());
             fkField.setRetrieveFKinfos(dataType.isRetrieveFKinfos());
             field = fkField;
         } else if (dataType.hasEnumeration()) {

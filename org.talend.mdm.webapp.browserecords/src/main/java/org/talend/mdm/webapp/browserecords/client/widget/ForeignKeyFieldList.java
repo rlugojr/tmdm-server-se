@@ -101,7 +101,7 @@ public class ForeignKeyFieldList extends ContentPanel {
     protected El inputEl;
 
     protected NumberField sizeField;
-    
+
     private ItemsDetailPanel itemsDetailPanel;
 
     public ForeignKeyFieldList(ItemNodeModel itemNode, TypeModel typeModel, ItemsDetailPanel itemsDetailPanel) {
@@ -229,6 +229,7 @@ public class ForeignKeyFieldList extends ContentPanel {
         sizeField.setValidator(validator);
         sizeField.addListener(Events.Change, new Listener<BaseEvent>() {
 
+            @Override
             public void handleEvent(BaseEvent be) {
                 if (sizeField.isValid() && sizeField.getValue() != null) {
                     pageSize = sizeField.getValue().intValue();
@@ -241,6 +242,7 @@ public class ForeignKeyFieldList extends ContentPanel {
         });
         sizeField.addListener(Events.KeyDown, new Listener<FieldEvent>() {
 
+            @Override
             public void handleEvent(FieldEvent fe) {
                 if (fe.getKeyCode() == KeyCodes.KEY_ENTER) {
                     // blur(inputEl.dom);
@@ -411,7 +413,7 @@ public class ForeignKeyFieldList extends ContentPanel {
         Field<?> field = null;
         if (typeModel.getForeignkey() != null) {
             ForeignKeyField foreignKeyField = new ForeignKeyField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo(),
-                    ForeignKeyFieldList.this, itemsDetailPanel);
+                    typeModel.getFkFilter(), typeModel.getXpath(), ForeignKeyFieldList.this, itemsDetailPanel);
             foreignKeyField.setValue((ForeignKeyBean) value);
             field = foreignKeyField;
             // ((List<ForeignKeyBean>) itemNode.getObjectValue()).add((ForeignKeyBean)value);
@@ -433,6 +435,7 @@ public class ForeignKeyFieldList extends ContentPanel {
 
         field.addListener(Events.Change, new Listener<FieldEvent>() {
 
+            @Override
             public void handleEvent(FieldEvent fe) {
                 int index = foreignKeyBeans.indexOf(foreignKeyBean);
                 foreignKeyBeans.set(index, (ForeignKeyBean) fe.getValue());
@@ -443,6 +446,7 @@ public class ForeignKeyFieldList extends ContentPanel {
 
         field.addListener(Events.Attach, new Listener<FieldEvent>() {
 
+            @Override
             public void handleEvent(FieldEvent fe) {
                 validate();
             }
@@ -468,6 +472,7 @@ public class ForeignKeyFieldList extends ContentPanel {
 
     Validator validator = new Validator() {
 
+        @Override
         public String validate(Field<?> field, String value) {
             String valueStr = value == null ? "" : value.toString();//$NON-NLS-1$
             boolean success = true;

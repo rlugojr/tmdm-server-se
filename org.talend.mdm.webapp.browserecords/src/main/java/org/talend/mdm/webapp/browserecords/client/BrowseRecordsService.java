@@ -156,5 +156,6 @@ public interface BrowseRecordsService extends RemoteService {
     boolean isExistId(String concept, String[] ids, String language) throws ServiceException;
 
     List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey, List<String> foregnKeyInfo,
-            String dataClusterPK, boolean ifFKFilter, String input, String language) throws ServiceException;
+            String foreignKeyFilter, String dataClusterPK, boolean ifFKFilter, String input, String language)
+            throws ServiceException;
 }

@@ -603,12 +603,6 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         }
 
         @Override
-        public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey, List<String> foregnKeyInfo,
-                String dataClusterPK, boolean ifFKFilter, String input, String language,
-                AsyncCallback<List<ForeignKeyBean>> callback) {
-        }
-
-        @Override
         public void checkTask(String dataClusterPK, String concept, String groupId, AsyncCallback<Integer> callback) {
 
         }
@@ -623,6 +617,12 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         public void getItemBeanById(String concept, String ids, String language, AsyncCallback<ItemBean> callback) {
             // TODO Auto-generated method stub
 
+        }
+
+        @Override
+        public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey, List<String> foregnKeyInfo,
+                String foreignKeyFilter, String dataClusterPK, boolean ifFKFilter, String input, String language,
+                AsyncCallback<List<ForeignKeyBean>> callback) {
         }
     }
 

@@ -65,14 +65,14 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
 
     private boolean staging;
 
-    private String currentNodeXpath;
+    private String xpath;
 
     private String fkFilter;
 
-    public ForeignKeyField(String currentNodeXpath, String fkFilter, String foreignKey, List<String> foreignKeyInfo,
+    public ForeignKeyField(String xpath, String fkFilter, String foreignKey, List<String> foreignKeyInfo,
             ItemsDetailPanel itemsDetailPanel) {
         this.validateFlag = BrowseRecords.getSession().getAppHeader().isAutoValidate();
-        this.currentNodeXpath = currentNodeXpath;
+        this.xpath = xpath;
         this.fkFilter = fkFilter;
         this.itemsDetailPanel = itemsDetailPanel;
         this.foreignKey = foreignKey;
@@ -82,20 +82,19 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         this.setFireChangeEventOnSetValue(true);
         this.setReturnCriteriaFK();
         fkWindow.setForeignKeyInfos(foreignKey, foreignKeyInfo);
-        fkWindow.setCurrentXpath(currentNodeXpath);
+        fkWindow.setCurrentXpath(xpath);
         fkWindow.setForeignKeyFilter(fkFilter);
         fkWindow.setSize(550, 350);
         fkWindow.setResizable(false);
         fkWindow.setModal(true);
         fkWindow.setBlinkModal(true);
         fkWindow.setStaging(staging);
-
         suggestBox = new SuggestComboBoxField(this);
     }
 
-    public ForeignKeyField(String foreignKey, List<String> foreignKeyInfo, ForeignKeyFieldList fkFieldList,
-            ItemsDetailPanel itemsDetailPanel) {
-        this(null, null, foreignKey, foreignKeyInfo, itemsDetailPanel);
+    public ForeignKeyField(String foreignKey, List<String> foreignKeyInfo, String foreignKeyFilter, String currentXpath,
+            ForeignKeyFieldList fkFieldList, ItemsDetailPanel itemsDetailPanel) {
+        this(currentXpath, foreignKeyFilter, foreignKey, foreignKeyInfo, itemsDetailPanel);
         this.fkFieldList = fkFieldList;
         this.isFkList = true;
         this.staging = itemsDetailPanel.isStaging();
@@ -283,7 +282,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         ItemNodeModel root = itemPanel.getTree().getRootModel();
         String xml = (new ItemTreeHandler(root, itemPanel.getViewBean(), ItemTreeHandlingStatus.BeforeLoad)).serializeItem();
         ServiceFactory.getInstance().getService(staging)
-                .getForeignKeyBean(foreignKey.split("/")[0], foreignKeyIds, xml, currentNodeXpath, foreignKey, foreignKeyInfo, //$NON-NLS-1$
+                .getForeignKeyBean(foreignKey.split("/")[0], foreignKeyIds, xml, xpath, foreignKey, foreignKeyInfo, //$NON-NLS-1$
                         fkFilter, staging, Locale.getLanguage(), new SessionAwareAsyncCallback<ForeignKeyBean>() {
 
                             @Override
@@ -382,4 +381,15 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
     public boolean isStaging() {
         return this.staging;
     }
+
+    @Override
+    public String getForeignKeyFilter() {
+        return this.fkFilter;
+    }
+
+    @Override
+    public String getXpath() {
+        return this.xpath;
+    }
+
 }

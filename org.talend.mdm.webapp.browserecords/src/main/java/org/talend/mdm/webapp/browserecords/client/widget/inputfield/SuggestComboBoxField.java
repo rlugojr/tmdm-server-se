@@ -53,8 +53,6 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
 
     private List<String> foreignKeyInfo;
 
-    private String foreignKeyFilter;
-
     private String displayFieldName = "displayInfo"; //$NON-NLS-1$
 
     private FKField foreignKeyField;
@@ -106,10 +104,12 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         public void handleEvent(BaseEvent be) {
             String inputValue = getInputValue();
             if (inputValue != null && inputValue.length() > 0) {
+                String foreignKeyFilter = foreignKeyField.getForeignKeyFilter();
                 final boolean hasForeignKeyFilter = foreignKeyFilter != null && foreignKeyFilter.trim().length() > 0 ? true
                         : false;
                 BasePagingLoadConfigImpl config = new BasePagingLoadConfigImpl();
                 config.setLimit(listLimitCount);
+                config.set("currentXpath", foreignKeyField.getXpath()); //$NON-NLS-1$
                 config.set("language", Locale.getLanguage()); //$NON-NLS-1$
 
                 String dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
@@ -120,8 +120,9 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
 
                 foreignKey = foreignKeyField.getForeignKey();
                 foreignKeyInfo = foreignKeyField.getForeignKeyInfo();
-                service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, dataCluster, hasForeignKeyFilter, inputValue,
-                        Locale.getLanguage(), new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
+                service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, foreignKeyFilter, dataCluster,
+                        hasForeignKeyFilter, inputValue, Locale.getLanguage(),
+                        new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
 
                             @Override
                             public void onSuccess(List<ForeignKeyBean> result) {
@@ -221,19 +222,18 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         }
         this.expand();
     }
-    
+
     public void updateSelectedBean() {
-        if(foreignKeyStore != null){
-            for(ForeignKeyBean bean : foreignKeyStore.getModels()){
-                if (bean.getDisplayInfo() == null
-                        || "".equals(bean.getDisplayInfo()) || "null".equals(bean.getDisplayInfo())) { //$NON-NLS-1$ //$NON-NLS-2$
-                    if(bean.getId().equalsIgnoreCase(this.getRawValue())){
+        if (foreignKeyStore != null) {
+            for (ForeignKeyBean bean : foreignKeyStore.getModels()) {
+                if (bean.getDisplayInfo() == null || "".equals(bean.getDisplayInfo()) || "null".equals(bean.getDisplayInfo())) { //$NON-NLS-1$ //$NON-NLS-2$
+                    if (bean.getId().equalsIgnoreCase(this.getRawValue())) {
                         selectedBean = bean;
                     } else {
                         selectedBean = null;
                     }
                 } else {
-                    if(bean.getDisplayInfo().equalsIgnoreCase(this.getRawValue())){
+                    if (bean.getDisplayInfo().equalsIgnoreCase(this.getRawValue())) {
                         selectedBean = bean;
                     } else {
                         selectedBean = null;

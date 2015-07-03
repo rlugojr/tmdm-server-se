@@ -24,7 +24,11 @@ public interface FKField {
 
     public List<String> getForeignKeyInfo();
 
+    public String getForeignKeyFilter();
+
+    public String getXpath();
+
     public void setValue(ForeignKeyBean bean);
-    
+
     public void setSuperValue(ForeignKeyBean bean);
 }

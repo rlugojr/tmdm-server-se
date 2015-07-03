@@ -156,5 +156,6 @@ public interface BrowseRecordsServiceAsync {
     void isExistId(String concept, String[] ids, String language, AsyncCallback<Boolean> callback);
 
     void getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey, List<String> foregnKeyInfo,
-            String dataClusterPK, boolean ifFKFilter, String input, String language, AsyncCallback<List<ForeignKeyBean>> callback);
+            String foreignKeyFilter, String dataClusterPK, boolean ifFKFilter, String input, String language,
+            AsyncCallback<List<ForeignKeyBean>> callback);
 }

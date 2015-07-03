@@ -44,7 +44,8 @@ public class SearchFieldCreator {
             field = textField;
             cons = OperatorConstants.stringOperators;
         } else if (typeModel.getForeignkey() != null) {
-            FKSearchField fkField = new FKSearchField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo());
+            FKSearchField fkField = new FKSearchField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo(),
+                    typeModel.getFkFilter(), typeModel.getXpath());
             fkField.setUsageField("SearchFieldCreator"); //$NON-NLS-1$
             field = fkField;
             cons = OperatorConstants.foreignKeyOperators;

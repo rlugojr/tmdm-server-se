@@ -201,8 +201,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                 String[] ids = getItemId(repository, item.getIds(), concept);
 
                 WSDeleteItemWithReport wsDeleteItem = new WSDeleteItemWithReport(new WSItemPK(new WSDataClusterPK(dataClusterPK),
-                        concept, ids), UpdateReportPOJO.GENERIC_UI_SOURCE, //$NON-NLS-1$
-                        UpdateReportPOJO.OPERATION_TYPE_PHYSICAL_DELETE, "/", //$NON-NLS-1$
+                        concept, ids), UpdateReportPOJO.GENERIC_UI_SOURCE, UpdateReportPOJO.OPERATION_TYPE_PHYSICAL_DELETE, "/", //$NON-NLS-1$
                         LocalUser.getLocalUser().getUsername(), true, true, override);
 
                 WSString deleteMessage = CommonUtil.getPort().deleteItemWithReport(wsDeleteItem);
@@ -675,7 +674,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             String[] ids = CommonUtil.extractIdWithDots(key.getFields(), item.getIds());
             WSItemPK wsItemPK = new WSItemPK(new WSDataClusterPK(dataClusterPK), concept, ids);
             WSDropItem wsDropItem = new WSDropItem(wsItemPK, path, override);
-            wsDropItem.setSource(UpdateReportPOJO.GENERIC_UI_SOURCE); //$NON-NLS-1$
+            wsDropItem.setSource(UpdateReportPOJO.GENERIC_UI_SOURCE);
             wsDropItem.setInvokeBeforeDeleting(true);
             wsDropItem.setWithReport(true);
             CommonUtil.getPort().dropItem(wsDropItem);
@@ -1638,7 +1637,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             // TODO (1) if update, check the item is modified by others?
             // TODO (2) if create, check if the item has not been created by someone else?
             WSPutItemWithReport wsPutItemWithReport = new WSPutItemWithReport(new WSPutItem(new WSDataClusterPK(
-                    getCurrentDataCluster()), xml, new WSDataModelPK(getCurrentDataModel()), !isCreate), UpdateReportPOJO.GENERIC_UI_SOURCE, true); //$NON-NLS-1$
+                    getCurrentDataCluster()), xml, new WSDataModelPK(getCurrentDataModel()), !isCreate),
+                    UpdateReportPOJO.GENERIC_UI_SOURCE, true);
             int status = ItemResult.SUCCESS;
             WSItemPK wsi = CommonUtil.getPort().putItemWithReport(wsPutItemWithReport);
             String message = wsPutItemWithReport.getSource(); // putItemWithReport is expected to put
@@ -1888,10 +1888,10 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             Configuration config = Configuration.getConfiguration();
             String dataModelPK = config.getModel() == null ? StringUtils.EMPTY : config.getModel();
             String dataClusterPK = config.getCluster() == null ? StringUtils.EMPTY : config.getCluster();
-            UpdateReportPOJO updateReportPOJO = new UpdateReportPOJO(
-                    concept,
+            UpdateReportPOJO updateReportPOJO = new UpdateReportPOJO(concept,
                     Util.joinStrings(ids, "."), UpdateReportPOJO.OPERATION_TYPE_ACTION, //$NON-NLS-1$
-                    UpdateReportPOJO.GENERIC_UI_SOURCE, System.currentTimeMillis(), dataClusterPK, dataModelPK, LocalUser.getLocalUser().getUsername(), null); //$NON-NLS-1$
+                    UpdateReportPOJO.GENERIC_UI_SOURCE, System.currentTimeMillis(), dataClusterPK, dataModelPK, LocalUser
+                            .getLocalUser().getUsername(), null);
 
             String updateReport = updateReportPOJO.serialize();
             WSTypedContent wsTypedContent = new WSTypedContent(null, new WSByteArray(updateReport.getBytes("UTF-8")),//$NON-NLS-1$
@@ -2332,8 +2332,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
     @Override
     public List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey,
-            List<String> foregnKeyInfo, String dataClusterPK, boolean ifFKFilter, String input, String language)
-            throws ServiceException {
+            List<String> foregnKeyInfo, String foreignKeyFilter, String dataClusterPK, boolean ifFKFilter, String input,
+            String language) throws ServiceException {
         try {
             String keyWords = input;
             String pattern = "[^a-zA-Z0-9\\s\\@\\.\\-\\_\\'\"]"; //$NON-NLS-1$
@@ -2344,6 +2344,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             typeModel.setForeignkey(foregnKey);
             typeModel.setForeignKeyInfo(foregnKeyInfo);
             typeModel.setRetrieveFKinfos(true);
+            typeModel.setFkFilter(foreignKeyFilter);
 
             if (input.contains(":") && input.indexOf(":") > 0) { //$NON-NLS-1$ //$NON-NLS-2$
                 String entityName = input.split(":")[0]; //$NON-NLS-1$

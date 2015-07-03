@@ -230,7 +230,8 @@ public class ForeignKeyTablePanel extends ContentPanel implements ReturnCriteria
             }
         });
 
-        FKSearchField f = new FKSearchField(fkTypeModel.getForeignkey(), fkTypeModel.getForeignKeyInfo());
+        FKSearchField f = new FKSearchField(fkTypeModel.getForeignkey(), fkTypeModel.getForeignKeyInfo(),
+                fkTypeModel.getFkFilter(), fkTypeModel.getXpath());
         f.setUsageField("ForeignKeyTablePanel"); //$NON-NLS-1$
         f.setStaging(staging);
         keyCellEditor = new FKKeyCellEditor(f, fkTypeModel, this);
