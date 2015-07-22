@@ -53,7 +53,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
 
     private List<String> foreignKeyInfo;
 
-    private ForeignKeyListWindow fkWindow = new ForeignKeyListWindow();
+    private ForeignKeyListWindow fkWindow;
 
     private boolean isFkList;
 
@@ -69,7 +69,9 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
 
     private String fkFilter;
 
-    public ForeignKeyField(String xpath, String fkFilter, String foreignKey, List<String> foreignKeyInfo,
+    private ItemNodeModel itemNode;
+
+    public ForeignKeyField(ItemNodeModel itemNode, String xpath, String fkFilter, String foreignKey, List<String> foreignKeyInfo,
             ItemsDetailPanel itemsDetailPanel) {
         this.validateFlag = BrowseRecords.getSession().getAppHeader().isAutoValidate();
         this.xpath = xpath;
@@ -80,7 +82,8 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         this.foreignKeyName = foreignKey.split("/")[0]; //$NON-NLS-1$
         this.staging = itemsDetailPanel.isStaging();
         this.setFireChangeEventOnSetValue(true);
-        this.setReturnCriteriaFK();
+        this.itemNode = itemNode;
+        fkWindow = new ForeignKeyListWindow();
         fkWindow.setForeignKeyInfos(foreignKey, foreignKeyInfo);
         fkWindow.setCurrentXpath(xpath);
         fkWindow.setForeignKeyFilter(fkFilter);
@@ -89,12 +92,14 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         fkWindow.setModal(true);
         fkWindow.setBlinkModal(true);
         fkWindow.setStaging(staging);
+        fkWindow.setItemNode(itemNode);
         suggestBox = new SuggestComboBoxField(this);
+        this.setReturnCriteriaFK();
     }
 
-    public ForeignKeyField(String foreignKey, List<String> foreignKeyInfo, String foreignKeyFilter, String currentXpath,
-            ForeignKeyFieldList fkFieldList, ItemsDetailPanel itemsDetailPanel) {
-        this(currentXpath, foreignKeyFilter, foreignKey, foreignKeyInfo, itemsDetailPanel);
+    public ForeignKeyField(ItemNodeModel itemNode, String foreignKey, List<String> foreignKeyInfo, String foreignKeyFilter,
+            String currentXpath, ForeignKeyFieldList fkFieldList, ItemsDetailPanel itemsDetailPanel) {
+        this(itemNode, currentXpath, foreignKeyFilter, foreignKey, foreignKeyInfo, itemsDetailPanel);
         this.fkFieldList = fkFieldList;
         this.isFkList = true;
         this.staging = itemsDetailPanel.isStaging();
@@ -390,6 +395,11 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
     @Override
     public String getXpath() {
         return this.xpath;
+    }
+
+    @Override
+    public void setItemNode(ItemNodeModel node) {
+        this.itemNode = node;
     }
 
 }

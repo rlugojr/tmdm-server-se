@@ -15,6 +15,7 @@ package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
 import java.util.List;
 
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
+import org.talend.mdm.webapp.browserecords.client.model.ItemNodeModel;
 
 public interface FKField {
 
@@ -31,4 +32,6 @@ public interface FKField {
     public void setValue(ForeignKeyBean bean);
 
     public void setSuperValue(ForeignKeyBean bean);
+
+    public void setItemNode(ItemNodeModel node);
 }

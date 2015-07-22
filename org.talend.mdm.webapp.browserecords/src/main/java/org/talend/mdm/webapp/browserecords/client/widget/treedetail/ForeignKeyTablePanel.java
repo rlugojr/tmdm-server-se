@@ -541,6 +541,7 @@ public class ForeignKeyTablePanel extends ContentPanel implements ReturnCriteria
 
                     @Override
                     public void onClick(ClickEvent event) {
+                        fkWindow.setItemNode(model);
                         fkWindow.show(entityModel, itemsDetailPanel, fkTypeModel.getXpath());
                         currentNodeModel = model;
                     }

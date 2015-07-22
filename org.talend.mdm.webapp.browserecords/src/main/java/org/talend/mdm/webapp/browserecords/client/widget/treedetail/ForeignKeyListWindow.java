@@ -13,6 +13,8 @@
 package org.talend.mdm.webapp.browserecords.client.widget.treedetail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -133,10 +135,11 @@ public class ForeignKeyListWindow extends Window {
     private String currentXpath;
 
     private boolean isPagingAccurate;
-    
+
     private boolean isStaging;
 
-    
+    private ItemNodeModel itemNode;
+
     public void setStaging(boolean isStaging) {
         this.isStaging = isStaging;
     }
@@ -215,6 +218,8 @@ public class ForeignKeyListWindow extends Window {
 
             @Override
             public void load(final Object loadConfig, final AsyncCallback<PagingLoadResult<ForeignKeyBean>> callback) {
+                String foreignKeyFilter = (hasForeignKeyFilter && itemNode != null) ? parseForeignKeyFilter(itemNode,
+                        typeModel.getFkFilter(), currentXpath) : ""; //$NON-NLS-1$
                 PagingLoadConfig config = (PagingLoadConfig) loadConfig;
                 BasePagingLoadConfigImpl baseConfig = BasePagingLoadConfigImpl.copyPagingLoad(config);
                 final String currentFilterText = getFilterValue();
@@ -231,7 +236,7 @@ public class ForeignKeyListWindow extends Window {
                 } else {
                     dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
                 }
-                service.getForeignKeyList(baseConfig, typeModel, dataCluster, hasForeignKeyFilter, currentFilterText,
+                service.getForeignKeyList(baseConfig, typeModel, dataCluster, foreignKeyFilter, currentFilterText,
                         Locale.getLanguage(), new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
 
                             @Override
@@ -379,8 +384,9 @@ public class ForeignKeyListWindow extends Window {
 
                 typeModel.setForeignKeyInfo(fkinfo);
                 loader.load(0, pageSize);
-                if(entityModel != null && targetEntity != null && !targetEntity.equals(entityModel.getConceptName())){
-                    fkDrawer = CommonUtil.switchForeignKeyEntityType(entityModel.getConceptName(), typeModel.getForeignkey(), fkInfo); 
+                if (entityModel != null && targetEntity != null && !targetEntity.equals(entityModel.getConceptName())) {
+                    fkDrawer = CommonUtil.switchForeignKeyEntityType(entityModel.getConceptName(), typeModel.getForeignkey(),
+                            fkInfo);
                     typeModel.setForeignkey(fkDrawer.getXpathForeignKey());
                 }
             }
@@ -429,8 +435,8 @@ public class ForeignKeyListWindow extends Window {
             for (String info : foreignKeyInfo) {
                 TypeModel metaDataType = dataTypes.get(info);
                 String id = CommonUtil.getElementFromXpath(info);
-                ColumnConfig columnConfig = new ColumnConfig(id, metaDataType == null ? id : ViewUtil.getViewableLabel(Locale.getLanguage(), 
-                        metaDataType), COLUMN_WIDTH);
+                ColumnConfig columnConfig = new ColumnConfig(id, metaDataType == null ? id : ViewUtil.getViewableLabel(
+                        Locale.getLanguage(), metaDataType), COLUMN_WIDTH);
                 columns.add(columnConfig);
                 if (entityModel.getTypeModel(info).getType().equals(DataTypeConstants.MLS)) {
 
@@ -552,6 +558,161 @@ public class ForeignKeyListWindow extends Window {
 
     public ComboBoxField<BaseModel> getTypeComboBox() {
         return this.typeComboBox;
+    }
+
+    public void setItemNode(ItemNodeModel itemNode) {
+        this.itemNode = itemNode;
+    }
+
+    private String parseForeignKeyFilter(ItemNodeModel node, String fkFilter, String currentXpath) {
+        String parsedFkfilter = fkFilter;
+        if (fkFilter != null) {
+            // parse
+            String[] criterias = fkFilter.split("#");//$NON-NLS-1$
+            List<Map<String, String>> conditions = new ArrayList<Map<String, String>>();
+            for (String cria : criterias) {
+                Map<String, String> conditionMap = new HashMap<String, String>();
+                String[] values = cria.split("\\$\\$");//$NON-NLS-1$
+                for (int i = 0; i < values.length; i++) {
+
+                    switch (i) {
+                    case 0:
+                        conditionMap.put("Xpath", values[0]);//$NON-NLS-1$
+                        break;
+                    case 1:
+                        conditionMap.put("Operator", values[1]);//$NON-NLS-1$
+                        break;
+                    case 2:
+                        String rightValueOrPath = values[2];
+                        rightValueOrPath = parseRightValueOrPath(node, rightValueOrPath, currentXpath);
+                        conditionMap.put("Value", rightValueOrPath);//$NON-NLS-1$
+                        break;
+                    case 3:
+                        conditionMap.put("Predicate", values[3]);//$NON-NLS-1$
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                conditions.add(conditionMap);
+            }
+            // build
+            if (conditions.size() > 0) {
+                StringBuffer sb = new StringBuffer();
+                for (Map<String, String> map : conditions) {
+                    Map<String, String> conditionMap = map;
+                    if (conditionMap.size() > 0) {
+                        String xpath = conditionMap.get("Xpath") == null ? "" : conditionMap.get("Xpath");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                        String operator = conditionMap.get("Operator") == null ? "" : conditionMap.get("Operator");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                        String value = conditionMap.get("Value") == null ? "" : conditionMap.get("Value");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                        String predicate = conditionMap.get("Predicate") == null ? "" : conditionMap.get("Predicate");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                        sb.append(xpath + "$$" + operator + "$$" + value + "$$" + predicate + "#");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
+                    }
+                }
+                if (sb.length() > 0) {
+                    parsedFkfilter = sb.toString();
+                }
+            }
+        }
+        return parsedFkfilter;
+    }
+
+    private String parseRightValueOrPath(ItemNodeModel node, String rightValueOrPath, String currentXpath) {
+        if (rightValueOrPath == null || currentXpath == null) {
+            throw new IllegalArgumentException();
+        }
+
+        boolean isValue = false;
+        boolean isRelativePath = false;
+
+        rightValueOrPath = rightValueOrPath.trim();// space(s) ignore
+
+        // switch cases
+        if (rightValueOrPath.startsWith("\"") && rightValueOrPath.endsWith("\"") || //$NON-NLS-1$//$NON-NLS-2$
+                rightValueOrPath.startsWith("'") && rightValueOrPath.endsWith("'")) { //$NON-NLS-1$ //$NON-NLS-2$
+            isValue = true;
+        } else if (rightValueOrPath.startsWith(".") || rightValueOrPath.startsWith("..")) { //$NON-NLS-1$ //$NON-NLS-2$
+            isRelativePath = true;
+        }
+
+        // cases handle
+        String result = rightValueOrPath;// by default result equals input value/path
+        if (isValue) {
+            result = rightValueOrPath.substring(1, rightValueOrPath.length() - 1);
+        } else if (isRelativePath) {
+            String[] rightPathArray = rightValueOrPath.split("/");
+            String relativeMark = rightPathArray[0];
+            String targetPath = node.getTypePath();
+            ItemNodeModel parentNode = node;
+            if (".".equals(relativeMark)) { //$NON-NLS-1$
+                targetPath = targetPath + rightValueOrPath.substring(rightValueOrPath.indexOf("/")); //$NON-NLS-1$
+            } else if ("..".equals(relativeMark)) { //$NON-NLS-1$
+                parentNode = (ItemNodeModel) parentNode.getParent();
+                targetPath = targetPath.substring(0, targetPath.lastIndexOf("/")); //$NON-NLS-1$
+                targetPath = targetPath + rightValueOrPath.substring(rightValueOrPath.indexOf("/")); //$NON-NLS-1$
+            }
+            ItemNodeModel targetNode = findTarget(targetPath, parentNode);
+            if (targetNode != null && targetNode.getObjectValue() != null) {
+                result = unwrapFkValue(targetNode.getObjectValue().toString());
+            } else {
+                result = ""; //$NON-NLS-1$
+            }
+        } else {
+            List<String> duplicatedPathList = new ArrayList<String>();
+            List<String> rightPathNodeList = new ArrayList<String>();
+            List<String> leftPathNodeList = Arrays.asList(currentXpath.split("/")); //$NON-NLS-1$
+            String[] rightValueOrPathArray = rightValueOrPath.split("/"); //$NON-NLS-1$
+            for (String element : rightValueOrPathArray) {
+                rightPathNodeList.add(element);
+            }
+            for (int i = 0; i < leftPathNodeList.size(); i++) {
+                if (i < rightPathNodeList.size() && leftPathNodeList.get(i).equals(rightPathNodeList.get(i))) {
+                    duplicatedPathList.add(rightPathNodeList.get(i));
+                } else {
+                    break;
+                }
+            }
+            rightPathNodeList.removeAll(duplicatedPathList);
+            ItemNodeModel parentNode = node;
+            for (int i = 0; i < rightPathNodeList.size(); i++) {
+                parentNode = (ItemNodeModel) parentNode.getParent();
+            }
+            ItemNodeModel targetNode = findTarget(rightValueOrPath, parentNode);
+            if (targetNode != null && targetNode.getObjectValue() != null) {
+                result = unwrapFkValue(targetNode.getObjectValue().toString());
+            } else {
+                result = ""; //$NON-NLS-1$
+            }
+        }
+        return result;
+    }
+
+    private ItemNodeModel findTarget(String targetPath, ItemNodeModel node) {
+        List<ModelData> childrenList = node.getChildren();
+        if (childrenList != null && childrenList.size() > 0) {
+            for (int i = 0; i < childrenList.size(); i++) {
+                ItemNodeModel child = (ItemNodeModel) childrenList.get(i);
+                if (targetPath.contains(child.getTypePath())) {
+                    if (targetPath.equals(child.getTypePath())) {
+                        return child;
+                    } else {
+                        findTarget(targetPath, child);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String unwrapFkValue(String value) {
+        if (value.startsWith("[") && value.endsWith("]")) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (value.contains("][")) { //$NON-NLS-1$
+                return value;
+            } else {
+                return value.substring(1, value.length() - 1);
+            }
+        }
+        return value;
     }
 
 }

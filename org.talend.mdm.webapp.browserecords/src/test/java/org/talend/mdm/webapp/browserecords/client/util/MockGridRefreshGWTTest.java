@@ -392,8 +392,9 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         }
 
         @Override
-        public void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK, boolean ifFKFilter,
-                String value, String language, AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
+        public void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK,
+                String foreignKeyFilter, String value, String language,
+                AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
         }
 
         @Override

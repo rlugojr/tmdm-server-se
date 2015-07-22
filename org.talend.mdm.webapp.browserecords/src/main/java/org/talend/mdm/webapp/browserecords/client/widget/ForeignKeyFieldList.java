@@ -412,8 +412,9 @@ public class ForeignKeyFieldList extends ContentPanel {
     public Field<?> createField(Object value) {
         Field<?> field = null;
         if (typeModel.getForeignkey() != null) {
-            ForeignKeyField foreignKeyField = new ForeignKeyField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo(),
-                    typeModel.getFkFilter(), typeModel.getXpath(), ForeignKeyFieldList.this, itemsDetailPanel);
+            ForeignKeyField foreignKeyField = new ForeignKeyField(itemNode, typeModel.getForeignkey(),
+                    typeModel.getForeignKeyInfo(), typeModel.getFkFilter(), typeModel.getXpath(), ForeignKeyFieldList.this,
+                    itemsDetailPanel);
             foreignKeyField.setValue((ForeignKeyBean) value);
             field = foreignKeyField;
             // ((List<ForeignKeyBean>) itemNode.getObjectValue()).add((ForeignKeyBean)value);

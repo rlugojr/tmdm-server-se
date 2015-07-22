@@ -317,11 +317,11 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
     @Override
     public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String dataClusterPK, boolean ifFKFilter, String value, String language) throws ServiceException {
+            String dataClusterPK, String foreignKeyFilter, String value, String language) throws ServiceException {
         try {
             String foreignKeyConcept = model.getForeignkey().split("/")[0]; //$NON-NLS-1$
             return ForeignKeyHelper.getForeignKeyList(config, model, getEntityModel(foreignKeyConcept, language), dataClusterPK,
-                    ifFKFilter, value);
+                    foreignKeyFilter, value);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
@@ -2360,7 +2360,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
             keyWords = keyWords.replaceAll(pattern, ""); //$NON-NLS-1$
             ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, typeModel,
-                    entityModel, dataClusterPK, ifFKFilter, keyWords);
+                    entityModel, dataClusterPK, foreignKeyFilter, keyWords);
 
             return loadResult.getData();
         } catch (Exception e) {
