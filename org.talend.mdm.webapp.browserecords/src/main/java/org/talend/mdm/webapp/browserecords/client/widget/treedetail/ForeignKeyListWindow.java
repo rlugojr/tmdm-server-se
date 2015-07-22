@@ -564,7 +564,7 @@ public class ForeignKeyListWindow extends Window {
         this.itemNode = itemNode;
     }
 
-    private String parseForeignKeyFilter(ItemNodeModel node, String fkFilter, String currentXpath) {
+    public String parseForeignKeyFilter(ItemNodeModel node, String fkFilter, String currentXpath) {
         String parsedFkfilter = fkFilter;
         if (fkFilter != null) {
             // parse
