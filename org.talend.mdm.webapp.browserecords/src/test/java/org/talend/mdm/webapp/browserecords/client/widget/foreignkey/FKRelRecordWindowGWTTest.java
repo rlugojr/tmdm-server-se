@@ -77,20 +77,17 @@ public class FKRelRecordWindowGWTTest extends GWTTestCase {
         family.setObjectValue("[123]");
         family.setParent(product);
         product.add(family);
-        assertEquals("ProductFamily/Name$$=$$talend$$#",
-                fkWindow.parseForeignKeyFilter(family, foreignKeyFilter, "Product/Family"));
+        fkWindow.setCurrentXpath("Product/Family");
+        assertEquals("ProductFamily/Name$$=$$talend$$#", fkWindow.parseForeignKeyFilter(family, foreignKeyFilter));
 
         foreignKeyFilter = "ProductFamily/Name$$=$$../Name$$#";
-        assertEquals("ProductFamily/Name$$=$$talend$$#",
-                fkWindow.parseForeignKeyFilter(family, foreignKeyFilter, "Product/Family"));
+        assertEquals("ProductFamily/Name$$=$$talend$$#", fkWindow.parseForeignKeyFilter(family, foreignKeyFilter));
 
         foreignKeyFilter = "ProductFamily/Name$$=$$\"talend\"$$#";
-        assertEquals("ProductFamily/Name$$=$$talend$$#",
-                fkWindow.parseForeignKeyFilter(family, foreignKeyFilter, "Product/Family"));
+        assertEquals("ProductFamily/Name$$=$$talend$$#", fkWindow.parseForeignKeyFilter(family, foreignKeyFilter));
 
         foreignKeyFilter = "ProductFamily/Name$$=$$\'talend\'$$#";
-        assertEquals("ProductFamily/Name$$=$$talend$$#",
-                fkWindow.parseForeignKeyFilter(family, foreignKeyFilter, "Product/Family"));
+        assertEquals("ProductFamily/Name$$=$$talend$$#", fkWindow.parseForeignKeyFilter(family, foreignKeyFilter));
 
         // test Person datamodel
         ItemNodeModel person = new ItemNodeModel();
@@ -132,18 +129,18 @@ public class FKRelRecordWindowGWTTest extends GWTTestCase {
         abc.setObjectValue("abc");
         abc.setParent(addrs);
         addrs.add(abc);
-
+        fkWindow.setCurrentXpath("Person/addrs/abc");
         foreignKeyFilter = "Addr/AddrId$$=$$Person/addrs/add_code$$#";
-        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter, "Person/addrs/abc"));
+        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter));
 
         foreignKeyFilter = "Addr/AddrId$$=$$../add_code$$#";
-        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter, "Person/addrs/abc"));
+        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter));
 
         foreignKeyFilter = "Addr/AddrId$$=$$\"123\"$$#";
-        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter, "Person/addrs/abc"));
+        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter));
 
         foreignKeyFilter = "Addr/AddrId$$=$$\'123\'$$#";
-        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter, "Person/addrs/abc"));
+        assertEquals("Addr/AddrId$$=$$123$$#", fkWindow.parseForeignKeyFilter(abc, foreignKeyFilter));
     }
 
     private EntityModel getCurrentEntityModel() {

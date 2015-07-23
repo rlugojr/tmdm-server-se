@@ -14,7 +14,6 @@ package org.talend.mdm.webapp.browserecords.client.widget.treedetail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -219,7 +218,7 @@ public class ForeignKeyListWindow extends Window {
             @Override
             public void load(final Object loadConfig, final AsyncCallback<PagingLoadResult<ForeignKeyBean>> callback) {
                 String foreignKeyFilter = (hasForeignKeyFilter && itemNode != null) ? parseForeignKeyFilter(itemNode,
-                        typeModel.getFkFilter(), currentXpath) : ""; //$NON-NLS-1$
+                        typeModel.getFkFilter()) : ""; //$NON-NLS-1$
                 PagingLoadConfig config = (PagingLoadConfig) loadConfig;
                 BasePagingLoadConfigImpl baseConfig = BasePagingLoadConfigImpl.copyPagingLoad(config);
                 final String currentFilterText = getFilterValue();
@@ -564,127 +563,76 @@ public class ForeignKeyListWindow extends Window {
         this.itemNode = itemNode;
     }
 
-    public String parseForeignKeyFilter(ItemNodeModel node, String fkFilter, String currentXpath) {
+    public String parseForeignKeyFilter(ItemNodeModel node, String fkFilter) {
         String parsedFkfilter = fkFilter;
         if (fkFilter != null) {
-            // parse
-            String[] criterias = fkFilter.split("#");//$NON-NLS-1$
+            String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil.getCriteriasByForeignKeyFilter(parsedFkfilter);
             List<Map<String, String>> conditions = new ArrayList<Map<String, String>>();
             for (String cria : criterias) {
-                Map<String, String> conditionMap = new HashMap<String, String>();
-                String[] values = cria.split("\\$\\$");//$NON-NLS-1$
-                for (int i = 0; i < values.length; i++) {
+                Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                        .buildConditionByCriteria(cria);
+                String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
 
-                    switch (i) {
-                    case 0:
-                        conditionMap.put("Xpath", values[0]);//$NON-NLS-1$
-                        break;
-                    case 1:
-                        conditionMap.put("Operator", values[1]);//$NON-NLS-1$
-                        break;
-                    case 2:
-                        String rightValueOrPath = values[2];
-                        rightValueOrPath = parseRightValueOrPath(node, rightValueOrPath, currentXpath);
-                        conditionMap.put("Value", rightValueOrPath);//$NON-NLS-1$
-                        break;
-                    case 3:
-                        conditionMap.put("Predicate", values[3]);//$NON-NLS-1$
-                        break;
-                    default:
-                        break;
+                if (filterValue == null || this.currentXpath == null) {
+                    return ""; //$NON-NLS-1$
+                }
+
+                // cases handle
+                if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
+                    filterValue = filterValue.substring(1, filterValue.length() - 1);
+                } else if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isRelativePath(filterValue)) {
+                    String[] rightPathArray = filterValue.split("/"); //$NON-NLS-1$
+                    String relativeMark = rightPathArray[0];
+                    String targetPath = node.getTypePath();
+                    ItemNodeModel parentNode = node;
+                    if (".".equals(relativeMark)) { //$NON-NLS-1$
+                        targetPath = targetPath + filterValue.substring(filterValue.indexOf("/")); //$NON-NLS-1$
+                    } else if ("..".equals(relativeMark)) { //$NON-NLS-1$
+                        parentNode = (ItemNodeModel) parentNode.getParent();
+                        targetPath = targetPath.substring(0, targetPath.lastIndexOf("/")); //$NON-NLS-1$
+                        targetPath = targetPath + filterValue.substring(filterValue.indexOf("/")); //$NON-NLS-1$
+                    }
+                    ItemNodeModel targetNode = findTarget(targetPath, parentNode);
+                    if (targetNode != null && targetNode.getObjectValue() != null) {
+                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode.getObjectValue()
+                                .toString());
+                    } else {
+                        filterValue = ""; //$NON-NLS-1$
+                    }
+                } else {
+                    List<String> duplicatedPathList = new ArrayList<String>();
+                    List<String> rightPathNodeList = new ArrayList<String>();
+                    List<String> leftPathNodeList = Arrays.asList(currentXpath.split("/")); //$NON-NLS-1$
+                    String[] rightValueOrPathArray = filterValue.split("/"); //$NON-NLS-1$
+                    for (String element : rightValueOrPathArray) {
+                        rightPathNodeList.add(element);
+                    }
+                    for (int i = 0; i < leftPathNodeList.size(); i++) {
+                        if (i < rightPathNodeList.size() && leftPathNodeList.get(i).equals(rightPathNodeList.get(i))) {
+                            duplicatedPathList.add(rightPathNodeList.get(i));
+                        } else {
+                            break;
+                        }
+                    }
+                    rightPathNodeList.removeAll(duplicatedPathList);
+                    ItemNodeModel parentNode = node;
+                    for (int i = 0; i < rightPathNodeList.size(); i++) {
+                        parentNode = (ItemNodeModel) parentNode.getParent();
+                    }
+                    ItemNodeModel targetNode = findTarget(filterValue, parentNode);
+                    if (targetNode != null && targetNode.getObjectValue() != null) {
+                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode.getObjectValue()
+                                .toString());
+                    } else {
+                        filterValue = ""; //$NON-NLS-1$
                     }
                 }
+                conditionMap.put("Value", filterValue); //$NON-NLS-1$
                 conditions.add(conditionMap);
             }
-            // build
-            if (conditions.size() > 0) {
-                StringBuffer sb = new StringBuffer();
-                for (Map<String, String> map : conditions) {
-                    Map<String, String> conditionMap = map;
-                    if (conditionMap.size() > 0) {
-                        String xpath = conditionMap.get("Xpath") == null ? "" : conditionMap.get("Xpath");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        String operator = conditionMap.get("Operator") == null ? "" : conditionMap.get("Operator");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        String value = conditionMap.get("Value") == null ? "" : conditionMap.get("Value");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        String predicate = conditionMap.get("Predicate") == null ? "" : conditionMap.get("Predicate");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        sb.append(xpath + "$$" + operator + "$$" + value + "$$" + predicate + "#");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
-                    }
-                }
-                if (sb.length() > 0) {
-                    parsedFkfilter = sb.toString();
-                }
-            }
+            parsedFkfilter = org.talend.mdm.webapp.base.shared.util.CommonUtil.buildForeignKeyFilterByConditions(conditions);
         }
         return parsedFkfilter;
-    }
-
-    private String parseRightValueOrPath(ItemNodeModel node, String rightValueOrPath, String currentXpath) {
-        if (rightValueOrPath == null || currentXpath == null) {
-            throw new IllegalArgumentException();
-        }
-
-        boolean isValue = false;
-        boolean isRelativePath = false;
-
-        rightValueOrPath = rightValueOrPath.trim();// space(s) ignore
-
-        // switch cases
-        if (rightValueOrPath.startsWith("\"") && rightValueOrPath.endsWith("\"") || //$NON-NLS-1$//$NON-NLS-2$
-                rightValueOrPath.startsWith("'") && rightValueOrPath.endsWith("'")) { //$NON-NLS-1$ //$NON-NLS-2$
-            isValue = true;
-        } else if (rightValueOrPath.startsWith(".") || rightValueOrPath.startsWith("..")) { //$NON-NLS-1$ //$NON-NLS-2$
-            isRelativePath = true;
-        }
-
-        // cases handle
-        String result = rightValueOrPath;// by default result equals input value/path
-        if (isValue) {
-            result = rightValueOrPath.substring(1, rightValueOrPath.length() - 1);
-        } else if (isRelativePath) {
-            String[] rightPathArray = rightValueOrPath.split("/");
-            String relativeMark = rightPathArray[0];
-            String targetPath = node.getTypePath();
-            ItemNodeModel parentNode = node;
-            if (".".equals(relativeMark)) { //$NON-NLS-1$
-                targetPath = targetPath + rightValueOrPath.substring(rightValueOrPath.indexOf("/")); //$NON-NLS-1$
-            } else if ("..".equals(relativeMark)) { //$NON-NLS-1$
-                parentNode = (ItemNodeModel) parentNode.getParent();
-                targetPath = targetPath.substring(0, targetPath.lastIndexOf("/")); //$NON-NLS-1$
-                targetPath = targetPath + rightValueOrPath.substring(rightValueOrPath.indexOf("/")); //$NON-NLS-1$
-            }
-            ItemNodeModel targetNode = findTarget(targetPath, parentNode);
-            if (targetNode != null && targetNode.getObjectValue() != null) {
-                result = unwrapFkValue(targetNode.getObjectValue().toString());
-            } else {
-                result = ""; //$NON-NLS-1$
-            }
-        } else {
-            List<String> duplicatedPathList = new ArrayList<String>();
-            List<String> rightPathNodeList = new ArrayList<String>();
-            List<String> leftPathNodeList = Arrays.asList(currentXpath.split("/")); //$NON-NLS-1$
-            String[] rightValueOrPathArray = rightValueOrPath.split("/"); //$NON-NLS-1$
-            for (String element : rightValueOrPathArray) {
-                rightPathNodeList.add(element);
-            }
-            for (int i = 0; i < leftPathNodeList.size(); i++) {
-                if (i < rightPathNodeList.size() && leftPathNodeList.get(i).equals(rightPathNodeList.get(i))) {
-                    duplicatedPathList.add(rightPathNodeList.get(i));
-                } else {
-                    break;
-                }
-            }
-            rightPathNodeList.removeAll(duplicatedPathList);
-            ItemNodeModel parentNode = node;
-            for (int i = 0; i < rightPathNodeList.size(); i++) {
-                parentNode = (ItemNodeModel) parentNode.getParent();
-            }
-            ItemNodeModel targetNode = findTarget(rightValueOrPath, parentNode);
-            if (targetNode != null && targetNode.getObjectValue() != null) {
-                result = unwrapFkValue(targetNode.getObjectValue().toString());
-            } else {
-                result = ""; //$NON-NLS-1$
-            }
-        }
-        return result;
     }
 
     private ItemNodeModel findTarget(String targetPath, ItemNodeModel node) {
@@ -702,17 +650,6 @@ public class ForeignKeyListWindow extends Window {
             }
         }
         return null;
-    }
-
-    private String unwrapFkValue(String value) {
-        if (value.startsWith("[") && value.endsWith("]")) { //$NON-NLS-1$ //$NON-NLS-2$
-            if (value.contains("][")) { //$NON-NLS-1$
-                return value;
-            } else {
-                return value.substring(1, value.length() - 1);
-            }
-        }
-        return value;
     }
 
 }

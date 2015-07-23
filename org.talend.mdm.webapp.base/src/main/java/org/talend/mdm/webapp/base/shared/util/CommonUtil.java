@@ -13,15 +13,16 @@
 package org.talend.mdm.webapp.base.shared.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * created by yjli on 2013-8-1
- * Detailled comment
- *
+ * created by yjli on 2013-8-1 Detailled comment
+ * 
  */
 public class CommonUtil {
-    
+
     public static String escape(String src) {
         int i;
         char j;
@@ -32,13 +33,13 @@ public class CommonUtil {
 
             j = src.charAt(i);
 
-            if (Character.isDigit(j) || Character.isLowerCase(j)
-                    || Character.isUpperCase(j))
+            if (Character.isDigit(j) || Character.isLowerCase(j) || Character.isUpperCase(j)) {
                 tmp.append(j);
-            else if (j < 256) {
+            } else if (j < 256) {
                 tmp.append("%"); //$NON-NLS-1$
-                if (j < 16)
+                if (j < 16) {
                     tmp.append("0"); //$NON-NLS-1$
+                }
                 tmp.append(Integer.toString(j, 16));
             } else {
                 tmp.append("%u"); //$NON-NLS-1$
@@ -47,7 +48,7 @@ public class CommonUtil {
         }
         return tmp.toString();
     }
-    
+
     public static String escapeSemicolon(String src) {
         int i;
         char j;
@@ -58,8 +59,9 @@ public class CommonUtil {
             if (';' == j || '%' == j) {
                 if (j < 256) {
                     tmp.append("%"); //$NON-NLS-1$
-                    if (j < 16)
+                    if (j < 16) {
                         tmp.append("0"); //$NON-NLS-1$
+                    }
                     tmp.append(Integer.toString(j, 16));
                 } else {
                     tmp.append("%u"); //$NON-NLS-1$
@@ -81,13 +83,11 @@ public class CommonUtil {
             pos = src.indexOf("%", lastPos); //$NON-NLS-1$
             if (pos == lastPos) {
                 if (src.charAt(pos + 1) == 'u') {
-                    ch = (char) Integer.parseInt(src
-                            .substring(pos + 2, pos + 6), 16);
+                    ch = (char) Integer.parseInt(src.substring(pos + 2, pos + 6), 16);
                     tmp.append(ch);
                     lastPos = pos + 6;
                 } else {
-                    ch = (char) Integer.parseInt(src
-                            .substring(pos + 1, pos + 3), 16);
+                    ch = (char) Integer.parseInt(src.substring(pos + 1, pos + 3), 16);
                     tmp.append(ch);
                     lastPos = pos + 3;
                 }
@@ -104,7 +104,7 @@ public class CommonUtil {
         return tmp.toString();
     }
 
-    public static String convertListToString(List<String> itemList,String separator) {
+    public static String convertListToString(List<String> itemList, String separator) {
         if (itemList == null) {
             return null;
         }
@@ -115,8 +115,8 @@ public class CommonUtil {
         }
         return result.toString();
     }
-    
-    public static List<String> convertStrigToList(String valueString,String separator) {
+
+    public static List<String> convertStrigToList(String valueString, String separator) {
         if (valueString == null || valueString.isEmpty()) {
             return null;
         }
@@ -127,7 +127,7 @@ public class CommonUtil {
         }
         return valueList;
     }
-    
+
     public static String convertListToString(List<String> itemList) {
         if (itemList == null) {
             return null;
@@ -139,7 +139,7 @@ public class CommonUtil {
         }
         return result.toString();
     }
-    
+
     public static List<String> convertStrigToList(String valueString) {
         if (valueString == null || valueString.isEmpty()) {
             return null;
@@ -151,4 +151,89 @@ public class CommonUtil {
         }
         return valueList;
     }
+
+    public static String[] getCriteriasByForeignKeyFilter(String fkFilter) {
+        return fkFilter.split("#");//$NON-NLS-1$
+    }
+
+    public static String buildForeignKeyFilterByConditions(List<Map<String, String>> conditions) {
+        String parsedFkfilter = ""; //$NON-NLS-1$
+        if (conditions.size() > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (Map<String, String> map : conditions) {
+                Map<String, String> conditionMap = map;
+                if (conditionMap.size() > 0) {
+                    String xpath = conditionMap.get("Xpath") == null ? "" : conditionMap.get("Xpath");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                    String operator = conditionMap.get("Operator") == null ? "" : conditionMap.get("Operator");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                    String value = conditionMap.get("Value") == null ? "" : conditionMap.get("Value");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                    String predicate = conditionMap.get("Predicate") == null ? "" : conditionMap.get("Predicate");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                    sb.append(xpath + "$$" + operator + "$$" + value + "$$" + predicate + "#");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
+                }
+            }
+            if (sb.length() > 0) {
+                parsedFkfilter = sb.toString();
+            }
+        }
+        return parsedFkfilter;
+    }
+
+    public static String wrapFkValue(String value) {
+        if (value.startsWith("[") && value.endsWith("]")) { //$NON-NLS-1$//$NON-NLS-2$
+            return value;
+        }
+        return "[" + value + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    public static String unwrapFkValue(String value) {
+        if (value.startsWith("[") && value.endsWith("]")) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (value.contains("][")) { //$NON-NLS-1$
+                return value;
+            } else {
+                return value.substring(1, value.length() - 1);
+            }
+        }
+        return value;
+    }
+
+    public static boolean isFilterValue(String foreignKeyFilterValue) {
+        return (foreignKeyFilterValue.startsWith("\"") && foreignKeyFilterValue.endsWith("\"") || //$NON-NLS-1$//$NON-NLS-2$
+        foreignKeyFilterValue.startsWith("'") && foreignKeyFilterValue.endsWith("'")); //$NON-NLS-1$//$NON-NLS-2$
+
+    }
+
+    public static boolean isRelativePath(String foreignKeyFilterValue) {
+        return (foreignKeyFilterValue.startsWith(".") || foreignKeyFilterValue.startsWith("..")); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    /**
+     * DOC xieru Comment method "buildConditionByCriteria".
+     * 
+     * @param cria
+     * @return
+     */
+    public static Map<String, String> buildConditionByCriteria(String criteria) {
+        Map<String, String> conditionMap = new HashMap<String, String>();
+        String[] values = criteria.split("\\$\\$");//$NON-NLS-1$
+        for (int i = 0; i < values.length; i++) {
+
+            switch (i) {
+            case 0:
+                conditionMap.put("Xpath", values[0]);//$NON-NLS-1$
+                break;
+            case 1:
+                conditionMap.put("Operator", values[1]);//$NON-NLS-1$
+                break;
+            case 2:
+                conditionMap.put("Value", values[2].trim());//$NON-NLS-1$
+                break;
+            case 3:
+                conditionMap.put("Predicate", values[3]);//$NON-NLS-1$
+                break;
+            default:
+                break;
+            }
+        }
+        return conditionMap;
+    }
+
 }

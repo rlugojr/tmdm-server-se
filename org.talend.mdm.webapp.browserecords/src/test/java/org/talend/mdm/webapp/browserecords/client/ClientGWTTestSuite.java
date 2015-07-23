@@ -45,6 +45,7 @@ public class ClientGWTTestSuite extends TestCase /* note this is TestCase and no
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.util.CommonUtilGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.util.CallJsniGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.rest.ExplainRestServiceHandlerGWTTest.class);
+        suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.foreignkey.FKRelRecordWindowGWTTest.class);
         return suite;
     }
 }

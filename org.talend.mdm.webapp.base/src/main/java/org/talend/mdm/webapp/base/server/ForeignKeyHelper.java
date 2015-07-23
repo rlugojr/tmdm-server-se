@@ -13,7 +13,6 @@
 package org.talend.mdm.webapp.base.server;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -129,7 +128,7 @@ public class ForeignKeyHelper {
         return foreignKeyBean;
     }
 
-    private static String getForeignKeyFilter(boolean ifFKFilter, String dataObject, String xml, String currentXpath,
+    public static String getForeignKeyFilter(boolean ifFKFilter, String dataObject, String xml, String currentXpath,
             TypeModel model) throws Exception {
         String fkFilter;
         if (ifFKFilter) {
@@ -556,77 +555,26 @@ public class ForeignKeyHelper {
                 return parsedFkfilter;
             }
             // parse
-            String[] criterias = fkFilter.split("#");//$NON-NLS-1$
+            String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil.getCriteriasByForeignKeyFilter(fkFilter);
             List<Map<String, String>> conditions = new ArrayList<Map<String, String>>();
             for (String cria : criterias) {
-                Map<String, String> conditionMap = new HashMap<String, String>();
-                String[] values = cria.split("\\$\\$");//$NON-NLS-1$
-                for (int i = 0; i < values.length; i++) {
-
-                    switch (i) {
-                    case 0:
-                        conditionMap.put("Xpath", values[0]);//$NON-NLS-1$
-                        break;
-                    case 1:
-                        conditionMap.put("Operator", values[1]);//$NON-NLS-1$
-                        break;
-                    case 2:
-                        String rightValueOrPath = values[2];
-                        rightValueOrPath = StringEscapeUtils.unescapeXml(rightValueOrPath);
-                        rightValueOrPath = parseRightValueOrPath(xml, dataObject, rightValueOrPath, currentXpath);
-                        if (isFkPath(values[0])) {
-                            rightValueOrPath = wrapFkValue(rightValueOrPath);
-                        } else {
-                            rightValueOrPath = unwrapFkValue(rightValueOrPath);
-                        }
-                        conditionMap.put("Value", rightValueOrPath);//$NON-NLS-1$
-                        break;
-                    case 3:
-                        conditionMap.put("Predicate", values[3]);//$NON-NLS-1$
-                        break;
-                    default:
-                        break;
-                    }
+                Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                        .buildConditionByCriteria(cria);
+                String value = conditionMap.get("Value"); //$NON-NLS-1$
+                value = StringEscapeUtils.unescapeXml(value);
+                value = parseRightValueOrPath(xml, dataObject, value, currentXpath);
+                if (isFkPath(conditionMap.get("Xpath"))) { //$NON-NLS-1$
+                    value = org.talend.mdm.webapp.base.shared.util.CommonUtil.wrapFkValue(value);
+                } else {
+                    value = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(value);
                 }
+                conditionMap.put("Value", value);//$NON-NLS-1$
                 conditions.add(conditionMap);
             }
             // build
-            if (conditions.size() > 0) {
-                StringBuffer sb = new StringBuffer();
-                for (Map<String, String> map : conditions) {
-                    Map<String, String> conditionMap = map;
-                    if (conditionMap.size() > 0) {
-                        String xpath = conditionMap.get("Xpath") == null ? "" : conditionMap.get("Xpath");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        String operator = conditionMap.get("Operator") == null ? "" : conditionMap.get("Operator");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        String value = conditionMap.get("Value") == null ? "" : conditionMap.get("Value");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        String predicate = conditionMap.get("Predicate") == null ? "" : conditionMap.get("Predicate");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                        sb.append(xpath + "$$" + operator + "$$" + value + "$$" + predicate + "#");//$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
-                    }
-                }
-                if (sb.length() > 0) {
-                    parsedFkfilter = sb.toString();
-                }
-            }
+            parsedFkfilter = org.talend.mdm.webapp.base.shared.util.CommonUtil.buildForeignKeyFilterByConditions(conditions);
         }
         return parsedFkfilter;
-    }
-
-    public static String wrapFkValue(String value) {
-        if (value.startsWith("[") && value.endsWith("]")) { //$NON-NLS-1$//$NON-NLS-2$
-            return value;
-        }
-        return "[" + value + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    public static String unwrapFkValue(String value) {
-        if (value.startsWith("[") && value.endsWith("]")) { //$NON-NLS-1$ //$NON-NLS-2$
-            if (value.contains("][")) { //$NON-NLS-1$
-                return value;
-            } else {
-                return value.substring(1, value.length() - 1);
-            }
-        }
-        return value;
     }
 
     public static String unwrapKeyValueToString(String value, String symbol) {
@@ -638,7 +586,7 @@ public class ForeignKeyHelper {
                 }
                 return sb.substring(0, sb.length() - symbol.length());
             } else {
-                return unwrapFkValue(value);
+                return org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(value);
             }
         } else {
             return value;
@@ -685,23 +633,9 @@ public class ForeignKeyHelper {
         if (rightValueOrPath == null || currentXpath == null) {
             throw new IllegalArgumentException();
         }
-
-        boolean isValue = false;
-        boolean isRelativePath = false;
-
-        rightValueOrPath = rightValueOrPath.trim();// space(s) ignore
-
-        // switch cases
-        if (rightValueOrPath.startsWith("\"") && rightValueOrPath.endsWith("\"") || //$NON-NLS-1$//$NON-NLS-2$
-                rightValueOrPath.startsWith("'") && rightValueOrPath.endsWith("'")) {
-            isValue = true;
-        } else if (rightValueOrPath.startsWith(".") || rightValueOrPath.startsWith("..")) {
-            isRelativePath = true;
-        }
-
         // cases handle
         String result = rightValueOrPath;// by default result equals input value/path
-        if (isValue) {
+        if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(rightValueOrPath)) {
             result = rightValueOrPath.substring(1, rightValueOrPath.length() - 1);
         } else {
             if (xml != null) {
@@ -709,7 +643,7 @@ public class ForeignKeyHelper {
                 org.dom4j.Document doc = XmlUtil.parseDocument(Util.parse(xml));
                 org.dom4j.Node currentNode = doc.selectSingleNode(currentXpath);
                 org.dom4j.Node targetNode = null;
-                if (isRelativePath) {
+                if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isRelativePath(rightValueOrPath)) {
                     targetNode = currentNode.selectSingleNode(rightValueOrPath);
                 } else {
                     String xpath = rightValueOrPath.startsWith("/") ? rightValueOrPath : "/" + rightValueOrPath; //$NON-NLS-1$//$NON-NLS-2$
