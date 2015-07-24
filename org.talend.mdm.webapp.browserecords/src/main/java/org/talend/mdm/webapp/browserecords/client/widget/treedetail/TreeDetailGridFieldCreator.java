@@ -258,6 +258,10 @@ public class TreeDetailGridFieldCreator {
                         node.setObjectValue((Serializable) (value == null ? null : value.getValue()));
                     } else {
                         node.setObjectValue((Serializable) fe.getValue());
+                        // TMDM-8470 trim pk textfield value
+                        if (node.isKey() && field instanceof TextField<?> && node.getObjectValue() != null) {
+                            node.setObjectValue(node.getObjectValue().toString().trim());
+                        }
                     }
                 }
 
@@ -296,6 +300,10 @@ public class TreeDetailGridFieldCreator {
                     if (fe.getField() instanceof FormatTextField) {
                         if (BrowseRecords.getSession().getAppHeader().isAutoValidate()) {
                             node.setObjectValue(((FormatTextField) fe.getField()).getOjbectValue());
+                            // TMDM-8470 trim pk textfield value
+                            if (node.isKey() && node.getObjectValue() != null) {
+                                node.setObjectValue(node.getObjectValue().toString().trim());
+                            }
                         }
                     } else if (fe.getField() instanceof FormatNumberField) {
                         if (BrowseRecords.getSession().getAppHeader().isAutoValidate()) {
@@ -338,8 +346,8 @@ public class TreeDetailGridFieldCreator {
             }
 
             private native void _setEl(El elem)/*-{
-		this.@com.extjs.gxt.ui.client.widget.Component::el = elem;
-    }-*/;
+                                               this.@com.extjs.gxt.ui.client.widget.Component::el = elem;
+                                               }-*/;
         };
         errorIcon.setStyleAttribute("display", "block"); //$NON-NLS-1$ //$NON-NLS-2$
         errorIcon.setStyleAttribute("float", "right"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -352,23 +360,23 @@ public class TreeDetailGridFieldCreator {
     }
 
     private static native void _setErrorIcon(Field<?> field, WidgetComponent errorIcon)/*-{
-		field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon = errorIcon;
-    }-*/;
+                                                                                       field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon = errorIcon;
+                                                                                       }-*/;
 
     private static native WidgetComponent _getErrorIcon(Field<?> field)/*-{
-		return field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon;
-    }-*/;
+                                                                       return field.@com.extjs.gxt.ui.client.widget.form.Field::errorIcon;
+                                                                       }-*/;
 
     public static native String getTemplate() /*-{
-		return [
-				'<tpl for=".">',
-				'<tpl if="text == \'\'">',
-				'<div role=\"listitem\" class="x-combo-list-item" title=""></br></div>',
-				'</tpl>',
-				'<tpl if="text != \'\'">',
-				'<div role=\"listitem\" class="x-combo-list-item" title="{text}">{text}</div>',
-				'</tpl>', '</tpl>' ].join("");
-    }-*/;
+                                              return [
+                                              '<tpl for=".">',
+                                              '<tpl if="text == \'\'">',
+                                              '<div role=\"listitem\" class="x-combo-list-item" title=""></br></div>',
+                                              '</tpl>',
+                                              '<tpl if="text != \'\'">',
+                                              '<div role=\"listitem\" class="x-combo-list-item" title="{text}">{text}</div>',
+                                              '</tpl>', '</tpl>' ].join("");
+                                              }-*/;
 
     private static void buildFacets(TypeModel typeModel, Widget w) {
         if (typeModel instanceof SimpleTypeModel) {
