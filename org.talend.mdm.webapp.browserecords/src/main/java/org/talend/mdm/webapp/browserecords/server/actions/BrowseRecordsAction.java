@@ -316,12 +316,13 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     }
 
     @Override
-    public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String dataClusterPK, String foreignKeyFilter, String value, String language) throws ServiceException {
+    public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, String foreignKeyPath,
+            List<String> foreignKeyInfo, String foreignKeyFilter, String filterValue, TypeModel model, String dataClusterPK,
+            String language) throws ServiceException {
         try {
-            String foreignKeyConcept = model.getForeignkey().split("/")[0]; //$NON-NLS-1$
-            return ForeignKeyHelper.getForeignKeyList(config, model, getEntityModel(foreignKeyConcept, language), dataClusterPK,
-                    foreignKeyFilter, value);
+            String foreignKeyConcept = foreignKeyPath.split("/")[0]; //$NON-NLS-1$
+            return ForeignKeyHelper.getForeignKeyList(config, foreignKeyPath, foreignKeyInfo, foreignKeyFilter, filterValue,
+                    model, getEntityModel(foreignKeyConcept, language), dataClusterPK);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
@@ -2364,19 +2365,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
     @Override
     public List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey,
-            List<String> foregnKeyInfo, String foreignKeyFilter, String dataClusterPK, boolean ifFKFilter, String input,
-            String language) throws ServiceException {
+            List<String> foregnKeyInfo, String foreignKeyFilter, String dataClusterPK, String input, String language)
+            throws ServiceException {
         try {
             String keyWords = input;
             String pattern = "[^a-zA-Z0-9\\s\\@\\.\\-\\_\\'\"]"; //$NON-NLS-1$
             String foregnKeyConcept = foregnKey.split("/")[0]; //$NON-NLS-1$
             EntityModel entityModel = getEntityModel(foregnKeyConcept, language);
-
             TypeModel typeModel = entityModel.getTypeModel(foregnKeyConcept);
-            typeModel.setForeignkey(foregnKey);
-            typeModel.setForeignKeyInfo(foregnKeyInfo);
-            typeModel.setRetrieveFKinfos(true);
-            typeModel.setFkFilter(foreignKeyFilter);
 
             if (input.contains(":") && input.indexOf(":") > 0) { //$NON-NLS-1$ //$NON-NLS-2$
                 String entityName = input.split(":")[0]; //$NON-NLS-1$
@@ -2391,9 +2387,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             }
 
             keyWords = keyWords.replaceAll(pattern, ""); //$NON-NLS-1$
-            ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, typeModel,
-                    entityModel, dataClusterPK, foreignKeyFilter, keyWords);
-
+            ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, foregnKey,
+                    foregnKeyInfo, foreignKeyFilter, keyWords, typeModel, entityModel, dataClusterPK);
             return loadResult.getData();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

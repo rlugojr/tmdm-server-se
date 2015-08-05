@@ -13,7 +13,9 @@
 
 package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
@@ -33,6 +35,7 @@ import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.ComponentHelper;
 import com.extjs.gxt.ui.client.widget.button.SplitButton;
+import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -70,6 +73,8 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
 
     private ItemNodeModel itemNode;
 
+    private Map<Integer, Field> targetField;
+
     public boolean isRetrieveFKinfos() {
         return retrieveFKinfos;
     }
@@ -88,7 +93,7 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         this.foreignKeyFilter = foreignKeyFilter;
         this.xpath = xpath;
         this.setFireChangeEventOnSetValue(true);
-        suggestBox = new SuggestComboBoxField(this);
+        // suggestBox = new SuggestComboBoxField(this);
     }
 
     @Override
@@ -173,7 +178,7 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         relWindow.setHeading(MessagesFactory.getMessages().fk_RelatedRecord());
         relWindow.setStaging(staging);
         relWindow.setForeignKeyInfos(this.foreignKey, this.foreignKeyInfo);
-        relWindow.setForeignKeyFilter(this.foreignKeyFilter);
+        relWindow.setForeignKeyFilter(parseForeignKeyFilter(targetField, foreignKeyFilter));
         relWindow.setCurrentXpath(this.xpath);
         relWindow.show();
     }
@@ -285,8 +290,40 @@ public class FKSearchField extends TextField<ForeignKeyBean> implements ReturnCr
         return xpath;
     }
 
-    @Override
-    public void setItemNode(ItemNodeModel node) {
-        this.itemNode = node;
+    public void setTargetField(Map<Integer, Field> targetField) {
+        this.targetField = targetField;
+    }
+
+    public String parseForeignKeyFilter(Map<Integer, Field> targetFields, String fkFilter) {
+        String parsedFkfilter = fkFilter;
+        if (fkFilter != null) {
+            String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil.getCriteriasByForeignKeyFilter(parsedFkfilter);
+            List<Map<String, String>> conditions = new ArrayList<Map<String, String>>();
+            for (int i = 0; i < criterias.length; i++) {
+                String criteria = criterias[i];
+                Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                        .buildConditionByCriteria(criteria);
+                String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
+
+                if (filterValue == null) {
+                    continue;
+                }
+
+                // cases handle
+                if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
+                    filterValue = filterValue.substring(1, filterValue.length() - 1);
+                } else {
+                    Field targetField = targetFields.get(i);
+                    if (targetField.getValue() != null) {
+                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetField.getValue()
+                                .toString());
+                    }
+                }
+                conditionMap.put("Value", filterValue); //$NON-NLS-1$
+                conditions.add(conditionMap);
+            }
+            parsedFkfilter = org.talend.mdm.webapp.base.shared.util.CommonUtil.buildForeignKeyFilterByConditions(conditions);
+        }
+        return parsedFkfilter;
     }
 }

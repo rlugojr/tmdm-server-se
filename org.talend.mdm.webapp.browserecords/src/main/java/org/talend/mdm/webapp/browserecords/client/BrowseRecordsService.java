@@ -56,8 +56,9 @@ public interface BrowseRecordsService extends RemoteService {
 
     String saveItemBean(ItemBean item, String language) throws ServiceException;
 
-    ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String dataClusterPK, String foreignKeyFilter, String value, String language) throws ServiceException;
+    ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, String foreignKeyPath,
+            List<String> foreignKeyInfo, String foreignKeyFilter, String filterValue, TypeModel model, String dataClusterPK,
+            String language) throws ServiceException;
 
     List<Restriction> getForeignKeyPolymTypeList(String xpathForeignKey, String language) throws ServiceException;
 
@@ -156,6 +157,5 @@ public interface BrowseRecordsService extends RemoteService {
     boolean isExistId(String concept, String[] ids, String language) throws ServiceException;
 
     List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey, List<String> foregnKeyInfo,
-            String foreignKeyFilter, String dataClusterPK, boolean ifFKFilter, String input, String language)
-            throws ServiceException;
+            String foreignKeyFilter, String dataClusterPK, String input, String language) throws ServiceException;
 }

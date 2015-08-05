@@ -13,7 +13,6 @@
 package org.talend.mdm.webapp.browserecords.client.widget.treedetail;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -168,14 +167,6 @@ public class ForeignKeyListWindow extends Window {
         return entityModel;
     }
 
-    public String getFkKey() {
-        return fkKey;
-    }
-
-    public void setFkKey(String fkKey) {
-        this.fkKey = fkKey;
-    }
-
     public ReturnCriteriaFK getReturnCriteriaFK() {
         return returnCriteriaFK;
     }
@@ -217,8 +208,6 @@ public class ForeignKeyListWindow extends Window {
 
             @Override
             public void load(final Object loadConfig, final AsyncCallback<PagingLoadResult<ForeignKeyBean>> callback) {
-                String foreignKeyFilter = (hasForeignKeyFilter && itemNode != null) ? parseForeignKeyFilter(itemNode,
-                        typeModel.getFkFilter()) : ""; //$NON-NLS-1$
                 PagingLoadConfig config = (PagingLoadConfig) loadConfig;
                 BasePagingLoadConfigImpl baseConfig = BasePagingLoadConfigImpl.copyPagingLoad(config);
                 final String currentFilterText = getFilterValue();
@@ -235,8 +224,9 @@ public class ForeignKeyListWindow extends Window {
                 } else {
                     dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
                 }
-                service.getForeignKeyList(baseConfig, typeModel, dataCluster, foreignKeyFilter, currentFilterText,
-                        Locale.getLanguage(), new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
+                service.getForeignKeyList(baseConfig, foreignKey, foreignKeyInfo, foreignKeyFilter, currentFilterText, typeModel,
+                        dataCluster, Locale.getLanguage(),
+                        new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
 
                             @Override
                             protected void doOnFailure(Throwable caught) {

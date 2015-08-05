@@ -14,6 +14,7 @@ package org.talend.mdm.webapp.browserecords.client.mvc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +44,8 @@ import org.talend.mdm.webapp.browserecords.client.widget.ItemsMainTabPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsSearchContainer;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsToolBar;
 import org.talend.mdm.webapp.browserecords.client.widget.LineagePanel;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyCellField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.creator.FieldCreator;
 import org.talend.mdm.webapp.browserecords.client.widget.treedetail.ForeignKeyListWindow;
@@ -401,6 +403,9 @@ public class BrowseRecordsView extends View {
         List<String> viewableXpaths = viewBean.getViewableXpaths();
         Map<String, TypeModel> dataTypes = entityModel.getMetaDataTypes();
         List<String> keys = Arrays.asList(entityModel.getKeys());
+
+        Map<String, ForeignKeyCellField> fkFieldwithFilterMap = new HashMap<String, ForeignKeyCellField>();
+        Map<String, Field> fieldMap = new HashMap<String, Field>();
         for (String xpath : viewableXpaths) {
             TypeModel typeModel = dataTypes.get(xpath);
 
@@ -408,8 +413,15 @@ public class BrowseRecordsView extends View {
                     typeModel), 200);
             if (typeModel instanceof SimpleTypeModel && !keys.contains(xpath) && !typeModel.isMultiOccurrence()) {
                 Field<?> field = FieldCreator.createField((SimpleTypeModel) typeModel, null, false, Locale.getLanguage());
-                if (field instanceof FKSearchField) {
-                    ((FKSearchField) field).setStaging(isStaging);
+                fieldMap.put(xpath, field);
+                if (field instanceof ForeignKeyField) {
+                    ForeignKeyCellField foreignKeyCellField = new ForeignKeyCellField((ForeignKeyField) field,
+                            typeModel.getFkFilter());
+                    foreignKeyCellField.setStaging(isStaging);
+                    if (typeModel.getFkFilter() != null && !typeModel.getFkFilter().isEmpty()) {
+                        fkFieldwithFilterMap.put(xpath, foreignKeyCellField);
+                    }
+                    field = foreignKeyCellField;
                 }
                 CellEditor cellEditor = CellEditorCreator.createCellEditor(field);
                 if (cellEditor != null) {
@@ -426,6 +438,34 @@ public class BrowseRecordsView extends View {
             if (typeModel == null || typeModel.isVisible()) {
                 ccList.add(cc);
             }
+        }
+
+        for (String xpath : fkFieldwithFilterMap.keySet()) {
+            ForeignKeyCellField foreignKeyCellField = fkFieldwithFilterMap.get(xpath);
+            Map<Integer, Field<?>> targetFieldMap = new HashMap<Integer, Field<?>>();
+            String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil.getCriteriasByForeignKeyFilter(dataTypes.get(
+                    xpath).getFkFilter());
+            for (int i = 0; i < criterias.length; i++) {
+                Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                        .buildConditionByCriteria(criterias[i]);
+                String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
+                if (!org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
+                    String targetPath;
+                    if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isRelativePath(filterValue)) {
+                        if (filterValue.startsWith(".")) { //$NON-NLS-1$
+                            targetPath = xpath + filterValue.substring(filterValue.indexOf(".")); //$NON-NLS-1$
+                        } else if (filterValue.startsWith("..")) { //$NON-NLS-1$
+                            targetPath = xpath.substring(0, xpath.lastIndexOf("/")) + filterValue.substring(filterValue.indexOf("..")); //$NON-NLS-1$ //$NON-NLS-2$
+                        }
+                    } else {
+                        targetPath = filterValue;
+                    }
+                    if (filterValue != null && entityModel.getConceptName().equals(filterValue.split("/")[0])) { //$NON-NLS-1$
+                        targetFieldMap.put(i, fieldMap.get(filterValue));
+                    }
+                }
+            }
+            foreignKeyCellField.setTargetField(targetFieldMap);
         }
 
         ItemsListPanel.getInstance().updateGrid(sm, ccList);

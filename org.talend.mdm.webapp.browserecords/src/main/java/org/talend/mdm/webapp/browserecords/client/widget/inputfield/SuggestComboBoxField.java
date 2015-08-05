@@ -23,7 +23,7 @@ import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
 import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -55,7 +55,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
 
     private String displayFieldName = "displayInfo"; //$NON-NLS-1$
 
-    private FKField foreignKeyField;
+    private ForeignKeyField foreignKeyField;
 
     private int getListDelay = 200;
 
@@ -68,7 +68,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         init();
     }
 
-    public SuggestComboBoxField(FKField foreignKeyField) {
+    public SuggestComboBoxField(ForeignKeyField foreignKeyField) {
         super();
         this.foreignKeyField = foreignKeyField;
         init();
@@ -109,20 +109,14 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
                         : false;
                 BasePagingLoadConfigImpl config = new BasePagingLoadConfigImpl();
                 config.setLimit(listLimitCount);
-                config.set("currentXpath", foreignKeyField.getXpath()); //$NON-NLS-1$
+                config.set("currentXpath", foreignKeyField.getCurrentPath()); //$NON-NLS-1$
                 config.set("language", Locale.getLanguage()); //$NON-NLS-1$
 
-                String dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
-
-                if (foreignKeyField.isStaging()) {
-                    dataCluster = BrowseRecords.getSession().getAppHeader().getStagingDataCluster();
-                }
-
-                foreignKey = foreignKeyField.getForeignKey();
+                String dataCluster = foreignKeyField.getDataCluster();
+                foreignKey = foreignKeyField.getForeignKeyPath();
                 foreignKeyInfo = foreignKeyField.getForeignKeyInfo();
-                service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, foreignKeyFilter, dataCluster,
-                        hasForeignKeyFilter, inputValue, Locale.getLanguage(),
-                        new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
+                service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, foreignKeyFilter, dataCluster, inputValue,
+                        Locale.getLanguage(), new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
 
                             @Override
                             public void onSuccess(List<ForeignKeyBean> result) {
@@ -240,7 +234,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
                     }
                 }
             }
-            foreignKeyField.setSuperValue(selectedBean);
+            foreignKeyField.setValue(selectedBean);
         }
     }
 

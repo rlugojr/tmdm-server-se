@@ -21,6 +21,7 @@ import org.talend.mdm.webapp.base.client.widget.MultiLanguageField;
 import org.talend.mdm.webapp.base.shared.SimpleTypeModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.MultipleField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.converter.BooleanConverter;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.converter.DateConverter;
@@ -53,11 +54,13 @@ public class FieldCreator {
             MultipleField multipleField = new MultipleField(dataType, language);
             field = multipleField;
         } else if (dataType.getForeignkey() != null) {
-            FKSearchField fkField = new FKSearchField(dataType.getForeignkey(), dataType.getForeignKeyInfo(),
-                    dataType.getFkFilter(), dataType.getXpath());
-            fkField.Update(dataType.getXpath(), fkField);
-            fkField.setRetrieveFKinfos(dataType.isRetrieveFKinfos());
-            field = fkField;
+            ForeignKeyField foreignKeyField = new ForeignKeyField(dataType.getForeignkey(), dataType.getForeignKeyInfo(),
+                    dataType.getXpath());
+            // FKSearchField fkField = new FKSearchField(dataType.getForeignkey(), dataType.getForeignKeyInfo(),
+            // dataType.getFkFilter(), dataType.getXpath());
+            // fkField.Update(dataType.getXpath(), fkField);
+            // fkField.setRetrieveFKinfos(dataType.isRetrieveFKinfos());
+            field = foreignKeyField;
         } else if (dataType.hasEnumeration()) {
             SimpleComboBox<String> comboBox = new SimpleComboBox<String>();
             comboBox.setFireChangeEventOnSetValue(true);

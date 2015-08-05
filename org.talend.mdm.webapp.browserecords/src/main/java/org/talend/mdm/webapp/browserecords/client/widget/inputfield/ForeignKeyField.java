@@ -1,6 +1,9 @@
 package org.talend.mdm.webapp.browserecords.client.widget.inputfield;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
@@ -23,6 +26,7 @@ import org.talend.mdm.webapp.browserecords.client.widget.treedetail.ForeignKeyLi
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.core.El;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
@@ -86,14 +90,14 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         fkWindow = new ForeignKeyListWindow();
         fkWindow.setForeignKeyInfos(foreignKey, foreignKeyInfo);
         fkWindow.setCurrentXpath(xpath);
-        fkWindow.setForeignKeyFilter(fkFilter);
+        fkWindow.setForeignKeyFilter(parseForeignKeyFilter(itemNode, fkFilter));
         fkWindow.setSize(550, 350);
         fkWindow.setResizable(false);
         fkWindow.setModal(true);
         fkWindow.setBlinkModal(true);
         fkWindow.setStaging(staging);
         fkWindow.setItemNode(itemNode);
-        suggestBox = new SuggestComboBoxField(this);
+        // suggestBox = new SuggestComboBoxField(this);
         this.setReturnCriteriaFK();
     }
 
@@ -397,9 +401,97 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> implements Return
         return this.xpath;
     }
 
-    @Override
     public void setItemNode(ItemNodeModel node) {
         this.itemNode = node;
+    }
+
+    public String parseForeignKeyFilter(ItemNodeModel node, String fkFilter) {
+        String parsedFkfilter = fkFilter;
+        if (fkFilter != null) {
+            String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil.getCriteriasByForeignKeyFilter(parsedFkfilter);
+            List<Map<String, String>> conditions = new ArrayList<Map<String, String>>();
+            for (String cria : criterias) {
+                Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                        .buildConditionByCriteria(cria);
+                String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
+
+                if (filterValue == null || this.xpath == null) {
+                    return ""; //$NON-NLS-1$
+                }
+
+                // cases handle
+                if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
+                    filterValue = filterValue.substring(1, filterValue.length() - 1);
+                } else if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isRelativePath(filterValue)) {
+                    String[] rightPathArray = filterValue.split("/"); //$NON-NLS-1$
+                    String relativeMark = rightPathArray[0];
+                    String targetPath = node.getTypePath();
+                    ItemNodeModel parentNode = node;
+                    if (".".equals(relativeMark)) { //$NON-NLS-1$
+                        targetPath = targetPath + filterValue.substring(filterValue.indexOf("/")); //$NON-NLS-1$
+                    } else if ("..".equals(relativeMark)) { //$NON-NLS-1$
+                        parentNode = (ItemNodeModel) parentNode.getParent();
+                        targetPath = targetPath.substring(0, targetPath.lastIndexOf("/")); //$NON-NLS-1$
+                        targetPath = targetPath + filterValue.substring(filterValue.indexOf("/")); //$NON-NLS-1$
+                    }
+                    ItemNodeModel targetNode = findTarget(targetPath, parentNode);
+                    if (targetNode != null && targetNode.getObjectValue() != null) {
+                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode.getObjectValue()
+                                .toString());
+                    } else {
+                        filterValue = ""; //$NON-NLS-1$
+                    }
+                } else {
+                    List<String> duplicatedPathList = new ArrayList<String>();
+                    List<String> rightPathNodeList = new ArrayList<String>();
+                    List<String> leftPathNodeList = Arrays.asList(xpath.split("/")); //$NON-NLS-1$
+                    String[] rightValueOrPathArray = filterValue.split("/"); //$NON-NLS-1$
+                    for (String element : rightValueOrPathArray) {
+                        rightPathNodeList.add(element);
+                    }
+                    for (int i = 0; i < leftPathNodeList.size(); i++) {
+                        if (i < rightPathNodeList.size() && leftPathNodeList.get(i).equals(rightPathNodeList.get(i))) {
+                            duplicatedPathList.add(rightPathNodeList.get(i));
+                        } else {
+                            break;
+                        }
+                    }
+                    rightPathNodeList.removeAll(duplicatedPathList);
+                    ItemNodeModel parentNode = node;
+                    for (int i = 0; i < rightPathNodeList.size(); i++) {
+                        parentNode = (ItemNodeModel) parentNode.getParent();
+                    }
+                    ItemNodeModel targetNode = findTarget(filterValue, parentNode);
+                    if (targetNode != null && targetNode.getObjectValue() != null) {
+                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode.getObjectValue()
+                                .toString());
+                    } else {
+                        filterValue = ""; //$NON-NLS-1$
+                    }
+                }
+                conditionMap.put("Value", filterValue); //$NON-NLS-1$
+                conditions.add(conditionMap);
+            }
+            parsedFkfilter = org.talend.mdm.webapp.base.shared.util.CommonUtil.buildForeignKeyFilterByConditions(conditions);
+        }
+        return parsedFkfilter;
+    }
+
+    private ItemNodeModel findTarget(String targetPath, ItemNodeModel node) {
+        List<ModelData> childrenList = node.getChildren();
+        if (childrenList != null && childrenList.size() > 0) {
+            for (int i = 0; i < childrenList.size(); i++) {
+                ItemNodeModel child = (ItemNodeModel) childrenList.get(i);
+                if (targetPath.contains(child.getTypePath())) {
+                    if (targetPath.equals(child.getTypePath())) {
+                        return child;
+                    } else {
+                        findTarget(targetPath, child);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 }
