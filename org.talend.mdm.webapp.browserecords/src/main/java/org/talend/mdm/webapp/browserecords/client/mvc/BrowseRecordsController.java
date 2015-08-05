@@ -38,8 +38,8 @@ import org.talend.mdm.webapp.browserecords.client.widget.ItemsDetailPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsListPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsMainTabPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.LineageListPanel;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeySelector;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
-import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.treedetail.ForeignKeyTablePanel;
 import org.talend.mdm.webapp.browserecords.shared.ViewBean;
 import org.talend.mdm.webapp.browserecords.shared.VisibleRuleResult;
@@ -66,7 +66,6 @@ public class BrowseRecordsController extends Controller {
         registerEventTypes(BrowseRecordsEvents.GetView);
         registerEventTypes(BrowseRecordsEvents.ViewItem);
         registerEventTypes(BrowseRecordsEvents.CreateForeignKeyView);
-        registerEventTypes(BrowseRecordsEvents.SelectForeignKeyView);
         registerEventTypes(BrowseRecordsEvents.ViewForeignKey);
         registerEventTypes(BrowseRecordsEvents.SaveItem);
         registerEventTypes(BrowseRecordsEvents.UpdatePolymorphism);
@@ -98,9 +97,6 @@ public class BrowseRecordsController extends Controller {
             break;
         case BrowseRecordsEvents.CreateForeignKeyViewCode:
             onCreateForeignKeyView(event);
-            break;
-        case BrowseRecordsEvents.SelectForeignKeyViewCode:
-            onSelectForeignKeyView(event);
             break;
         case BrowseRecordsEvents.ViewItemCode:
             onViewItem(event);
@@ -245,9 +241,9 @@ public class BrowseRecordsController extends Controller {
                             if (returnCriteriaFK instanceof ForeignKeyTablePanel) {
                                 ForeignKeyTablePanel foreignKeyTablePanel = (ForeignKeyTablePanel) returnCriteriaFK;
                                 foreignKeyTablePanel.setCriteriaFK(result.getReturnValue());
-                            } else if (returnCriteriaFK instanceof ForeignKeyField) {
-                                ForeignKeyField foreignKeyField = (ForeignKeyField) returnCriteriaFK;
-                                foreignKeyField.setCriteriaFK(result.getReturnValue());
+                            } else if (returnCriteriaFK instanceof ForeignKeySelector) {
+                                ForeignKeySelector foreignKeySelector = (ForeignKeySelector) returnCriteriaFK;
+                                foreignKeySelector.setCriteriaFK(result.getReturnValue());
                             }
                         }
                         // Only Hierarchy call the next method

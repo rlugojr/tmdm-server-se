@@ -78,9 +78,10 @@ public class ForeignKeyHelper {
         ForeignKeyHolder holder;
         String foreignKeyFilter = getForeignKeyFilter(hasForeignKeyFilter, currentXpath.split("/")[0], xml, currentXpath, model); //$NON-NLS-1$
         if (hasCompositeKey && ids.contains(".")) { //$NON-NLS-1$
-            holder = getForeignKeyHolder(model, foreignKeyFilter, ids.split("[.]")[0]); //$NON-NLS-1$ 
+            holder = getForeignKeyHolder(model, model.getForeignkey(), model.getForeignKeyInfo(), foreignKeyFilter,
+                    ids.split("[.]")[0]); //$NON-NLS-1$ 
         } else {
-            holder = getForeignKeyHolder(model, foreignKeyFilter, ids);
+            holder = getForeignKeyHolder(model, model.getForeignkey(), model.getForeignKeyInfo(), foreignKeyFilter, ids);
         }
         String[] results = null;
         if (holder != null) {
@@ -108,8 +109,8 @@ public class ForeignKeyHelper {
             }
         }
         if (results != null) {
-            List<ForeignKeyBean> foreignKeyBeanList = convertForeignKeyBeanList(results, entityModel, model, dataClusterPK, 0,
-                    language);
+            List<ForeignKeyBean> foreignKeyBeanList = convertForeignKeyBeanList(results, entityModel, model.getForeignkey(),
+                    model.getForeignKeyInfo(), dataClusterPK, 0, language);
             if (foreignKeyBeanList.size() > 0) {
                 foreignKeyBean = foreignKeyBeanList.get(0);
             }
@@ -129,22 +130,25 @@ public class ForeignKeyHelper {
         return fkFilter;
     }
 
-    public static ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            EntityModel entityModel, String dataClusterPK, String foreignKeyFilter, String value) throws Exception {
-        ForeignKeyHolder holder = getForeignKeyHolder(model, foreignKeyFilter, value);
-        return _getForeignKeyList(config, model, entityModel, dataClusterPK, holder);
+    public static ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config,
+            String foreignKeyPath, List<String> foreignKeyInfo, String foreignKeyFilter, String filterValue, TypeModel model,
+            EntityModel entityModel, String dataClusterPK) throws Exception {
+        ForeignKeyHolder holder = getForeignKeyHolder(model, foreignKeyPath, foreignKeyInfo, foreignKeyFilter, filterValue);
+        return _getForeignKeyList(config, foreignKeyPath, foreignKeyInfo, entityModel, dataClusterPK, holder);
     }
 
     public static ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            EntityModel entityModel, String dataClusterPK, boolean ifFKFilter, String value) throws Exception {
+            EntityModel entityModel, String dataClusterPK, boolean ifFKFilter, String filterValue) throws Exception {
         String foreignKeyFilter = getForeignKeyFilter(ifFKFilter,
                 (String) config.get("dataObject"), (String) config.get("xml"), (String) config.get("currentXpath"), model); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        ForeignKeyHolder holder = getForeignKeyHolder(model, foreignKeyFilter, value);
-        return _getForeignKeyList(config, model, entityModel, dataClusterPK, holder);
+        ForeignKeyHolder holder = getForeignKeyHolder(model, model.getForeignkey(), model.getForeignKeyInfo(), foreignKeyFilter,
+                filterValue);
+        return _getForeignKeyList(config, model.getForeignkey(), model.getForeignKeyInfo(), entityModel, dataClusterPK, holder);
     }
 
-    public static ItemBasePageLoadResult<ForeignKeyBean> _getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            EntityModel entityModel, String dataClusterPK, ForeignKeyHolder holder) throws Exception {
+    public static ItemBasePageLoadResult<ForeignKeyBean> _getForeignKeyList(BasePagingLoadConfigImpl config,
+            String foreignKeyPath, List<String> foreignKeyInfo, EntityModel entityModel, String dataClusterPK,
+            ForeignKeyHolder holder) throws Exception {
         String[] results = null;
         if (holder != null) {
             String conceptName = holder.conceptName;
@@ -164,7 +168,7 @@ public class ForeignKeyHelper {
             }
 
             if (sortDir != null) {
-                if (model.getForeignKeyInfo() != null && model.getForeignKeyInfo().size() > 0) {
+                if (foreignKeyInfo != null && foreignKeyInfo.size() > 0) {
                     // TMDM-5276: use substringBeforeLast in case sort field is a contained field
                     // (Entity/field1/.../fieldN)
                     xpath = StringUtils.substringBeforeLast(xPaths.get(0), "/") + "/" + config.getSortField(); //$NON-NLS-1$ //$NON-NLS-2$
@@ -203,26 +207,27 @@ public class ForeignKeyHelper {
                 throw new IllegalArgumentException("Total count '" + results[0] + "' does not match expected format"); //$NON-NLS-1$ //$NON-NLS-2$
             }
             boolean isPagingAccurate = CommonUtil.getPort().isPagingAccurate(new WSInt(Integer.valueOf(count))).is_true();
-            return new ItemBasePageLoadResult<ForeignKeyBean>(convertForeignKeyBeanList(results, entityModel, model,
-                    dataClusterPK, config.getOffset(), (String) config.get("language")), config.getOffset(), //$NON-NLS-1$
+            return new ItemBasePageLoadResult<ForeignKeyBean>(convertForeignKeyBeanList(results, entityModel, foreignKeyPath,
+                    foreignKeyInfo, dataClusterPK, config.getOffset(), (String) config.get("language")), config.getOffset(), //$NON-NLS-1$
                     Integer.valueOf(count), isPagingAccurate);
         } else {
             return new ItemBasePageLoadResult<ForeignKeyBean>(new ArrayList<ForeignKeyBean>(), config.getOffset(), 0);
         }
     }
 
-    private static List<ForeignKeyBean> convertForeignKeyBeanList(String[] results, EntityModel entityModel, TypeModel model,
-            String dataClusterPK, int offset, String language) throws Exception {
+    private static List<ForeignKeyBean> convertForeignKeyBeanList(String[] results, EntityModel entityModel,
+            String foreignKeyPath, List<String> foreignKeyInfo, String dataClusterPK, int offset, String language)
+            throws Exception {
         List<ForeignKeyBean> fkBeans = new ArrayList<ForeignKeyBean>();
         if (LOG.isDebugEnabled()) {
             for (String result : results) {
                 LOG.debug(result);
             }
         }
-        String fk = model.getForeignkey().split("/")[0]; //$NON-NLS-1$
+        String fk = foreignKeyPath.split("/")[0]; //$NON-NLS-1$
         BusinessConcept businessConcept = schemaManager.getBusinessConcept(fk);
         // init foreignKey info type
-        if (model.getForeignKeyInfo() != null && model.getForeignKeyInfo().size() > 0 && businessConcept != null) {
+        if (foreignKeyInfo != null && foreignKeyInfo.size() > 0 && businessConcept != null) {
             businessConcept.load();
         }
         // Polymorphism FK
@@ -260,9 +265,9 @@ public class ForeignKeyHelper {
             }
 
             if (resultAsDOM.getNodeName().equals("result")) { //$NON-NLS-1$
-                initFKBean(dataClusterPK, entityModel, resultAsDOM, bean, fk, model.getForeignKeyInfo(),
+                initFKBean(dataClusterPK, entityModel, resultAsDOM, bean, fk, foreignKeyInfo,
                         businessConcept != null ? businessConcept.getXpathDerivedSimpleTypeMap() : null, language);
-                convertFKInfo2DisplayInfo(bean, model.getForeignKeyInfo());
+                convertFKInfo2DisplayInfo(bean, foreignKeyInfo);
             } else {
                 bean.set(resultAsDOM.getNodeName(), resultAsDOM.getTextContent().trim());
             }
@@ -285,32 +290,26 @@ public class ForeignKeyHelper {
         String fkFilter;
     }
 
-    protected static ForeignKeyHolder getForeignKeyHolder(TypeModel model, String foreignKeyFilter, String value)
-            throws Exception {
-        String xpathForeignKey = model.getForeignkey();
-        if (xpathForeignKey == null) {
-            return null;
-        }
-
+    protected static ForeignKeyHolder getForeignKeyHolder(TypeModel model, String foreignKeyPath, List<String> foreignKeyInfo,
+            String foreignKeyFilter, String filterValue) throws Exception {
         // to verify
         String xpathInfoForeignKey;
-        if (model.getForeignKeyInfo() != null && model.getForeignKeyInfo().size() > 0) {
-            xpathInfoForeignKey = Util.joinStrings(model.getForeignKeyInfo()
-                    .toArray(new String[model.getForeignKeyInfo().size()]), ",");//$NON-NLS-1$
+        if (foreignKeyInfo != null && foreignKeyInfo.size() > 0) {
+            xpathInfoForeignKey = Util.joinStrings(foreignKeyInfo.toArray(new String[foreignKeyInfo.size()]), ",");//$NON-NLS-1$
         } else {
             xpathInfoForeignKey = "";//$NON-NLS-1$
         }
 
-        String initxpathForeignKey = Util.getForeignPathFromPath(xpathForeignKey);
+        String initxpathForeignKey = Util.getForeignPathFromPath(foreignKeyPath);
 
         List<WSWhereItem> conditions = new ArrayList<WSWhereItem>();
-        WSWhereCondition whereCondition = Util.getConditionFromPath(xpathForeignKey);
+        WSWhereCondition whereCondition = Util.getConditionFromPath(foreignKeyPath);
         if (whereCondition != null) {
             conditions.add(new WSWhereItem(whereCondition, null, null));
         }
         if (!Util.isCustomFilter(foreignKeyFilter)) {
             // get FK filter
-            WSWhereItem filterWhereItem = Util.getConditionFromFKFilter(xpathForeignKey, xpathInfoForeignKey, foreignKeyFilter,
+            WSWhereItem filterWhereItem = Util.getConditionFromFKFilter(foreignKeyPath, xpathInfoForeignKey, foreignKeyFilter,
                     false);
             if (filterWhereItem != null) {
                 conditions.add(filterWhereItem);
@@ -332,10 +331,11 @@ public class ForeignKeyHelper {
             } else {
                 xpathInfos[0] = initxpathForeignKey;
             }
-            value = value == null ? "" : value; //$NON-NLS-1$
+            filterValue = filterValue == null ? "" : filterValue; //$NON-NLS-1$
             // build query - add a content condition on the pivot if we search for a particular value
-            if (value != null && !"".equals(value.trim()) && !".*".equals(value.trim()) && !"'*'".equals(value.trim())) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                WSWhereItem queryWhereItem = getFKQueryCondition(xpathForeignKey, xpathInfoForeignKey, value);
+            if (filterValue != null
+                    && !"".equals(filterValue.trim()) && !".*".equals(filterValue.trim()) && !"'*'".equals(filterValue.trim())) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                WSWhereItem queryWhereItem = getFKQueryCondition(foreignKeyPath, xpathInfoForeignKey, filterValue);
                 if (queryWhereItem != null) {
                     conditions.add(queryWhereItem);
                 }
@@ -351,7 +351,7 @@ public class ForeignKeyHelper {
 
             // add the xPath Infos Path
             ArrayList<String> xPaths = new ArrayList<String>();
-            if (model.isRetrieveFKinfos()) {
+            if (foreignKeyInfo.size() > 0) {
                 // add the xPath Infos Path
                 for (String xpathInfo : xpathInfos) {
                     xPaths.add(Util.getFormatedFKInfo(xpathInfo.replaceFirst(initxpathForeignKey, initxpathForeignKey),

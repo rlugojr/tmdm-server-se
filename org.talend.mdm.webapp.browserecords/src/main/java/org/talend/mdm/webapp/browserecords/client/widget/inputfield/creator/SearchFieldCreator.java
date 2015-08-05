@@ -19,7 +19,7 @@ import org.talend.mdm.webapp.base.shared.ComplexTypeModel;
 import org.talend.mdm.webapp.base.shared.SimpleTypeModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.model.OperatorConstants;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldCreateContext;
 import org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldCreator;
 import org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldSource;
@@ -44,7 +44,8 @@ public class SearchFieldCreator {
             field = textField;
             cons = OperatorConstants.stringOperators;
         } else if (typeModel.getForeignkey() != null) {
-            FKSearchField fkField = new FKSearchField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo());
+            ForeignKeyField fkField = new ForeignKeyField(typeModel.getForeignkey(), typeModel.getForeignKeyInfo(),
+                    typeModel.getXpath());
             fkField.setUsageField("SearchFieldCreator"); //$NON-NLS-1$
             field = fkField;
             cons = OperatorConstants.foreignKeyOperators;

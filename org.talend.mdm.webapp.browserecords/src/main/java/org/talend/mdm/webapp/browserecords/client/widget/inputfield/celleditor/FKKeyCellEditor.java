@@ -2,7 +2,7 @@ package org.talend.mdm.webapp.browserecords.client.widget.inputfield.celleditor;
 
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 import org.talend.mdm.webapp.base.shared.TypeModel;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyCellField;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 
 import com.extjs.gxt.ui.client.widget.form.Field;
@@ -34,8 +34,8 @@ public class FKKeyCellEditor extends CellEditor {
     @Override
     public Object postProcessValue(Object value) {
         ForeignKeyBean tempValue = (ForeignKeyBean) value;
-        if(field instanceof FKSearchField){
-            if(value instanceof ForeignKeyBean){
+        if (field instanceof ForeignKeyCellField) {
+            if (value instanceof ForeignKeyBean) {
                 if (fkBean != null) {
                     String v = value != null ? value.toString() : ""; //$NON-NLS-1$
                     fkBean.getForeignKeyInfo().put(typeModel.getXpath(), v);

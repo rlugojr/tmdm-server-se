@@ -325,12 +325,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     }
 
     @Override
-    public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String dataClusterPK, String foreignKeyFilter, String value, String language) throws ServiceException {
+    public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, String foreignKeyPath,
+            List<String> foreignKeyInfo, String foreignKeyFilter, String filterValue, TypeModel model, String dataClusterPK,
+            String language) throws ServiceException {
         try {
-            String foreignKeyConcept = model.getForeignkey().split("/")[0]; //$NON-NLS-1$
-            return ForeignKeyHelper.getForeignKeyList(config, model, getEntityModel(foreignKeyConcept, language), dataClusterPK,
-                    foreignKeyFilter, value);
+            String foreignKeyConcept = foreignKeyPath.split("/")[0]; //$NON-NLS-1$
+            return ForeignKeyHelper.getForeignKeyList(config, foreignKeyPath, foreignKeyInfo,
+                    org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), filterValue, model,
+                    getEntityModel(foreignKeyConcept, language), dataClusterPK);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
@@ -346,7 +348,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         model.setForeignkey(foreignKey);
         model.setForeignKeyInfo(foreignKeyInfo);
         model.setRetrieveFKinfos(true);
-        model.setFkFilter(foreignKeyFilter);
+        model.setFkFilter(org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter));
         EntityModel foreignKeyEntityModel = getEntityModel(model.getForeignkey().split("/")[0], language); //$NON-NLS-1$
         try {
             return ForeignKeyHelper.getForeignKeyBean(model, foreignKeyEntityModel, currentDataCluster, ids, xml, currentXpath,
@@ -1146,6 +1148,47 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
+        }
+    }
+
+    public static List<ItemBaseModel> getViewsListOrderedByLabels(Map<String, String> unsortedViewsMap) {
+        TreeMap<String, String> sortedViewsByLabelsMap = new TreeMap<String, String>(new ViewLabelComparator(unsortedViewsMap));
+        sortedViewsByLabelsMap.putAll(unsortedViewsMap);
+
+        List<ItemBaseModel> viewsList = new ArrayList<ItemBaseModel>();
+        for (String viewName : sortedViewsByLabelsMap.keySet()) {
+            String viewLabel = unsortedViewsMap.get(viewName);
+            ItemBaseModel bm = new ItemBaseModel();
+            bm.set("name", viewLabel); //$NON-NLS-1$
+            bm.set("value", viewName); //$NON-NLS-1$
+            viewsList.add(bm);
+        }
+        return viewsList;
+    }
+
+    private static class ViewLabelComparator implements Comparator<String> {
+
+        private Map<String, String> unsortedViewsMap;
+
+        public ViewLabelComparator(Map<String, String> unsortedViewsMap) {
+            this.unsortedViewsMap = unsortedViewsMap;
+        }
+
+        @Override
+        public int compare(String viewName1, String viewName2) {
+            String viewLabel1 = unsortedViewsMap.get(viewName1);
+            int comparison = viewLabel1.compareTo(unsortedViewsMap.get(viewName2));
+            if (comparison > 0) {
+                return 1;
+            } else if (comparison < 0) {
+                return -1;
+            } else {
+                // Even if it should not be the case, there might be views with same label.
+                // So do not return 0, otherwise in such case the duplicated map entry would be overwritten, but log an
+                // error
+                LOG.error("Found duplicated label '" + viewLabel1 + "' defined by view '" + viewName1 + "'."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                return 1;
+            }
         }
     }
 
@@ -2300,18 +2343,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
     @Override
     public List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, String foregnKey,
-            List<String> foregnKeyInfo, String dataClusterPK, boolean ifFKFilter, String input, String language)
+            List<String> foregnKeyInfo, String foreignKeyFilter, String dataClusterPK, String input, String language)
             throws ServiceException {
         try {
             String keyWords = input;
             String pattern = "[^a-zA-Z0-9\\s\\@\\.\\-\\_\\'\"]"; //$NON-NLS-1$
             String foregnKeyConcept = foregnKey.split("/")[0]; //$NON-NLS-1$
             EntityModel entityModel = getEntityModel(foregnKeyConcept, language);
-
             TypeModel typeModel = entityModel.getTypeModel(foregnKeyConcept);
-            typeModel.setForeignkey(foregnKey);
-            typeModel.setForeignKeyInfo(foregnKeyInfo);
-            typeModel.setRetrieveFKinfos(true);
 
             if (input.contains(":") && input.indexOf(":") > 0) { //$NON-NLS-1$ //$NON-NLS-2$
                 String entityName = input.split(":")[0]; //$NON-NLS-1$
@@ -2326,9 +2365,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             }
 
             keyWords = keyWords.replaceAll(pattern, ""); //$NON-NLS-1$
-            ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, typeModel,
-                    entityModel, dataClusterPK, ifFKFilter, keyWords);
-
+            ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, foregnKey,
+                    foregnKeyInfo, org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), keyWords,
+                    typeModel, entityModel, dataClusterPK);
             return loadResult.getData();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

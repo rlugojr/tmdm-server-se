@@ -23,7 +23,7 @@ import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
 import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -57,7 +57,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
 
     private String displayFieldName = "displayInfo"; //$NON-NLS-1$
 
-    private FKField foreignKeyField;
+    private ForeignKeyField foreignKeyField;
 
     private int getListDelay = 200;
 
@@ -70,20 +70,18 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         init();
     }
 
-    public SuggestComboBoxField(FKField foreignKeyField) {
+    public SuggestComboBoxField(ForeignKeyField foreignKeyField) {
         super();
         this.foreignKeyField = foreignKeyField;
         init();
     }
 
     protected void init() {
-
         initKeyCodeList();
         setDisplayField(displayFieldName);
         setTypeAhead(true);
         setTriggerAction(TriggerAction.ALL);
         setFireChangeEventOnSetValue(true);
-
         setStore(foreignKeyStore);
         setListener();
     }
@@ -106,21 +104,16 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         public void handleEvent(BaseEvent be) {
             String inputValue = getInputValue();
             if (inputValue != null && inputValue.length() > 0) {
-                final boolean hasForeignKeyFilter = foreignKeyFilter != null && foreignKeyFilter.trim().length() > 0 ? true
-                        : false;
+                String foreignKeyFilter = foreignKeyField.parseForeignKeyFilter();
                 BasePagingLoadConfigImpl config = new BasePagingLoadConfigImpl();
                 config.setLimit(listLimitCount);
+                config.set("currentXpath", foreignKeyField.getCurrentPath()); //$NON-NLS-1$
                 config.set("language", Locale.getLanguage()); //$NON-NLS-1$
 
-                String dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
-
-                if (foreignKeyField.isStaging()) {
-                    dataCluster = BrowseRecords.getSession().getAppHeader().getStagingDataCluster();
-                }
-
-                foreignKey = foreignKeyField.getForeignKey();
+                String dataCluster = foreignKeyField.getDataCluster();
+                foreignKey = foreignKeyField.getForeignKeyPath();
                 foreignKeyInfo = foreignKeyField.getForeignKeyInfo();
-                service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, dataCluster, hasForeignKeyFilter, inputValue,
+                service.getForeignKeySuggestion(config, foreignKey, foreignKeyInfo, foreignKeyFilter, dataCluster, inputValue,
                         Locale.getLanguage(), new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
 
                             @Override
@@ -137,6 +130,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
     protected void onRender(Element target, int index) {
         super.onRender(target, index);
         this.setMinChars(1000);
+        getElement().setAttribute("style", "top:0px"); //$NON-NLS-1$ //$NON-NLS-2$
         getInputEl().dom.setAttribute("autocomplete", "off"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
@@ -240,7 +234,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
                     }
                 }
             }
-            foreignKeyField.setSuperValue(selectedBean);
+            foreignKeyField.setValue(selectedBean);
         }
     }
 

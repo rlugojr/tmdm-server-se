@@ -41,7 +41,6 @@ import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
 import org.talend.mdm.webapp.browserecords.client.util.UserSession;
 import org.talend.mdm.webapp.browserecords.client.util.ViewUtil;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKRelRecordWindow;
 import org.talend.mdm.webapp.browserecords.client.widget.SearchPanel.AdvancedSearchPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.SearchPanel.SimpleCriterionPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ComboBoxField;
@@ -153,8 +152,6 @@ public class ItemsToolBar extends ToolBar {
 
     private ItemBaseModel currentModel = null;
 
-    private FKRelRecordWindow relWindow = new FKRelRecordWindow();
-
     /*************************************/
 
     public static interface ItemsToolBarCreator {
@@ -194,7 +191,6 @@ public class ItemsToolBar extends ToolBar {
         this.setId("ItemsToolBar"); //$NON-NLS-1$
         this.setLayout(new ToolBarLayoutEx());
         initToolBar();
-        relWindow.setHeading(MessagesFactory.getMessages().fk_RelatedRecord());
     }
 
     public void setQueryModel(QueryModel qm) {

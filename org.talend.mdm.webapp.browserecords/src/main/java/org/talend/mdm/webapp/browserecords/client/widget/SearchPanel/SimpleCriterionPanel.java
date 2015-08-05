@@ -22,7 +22,7 @@ import org.talend.mdm.webapp.base.client.widget.MultiLanguageField;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.resources.icon.Icons;
 import org.talend.mdm.webapp.browserecords.client.util.StagingConstant;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.FKSearchField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ComboBoxField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.SpinnerField;
@@ -216,9 +216,9 @@ public class SimpleCriterionPanel<T> extends HorizontalPanel implements ReturnCr
         field = SearchFieldCreator.createField(typeModel);
         if (field != null) {
             field.setId("SimpleSearchValueFiled"); //$NON-NLS-1$
-            if (field instanceof FKSearchField) {
-                ((FKSearchField) field).Update(getKey(), this);
-                ((FKSearchField) field).setStaging(staging);
+            if (field instanceof ForeignKeyField) {
+                // ((FKSearchField) field).Update(getKey(), this);
+                ((ForeignKeyField) field).setStaging(staging);
             }
             content.add(field);
             field.addListener(Events.KeyDown, new Listener<FieldEvent>() {
@@ -256,8 +256,8 @@ public class SimpleCriterionPanel<T> extends HorizontalPanel implements ReturnCr
     private String getValue() {
 
         if (field != null) {
-            if (field instanceof FKSearchField) {
-                return ((FKSearchField) field).getValue().getId();
+            if (field instanceof ForeignKeyField) {
+                return ((ForeignKeyField) field).getValue().getId();
             } else if (field instanceof DateField) {
                 return ((DateField) field).getPropertyEditor().getFormat().format(((DateField) field).getValue());
             } else if (field instanceof RadioGroup) {
@@ -275,8 +275,8 @@ public class SimpleCriterionPanel<T> extends HorizontalPanel implements ReturnCr
 
     private String getInfo() {
         String info = getValue();
-        if (field != null && field instanceof FKSearchField) {
-            ForeignKeyBean fkField = ((FKSearchField) field).getValue();
+        if (field != null && field instanceof ForeignKeyField) {
+            ForeignKeyBean fkField = ((ForeignKeyField) field).getValue();
             return fkField.getDisplayInfo() != null ? fkField.getDisplayInfo() : fkField.getId();
         }
         return info;
@@ -319,11 +319,11 @@ public class SimpleCriterionPanel<T> extends HorizontalPanel implements ReturnCr
                         return;
                     }
                 }
-            } else if (field instanceof FKSearchField) {
+            } else if (field instanceof ForeignKeyField) {
                 ForeignKeyBean fk = new ForeignKeyBean();
                 fk.setId(criterion.getValue());
                 fk.setDisplayInfo(criterion.getInfo());
-                ((FKSearchField) field).setValue(fk);
+                ((ForeignKeyField) field).setValue(fk);
             } else if (field instanceof SpinnerField) {
                 String dataType = typeModel.getType().getBaseTypeName();
                 String value = criterion.getValue();
@@ -357,8 +357,8 @@ public class SimpleCriterionPanel<T> extends HorizontalPanel implements ReturnCr
     @Override
     public void setCriteriaFK(ForeignKeyBean fk) {
         if (field != null) {
-            if (field instanceof FKSearchField) {
-                ((FKSearchField) field).setValue(fk);
+            if (field instanceof ForeignKeyField) {
+                ((ForeignKeyField) field).setValue(fk);
             }
         }
     }

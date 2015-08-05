@@ -10,10 +10,9 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.mdm.webapp.browserecords.client.widget.treedetail;
+package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -29,19 +28,13 @@ import org.talend.mdm.webapp.base.shared.EntityModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
-import org.talend.mdm.webapp.browserecords.client.handler.ItemTreeHandler;
-import org.talend.mdm.webapp.browserecords.client.handler.ItemTreeHandlingStatus;
 import org.talend.mdm.webapp.browserecords.client.i18n.MessagesFactory;
 import org.talend.mdm.webapp.browserecords.client.model.ForeignKeyDrawer;
-import org.talend.mdm.webapp.browserecords.client.model.ItemNodeModel;
 import org.talend.mdm.webapp.browserecords.client.model.Restriction;
 import org.talend.mdm.webapp.browserecords.client.resources.icon.Icons;
 import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
 import org.talend.mdm.webapp.browserecords.client.util.ViewUtil;
-import org.talend.mdm.webapp.browserecords.client.widget.ItemPanel;
-import org.talend.mdm.webapp.browserecords.client.widget.ItemsDetailPanel;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ComboBoxField;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -88,20 +81,21 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
-/**
- * Tree Detail : select ForeignKey UI
- */
 public class ForeignKeyListWindow extends Window {
+
+    private String foreignKeyPath;
+
+    private List<String> foreignKeyInfo;
+
+    private String foreignKeyFilter;
 
     private static final int COLUMN_WIDTH = 100;
 
-    private static final int WINDOW_WIDTH = 450;
+    private static final int WINDOW_WIDTH = 530;
 
-    private static final int WINDOW_HEIGH = 300;
+    private static final int WINDOW_HEIGH = 310;
 
-    private Grid<ForeignKeyBean> relatedRecordGrid;
-
-    private String fkKey;
+    private Grid<ForeignKeyBean> grid;
 
     private ReturnCriteriaFK returnCriteriaFK;
 
@@ -119,69 +113,25 @@ public class ForeignKeyListWindow extends Window {
 
     private ComboBoxField<BaseModel> typeComboBox;
 
-    private String xPath;
-
     private EntityModel entityModel;
-
-    private String foreignKey;
-
-    private List<String> foreignKeyInfo;
-
-    private String foreignKeyFilter;
-
-    private String xml;
-
-    private String currentXpath;
 
     private boolean isPagingAccurate;
 
-    private boolean isStaging;
+    private String dataCluster;
 
-    private ItemNodeModel itemNode;
+    private ForeignKeyField sourceField;
 
-    public void setStaging(boolean isStaging) {
-        this.isStaging = isStaging;
-    }
-
-    public ForeignKeyListWindow() {
-    }
-
-    public String getForeignKeyFilter() {
-        return foreignKeyFilter;
+    public ForeignKeyListWindow(String foreignKeyPath, List<String> foreignKeyInfo, String dataCluster, EntityModel entityModel,
+            ForeignKeyField foreignKeyField) {
+        this.foreignKeyPath = foreignKeyPath;
+        this.foreignKeyInfo = foreignKeyInfo;
+        this.dataCluster = dataCluster;
+        this.entityModel = entityModel;
+        this.sourceField = foreignKeyField;
     }
 
     public void setForeignKeyFilter(String foreignKeyFilter) {
         this.foreignKeyFilter = foreignKeyFilter;
-    }
-
-    public void setForeignKeyInfos(String fk, List<String> fkInfo) {
-        this.foreignKey = fk;
-        this.foreignKeyInfo = fkInfo;
-    }
-
-    public void setEntityModel(EntityModel entityModel) {
-        this.entityModel = entityModel;
-        this.fkKey = entityModel.getConceptName();
-    }
-
-    public EntityModel getEntityModel() {
-        return entityModel;
-    }
-
-    public String getFkKey() {
-        return fkKey;
-    }
-
-    public void setFkKey(String fkKey) {
-        this.fkKey = fkKey;
-    }
-
-    public ReturnCriteriaFK getReturnCriteriaFK() {
-        return returnCriteriaFK;
-    }
-
-    public void setReturnCriteriaFK(ReturnCriteriaFK returnCriteriaFK) {
-        this.returnCriteriaFK = returnCriteriaFK;
     }
 
     private String getFilterValue() {
@@ -194,49 +144,25 @@ public class ForeignKeyListWindow extends Window {
         return value;
     }
 
-    public TypeModel buildTypeModel() {
-        TypeModel typeModel = getEntityModel().getMetaDataTypes().get(fkKey);
-        typeModel.setForeignkey(this.foreignKey);
-        typeModel.setForeignKeyInfo(this.foreignKeyInfo);
-        typeModel.setRetrieveFKinfos(true);
-        typeModel.setFkFilter(this.foreignKeyFilter);
-        return typeModel;
-    }
-
     @Override
     protected void onRender(Element parent, int pos) {
         super.onRender(parent, pos);
         final PagingLoadConfig config = new BasePagingLoadConfig();
-        final TypeModel typeModel = buildTypeModel();
+        final TypeModel typeModel = entityModel.getTypeModel(entityModel.getConceptName());
 
-        final boolean hasForeignKeyFilter = this.foreignKeyFilter != null && this.foreignKeyFilter.trim().length() > 0 ? true
-                : false;
-
-        xPath = typeModel.getXpath();
         RpcProxy<PagingLoadResult<ForeignKeyBean>> proxy = new RpcProxy<PagingLoadResult<ForeignKeyBean>>() {
 
             @Override
             public void load(final Object loadConfig, final AsyncCallback<PagingLoadResult<ForeignKeyBean>> callback) {
-                String foreignKeyFilter = (hasForeignKeyFilter && itemNode != null) ? parseForeignKeyFilter(itemNode,
-                        typeModel.getFkFilter()) : ""; //$NON-NLS-1$
                 PagingLoadConfig config = (PagingLoadConfig) loadConfig;
                 BasePagingLoadConfigImpl baseConfig = BasePagingLoadConfigImpl.copyPagingLoad(config);
                 final String currentFilterText = getFilterValue();
 
-                if (hasForeignKeyFilter) {
-                    baseConfig.set("xml", xml); //$NON-NLS-1$
-                    baseConfig.set("currentXpath", currentXpath); //$NON-NLS-1$
-                    baseConfig.set("dataObject", currentXpath.split("/")[0]); //$NON-NLS-1$ //$NON-NLS-2$
-                }
                 baseConfig.set("language", Locale.getLanguage()); //$NON-NLS-1$
-                String dataCluster;
-                if (ForeignKeyListWindow.this.isStaging) {
-                    dataCluster = BrowseRecords.getSession().getAppHeader().getStagingDataCluster();
-                } else {
-                    dataCluster = BrowseRecords.getSession().getAppHeader().getMasterDataCluster();
-                }
-                service.getForeignKeyList(baseConfig, typeModel, dataCluster, foreignKeyFilter, currentFilterText,
-                        Locale.getLanguage(), new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
+
+                service.getForeignKeyList(baseConfig, foreignKeyPath, foreignKeyInfo, foreignKeyFilter, currentFilterText,
+                        typeModel, dataCluster, Locale.getLanguage(),
+                        new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
 
                             @Override
                             protected void doOnFailure(Throwable caught) {
@@ -269,7 +195,7 @@ public class ForeignKeyListWindow extends Window {
 
             @Override
             public void load(final Object loadConfig, final AsyncCallback<BaseListLoadResult<BaseModel>> callback) {
-                service.getForeignKeyPolymTypeList(typeModel.getForeignkey(), Locale.getLanguage(),
+                service.getForeignKeyPolymTypeList(ForeignKeyListWindow.this.foreignKeyPath, Locale.getLanguage(),
                         new SessionAwareAsyncCallback<List<Restriction>>() {
 
                             @Override
@@ -309,29 +235,29 @@ public class ForeignKeyListWindow extends Window {
             @Override
             public void handleEvent(FieldEvent be) {
                 if (be.getKeyCode() == KeyCodes.KEY_UP) {
-                    ForeignKeyBean fkBean = relatedRecordGrid.getSelectionModel().getSelectedItem();
+                    ForeignKeyBean fkBean = grid.getSelectionModel().getSelectedItem();
                     if (fkBean == null) {
-                        relatedRecordGrid.getSelectionModel().select(store.getCount() - 1, true);
+                        grid.getSelectionModel().select(store.getCount() - 1, true);
                     } else {
-                        relatedRecordGrid.getSelectionModel().selectPrevious(false);
+                        grid.getSelectionModel().selectPrevious(false);
                         filter.focus();
                     }
                     return;
                 }
                 if (be.getKeyCode() == KeyCodes.KEY_DOWN) {
-                    ForeignKeyBean fkBean = relatedRecordGrid.getSelectionModel().getSelectedItem();
+                    ForeignKeyBean fkBean = grid.getSelectionModel().getSelectedItem();
                     if (fkBean == null) {
-                        relatedRecordGrid.getSelectionModel().select(0, true);
+                        grid.getSelectionModel().select(0, true);
                     } else {
-                        relatedRecordGrid.getSelectionModel().selectNext(false);
+                        grid.getSelectionModel().selectNext(false);
                         filter.focus();
                     }
                     return;
                 }
                 if (be.getKeyCode() == KeyCodes.KEY_ENTER) {
                     if (filter.getRawValue().equals(previousFilterText)) {
-                        ForeignKeyBean fkBean = relatedRecordGrid.getSelectionModel().getSelectedItem();
-                        fkBean.setForeignKeyPath(xPath);
+                        ForeignKeyBean fkBean = grid.getSelectionModel().getSelectedItem();
+                        fkBean.setForeignKeyPath(entityModel.getConceptName());
                         fkBean.setDisplayInfo(fkBean.toString() != null ? fkBean.toString() : fkBean.getId());
                         returnCriteriaFK.setCriteriaFK(fkBean);
                         closeOrHideWindow();
@@ -351,6 +277,7 @@ public class ForeignKeyListWindow extends Window {
         ToolBar toolBar = new ToolBar();
 
         typeComboBox = new ComboBoxField<BaseModel>();
+        typeComboBox.setRawValue(entityModel.getConceptName());
         typeComboBox.setDisplayField("name"); //$NON-NLS-1$
         typeComboBox.setValueField("value"); //$NON-NLS-1$
         typeComboBox.setStore(typeList);
@@ -364,15 +291,16 @@ public class ForeignKeyListWindow extends Window {
             public void selectionChanged(SelectionChangedEvent<BaseModel> se) {
                 String targetEntity = se.getSelectedItem().get("value").toString();//$NON-NLS-1$
                 StringBuffer sb = new StringBuffer();
-                for (int i = 0; i < typeModel.getForeignKeyInfo().size(); i++) {
-                    sb.append(typeModel.getForeignKeyInfo().get(i));
-                    if (i < typeModel.getForeignKeyInfo().size() - 1 && i >= 0) {
+                for (int i = 0; i < ForeignKeyListWindow.this.foreignKeyInfo.size(); i++) {
+                    sb.append(ForeignKeyListWindow.this.foreignKeyInfo.get(i));
+                    if (i < ForeignKeyListWindow.this.foreignKeyInfo.size() - 1 && i >= 0) {
                         sb.append(",");//$NON-NLS-1$
                     }
                 }
                 String fkInfo = sb.toString();
-                ForeignKeyDrawer fkDrawer = CommonUtil.switchForeignKeyEntityType(targetEntity, typeModel.getForeignkey(), fkInfo);
-                typeModel.setForeignkey(fkDrawer.getXpathForeignKey());
+                ForeignKeyDrawer fkDrawer = CommonUtil.switchForeignKeyEntityType(targetEntity,
+                        ForeignKeyListWindow.this.foreignKeyPath, fkInfo);
+                ForeignKeyListWindow.this.foreignKeyPath = fkDrawer.getXpathForeignKey();
                 List<String> fkinfo = new ArrayList<String>();
                 if (fkDrawer.getXpathInfoForeignKey() != null) {
                     String[] foreignKeyList = fkDrawer.getXpathInfoForeignKey().split(","); //$NON-NLS-1$
@@ -380,13 +308,12 @@ public class ForeignKeyListWindow extends Window {
                         fkinfo.add(info);
                     }
                 }
-
-                typeModel.setForeignKeyInfo(fkinfo);
+                ForeignKeyListWindow.this.foreignKeyInfo = fkinfo;
                 loader.load(0, pageSize);
                 if (entityModel != null && targetEntity != null && !targetEntity.equals(entityModel.getConceptName())) {
-                    fkDrawer = CommonUtil.switchForeignKeyEntityType(entityModel.getConceptName(), typeModel.getForeignkey(),
-                            fkInfo);
-                    typeModel.setForeignkey(fkDrawer.getXpathForeignKey());
+                    fkDrawer = CommonUtil.switchForeignKeyEntityType(entityModel.getConceptName(),
+                            ForeignKeyListWindow.this.foreignKeyPath, fkInfo);
+                    ForeignKeyListWindow.this.foreignKeyPath = fkDrawer.getXpathForeignKey();
                 }
             }
         });
@@ -423,13 +350,14 @@ public class ForeignKeyListWindow extends Window {
         pageToolBar.setEnabled(true);
 
         // change label display
-        boolean retrieveFKinfos = typeModel.isRetrieveFKinfos();
+        // boolean retrieveFKinfos = typeModel.isRetrieveFKinfos();
         boolean isDisplayKeyInfo = false;
-        if (retrieveFKinfos) {
-            List<String> foreignKeyInfo = typeModel.getForeignKeyInfo();
-            if (foreignKeyInfo.contains(typeModel.getForeignkey())) {
+        if (this.foreignKeyInfo.size() > 0) {
+            List<String> foreignKeyInfo = this.foreignKeyInfo;
+            if (foreignKeyInfo.contains(this.foreignKeyPath)) {
                 isDisplayKeyInfo = true;
             }
+            Map<String, TypeModel> dataTypes = entityModel.getMetaDataTypes();
             for (String info : foreignKeyInfo) {
                 ColumnConfig columnConfig = new ColumnConfig(CommonUtil.getElementFromXpath(info),
                 CommonUtil.getElementFromXpath(info), COLUMN_WIDTH);
@@ -462,7 +390,7 @@ public class ForeignKeyListWindow extends Window {
         // fix bug TMDM-2829
         if (!isDisplayKeyInfo) {
             ColumnConfig columnConfig = columns.get(0);
-            final String fkInfo = typeModel.getForeignKeyInfo().get(0);
+            final String fkInfo = this.foreignKeyInfo.get(0);
             columnConfig.setRenderer(new GridCellRenderer<ForeignKeyBean>() {
 
                 @Override
@@ -486,13 +414,13 @@ public class ForeignKeyListWindow extends Window {
         }
 
         ColumnModel cm = new ColumnModel(columns);
-        relatedRecordGrid = new Grid<ForeignKeyBean>(store, cm);
-        relatedRecordGrid.getView().setForceFit(true);
-        relatedRecordGrid.setLoadMask(true);
-        relatedRecordGrid.setBorders(false);
-        relatedRecordGrid.setStateful(true);
-        relatedRecordGrid.setStateId("relatedRecordGrid"); //$NON-NLS-1$
-        relatedRecordGrid.addListener(Events.Attach, new Listener<GridEvent<ForeignKeyBean>>() {
+        grid = new Grid<ForeignKeyBean>(store, cm);
+        grid.getView().setForceFit(true);
+        grid.setLoadMask(true);
+        grid.setBorders(false);
+        grid.setStateful(true);
+        grid.setStateId("relatedRecordGrid"); //$NON-NLS-1$
+        grid.addListener(Events.Attach, new Listener<GridEvent<ForeignKeyBean>>() {
 
             @Override
             public void handleEvent(GridEvent<ForeignKeyBean> be) {
@@ -502,20 +430,20 @@ public class ForeignKeyListWindow extends Window {
             }
         });
 
-        relatedRecordGrid.addListener(Events.OnDoubleClick, new Listener<GridEvent<ForeignKeyBean>>() {
+        grid.addListener(Events.OnDoubleClick, new Listener<GridEvent<ForeignKeyBean>>() {
 
             @Override
             public void handleEvent(final GridEvent<ForeignKeyBean> be) {
                 ForeignKeyBean fkBean = be.getModel();
-                fkBean.setForeignKeyPath(xPath);
+                fkBean.setForeignKeyPath(entityModel.getConceptName());
                 CommonUtil.setForeignKeyDisplayInfo(fkBean);
-                returnCriteriaFK.setCriteriaFK(fkBean);
+                sourceField.setValue(fkBean);
                 typeComboBox.setRawValue(null);
                 closeOrHideWindow();
             }
         });
 
-        panel.add(relatedRecordGrid);
+        panel.add(grid);
         panel.setBottomComponent(pageToolBar);
 
         Button cancelBtn = new Button(MessagesFactory.getMessages().cancel_btn());
@@ -531,123 +459,12 @@ public class ForeignKeyListWindow extends Window {
 
     }
 
-    public void show(EntityModel entityModel, ItemsDetailPanel detailPanel, String xPath) {
-        if (this.foreignKeyFilter != null && this.foreignKeyFilter.trim().length() > 0) {
-            ItemPanel itemPanel = (ItemPanel) detailPanel.getFirstTabWidget();
-            ItemNodeModel root = itemPanel.getTree().getRootModel();
-            xml = (new ItemTreeHandler(root, itemPanel.getViewBean(), ItemTreeHandlingStatus.BeforeLoad)).serializeItem();
-        }
-        if (xPath != null) {
-            this.currentXpath = xPath;
-        }
-        this.setEntityModel(entityModel);
-        show();
-    }
-
     protected void closeOrHideWindow() {
         hide(null);
     }
 
-    public void setCurrentXpath(String currentXpath) {
-        this.currentXpath = currentXpath;
-    }
-
     public ComboBoxField<BaseModel> getTypeComboBox() {
         return this.typeComboBox;
-    }
-
-    public void setItemNode(ItemNodeModel itemNode) {
-        this.itemNode = itemNode;
-    }
-
-    public String parseForeignKeyFilter(ItemNodeModel node, String fkFilter) {
-        String parsedFkfilter = fkFilter;
-        if (fkFilter != null) {
-            String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil.getCriteriasByForeignKeyFilter(parsedFkfilter);
-            List<Map<String, String>> conditions = new ArrayList<Map<String, String>>();
-            for (String cria : criterias) {
-                Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
-                        .buildConditionByCriteria(cria);
-                String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
-
-                if (filterValue == null || this.currentXpath == null) {
-                    return ""; //$NON-NLS-1$
-                }
-
-                // cases handle
-                filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(filterValue);
-                if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
-                    filterValue = filterValue.substring(1, filterValue.length() - 1);
-                } else if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isRelativePath(filterValue)) {
-                    String[] rightPathArray = filterValue.split("/"); //$NON-NLS-1$
-                    String relativeMark = rightPathArray[0];
-                    String targetPath = node.getTypePath();
-                    ItemNodeModel parentNode = node;
-                    if (".".equals(relativeMark)) { //$NON-NLS-1$
-                        targetPath = targetPath + filterValue.substring(filterValue.indexOf("/")); //$NON-NLS-1$
-                    } else if ("..".equals(relativeMark)) { //$NON-NLS-1$
-                        parentNode = (ItemNodeModel) parentNode.getParent();
-                        targetPath = targetPath.substring(0, targetPath.lastIndexOf("/")); //$NON-NLS-1$
-                        targetPath = targetPath + filterValue.substring(filterValue.indexOf("/")); //$NON-NLS-1$
-                    }
-                    ItemNodeModel targetNode = findTarget(targetPath, parentNode);
-                    if (targetNode != null && targetNode.getObjectValue() != null) {
-                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode.getObjectValue()
-                                .toString());
-                    } else {
-                        filterValue = ""; //$NON-NLS-1$
-                    }
-                } else {
-                    List<String> duplicatedPathList = new ArrayList<String>();
-                    List<String> leftPathNodeList = new ArrayList<String>();
-                    List<String> rightPathNodeList = Arrays.asList(filterValue.split("/")); //$NON-NLS-1$
-                    String[] leftValueOrPathArray = currentXpath.split("/"); //$NON-NLS-1$
-                    for (String element : leftValueOrPathArray) {
-                        leftPathNodeList.add(element);
-                    }
-                    for (int i = 0; i < leftPathNodeList.size(); i++) {
-                        if (i < rightPathNodeList.size() && leftPathNodeList.get(i).equals(rightPathNodeList.get(i))) {
-                            duplicatedPathList.add(rightPathNodeList.get(i));
-                        } else {
-                            break;
-                        }
-                    }
-                    leftPathNodeList.removeAll(duplicatedPathList);
-                    ItemNodeModel parentNode = node;
-                    for (int i = 0; i < leftPathNodeList.size(); i++) {
-                        parentNode = (ItemNodeModel) parentNode.getParent();
-                    }
-                    ItemNodeModel targetNode = findTarget(filterValue, parentNode);
-                    if (targetNode != null && targetNode.getObjectValue() != null) {
-                        filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode.getObjectValue()
-                                .toString());
-                    } else {
-                        filterValue = ""; //$NON-NLS-1$
-                    }
-                }
-                conditionMap.put("Value", filterValue); //$NON-NLS-1$
-                conditions.add(conditionMap);
-            }
-            parsedFkfilter = org.talend.mdm.webapp.base.shared.util.CommonUtil.buildForeignKeyFilterByConditions(conditions);
-        }
-        return parsedFkfilter;
-    }
-
-    private ItemNodeModel findTarget(String targetPath, ItemNodeModel node) {
-        List<ModelData> childrenList = node.getChildren();
-        if (childrenList != null && childrenList.size() > 0) {
-            for (int i = 0; i < childrenList.size(); i++) {
-                ItemNodeModel child = (ItemNodeModel) childrenList.get(i);
-                if (targetPath.contains(child.getTypePath())) {
-                    if (targetPath.equals(child.getTypePath())) {
-                        return child;
-                    } else {
-                        findTarget(targetPath, child);
-                    }
-                }
-            }
-        }
-        return null;
     }
 
 }
