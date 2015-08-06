@@ -13,7 +13,7 @@
 package org.talend.mdm.webapp.browserecords.client.creator;
 
 import org.talend.mdm.webapp.base.client.widget.MultiLanguageField;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.BooleanField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatDateField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.celleditor.BooleanFieldCellEditor;

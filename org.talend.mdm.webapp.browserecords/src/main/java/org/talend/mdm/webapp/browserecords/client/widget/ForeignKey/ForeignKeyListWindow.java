@@ -10,7 +10,6 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -359,8 +358,6 @@ public class ForeignKeyListWindow extends Window {
             }
             Map<String, TypeModel> dataTypes = entityModel.getMetaDataTypes();
             for (String info : foreignKeyInfo) {
-                ColumnConfig columnConfig = new ColumnConfig(CommonUtil.getElementFromXpath(info),
-                CommonUtil.getElementFromXpath(info), COLUMN_WIDTH);
                 columns.add(columnConfig);
                 if (entityModel.getTypeModel(info).getType().equals(DataTypeConstants.MLS)) {
 
@@ -378,7 +375,6 @@ public class ForeignKeyListWindow extends Window {
                 }
             }
             if (columns.size() > 0) {
-                config.setSortField(columns.get(0).getHeader());
                 config.setSortDir(SortDir.ASC);
             }
         }

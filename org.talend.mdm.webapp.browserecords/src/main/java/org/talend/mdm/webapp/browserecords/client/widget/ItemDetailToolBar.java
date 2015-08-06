@@ -36,7 +36,7 @@ import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
 import org.talend.mdm.webapp.browserecords.client.util.UserSession;
 import org.talend.mdm.webapp.browserecords.client.util.ViewUtil;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ComboBoxField;
 import org.talend.mdm.webapp.browserecords.client.widget.integrity.CloseLineageTabPostDeleteAction;
 import org.talend.mdm.webapp.browserecords.client.widget.integrity.CloseTabPostDeleteAction;
