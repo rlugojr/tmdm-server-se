@@ -11,7 +11,7 @@
 //
 // ============================================================================
 
-package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
+package org.talend.mdm.webapp.browserecords.client.widget.foreignKey;
 
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 

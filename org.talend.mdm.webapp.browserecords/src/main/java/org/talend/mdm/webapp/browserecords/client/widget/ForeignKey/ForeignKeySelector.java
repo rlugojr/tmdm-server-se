@@ -10,20 +10,26 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
+package org.talend.mdm.webapp.browserecords.client.widget.foreignKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsEvents;
+import org.talend.mdm.webapp.browserecords.client.ServiceFactory;
+import org.talend.mdm.webapp.browserecords.client.handler.ItemTreeHandler;
+import org.talend.mdm.webapp.browserecords.client.handler.ItemTreeHandlingStatus;
 import org.talend.mdm.webapp.browserecords.client.i18n.MessagesFactory;
 import org.talend.mdm.webapp.browserecords.client.model.ItemNodeModel;
 import org.talend.mdm.webapp.browserecords.client.mvc.BrowseRecordsView;
 import org.talend.mdm.webapp.browserecords.client.resources.icon.Icons;
+import org.talend.mdm.webapp.browserecords.client.util.Locale;
 import org.talend.mdm.webapp.browserecords.client.widget.ForeignKeyFieldList;
+import org.talend.mdm.webapp.browserecords.client.widget.ItemPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsDetailPanel;
 
 import com.extjs.gxt.ui.client.core.El;
@@ -31,13 +37,14 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.ComponentHelper;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Image;
 
-public class ForeignKeySelector extends ForeignKeyField {
+public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteriaFK {
 
     private String foreignKeyFilter;
 
@@ -60,6 +67,8 @@ public class ForeignKeySelector extends ForeignKeyField {
     private boolean showCleanButton;
 
     private boolean showRelationButton;
+
+    private boolean validateFlag;
 
     public ForeignKeySelector(String foreignKeyPath, List<String> foreignKeyInfo, String currentPath, String foreignKeyFilter,
             ItemsDetailPanel itemsDetailPanel, ItemNodeModel itemNode) {
@@ -159,9 +168,11 @@ public class ForeignKeySelector extends ForeignKeyField {
         Element iconBody = DOM.createTBody();
         Element iconTR = DOM.createTR();
 
-        Element selectTD = DOM.createTD();
-        iconTR.appendChild(selectTD);
-        selectTD.appendChild(selectButton.getElement());
+        if (showSelectButton) {
+            Element selectTD = DOM.createTD();
+            iconTR.appendChild(selectTD);
+            selectTD.appendChild(selectButton.getElement());
+        }
 
         if (showAddButton) {
             Element addTD = DOM.createTD();
@@ -185,8 +196,6 @@ public class ForeignKeySelector extends ForeignKeyField {
         iconTD.setAttribute("align", "right"); //$NON-NLS-1$//$NON-NLS-2$
         iconTD.appendChild(iconBody);
         wrap.appendChild(tbody);
-
-        // updateCtrlButton();
         return wrap;
     }
 
@@ -200,7 +209,7 @@ public class ForeignKeySelector extends ForeignKeyField {
     }
 
     @Override
-    public String getForeignKeyFilter() {
+    public String parseForeignKeyFilter() {
         if (foreignKeyFilter != null) {
             String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil
                     .getCriteriasByForeignKeyFilter(foreignKeyFilter);
@@ -330,5 +339,59 @@ public class ForeignKeySelector extends ForeignKeyField {
         ComponentHelper.doDetach(addButton);
         ComponentHelper.doDetach(cleanButton);
         ComponentHelper.doDetach(relationButton);
+    }
+
+    public void setCriteriaFK(final String foreignKeyIds) {
+        ItemPanel itemPanel = (ItemPanel) itemsDetailPanel.getFirstTabWidget();
+        ItemNodeModel root = itemPanel.getTree().getRootModel();
+        String xml = (new ItemTreeHandler(root, itemPanel.getViewBean(), ItemTreeHandlingStatus.BeforeLoad)).serializeItem();
+        ServiceFactory
+                .getInstance()
+                .getService(isStaging)
+                .getForeignKeyBean(foreignKeyPath.split("/")[0], foreignKeyIds, xml, currentPath, foreignKeyPath, foreignKeyInfo, //$NON-NLS-1$
+                        parseForeignKeyFilter(), isStaging, Locale.getLanguage(),
+                        new SessionAwareAsyncCallback<ForeignKeyBean>() {
+
+                            @Override
+                            public void onSuccess(ForeignKeyBean foreignKeyBean) {
+                                if (foreignKeyBean != null) {
+                                    setValue(foreignKeyBean);
+                                } else {
+                                    MessageBox.alert(MessagesFactory.getMessages().warning_title(), MessagesFactory.getMessages()
+                                            .foreignkey_filter_warning(), null);
+                                }
+                            }
+                        });
+    }
+
+    @Override
+    public void setCriteriaFK(final ForeignKeyBean fk) {
+        setValue(fk);
+    }
+
+    @Override
+    public boolean validateValue(String value) {
+        if (!validateFlag) {
+            return true;
+        }
+        return super.validateValue(value);
+    }
+
+    public void setValidateFlag(boolean validateFlag) {
+        this.validateFlag = validateFlag;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        this.validate();
+
+        ForeignKeyBean bean = new ForeignKeyBean();
+        bean.setId(""); //$NON-NLS-1$
+        setValue(bean);
+
+        if (suggestBox != null) {
+            suggestBox.clear();
+        }
     }
 }

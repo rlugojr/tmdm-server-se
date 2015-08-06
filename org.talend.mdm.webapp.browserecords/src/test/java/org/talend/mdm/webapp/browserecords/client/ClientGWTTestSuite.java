@@ -30,13 +30,12 @@ public class ClientGWTTestSuite extends TestCase /* note this is TestCase and no
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.inputfield.UrlFieldGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeDetailGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.treedetail.IncrementalBuildTreeGWTTest.class);
-        suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.treedetail.ForeignKeyListWindowGWTTest.class);
+        // suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.foreignkey.ForeignKeyListWindowGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.treedetail.FieldCreatorGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.treedetail.SortSubTypesGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.typefield.TypeFieldCreatorGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.typefield.DateTimeTypeFieldFactoryGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.typefield.MiscTypeFieldFactoryGWTTest.class);
-        suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.foreignkey.FKRelRecordWindowGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.handler.ItemTreeHandlerGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.util.ItemNodeModelGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.util.MultiOccurrenceManagerGWTTest.class);
@@ -45,7 +44,7 @@ public class ClientGWTTestSuite extends TestCase /* note this is TestCase and no
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.util.CommonUtilGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.util.CallJsniGWTTest.class);
         suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.rest.ExplainRestServiceHandlerGWTTest.class);
-        suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.foreignkey.FKRelRecordWindowGWTTest.class);
+        suite.addTestSuite(org.talend.mdm.webapp.browserecords.client.widget.foreignkey.ForeignKeySelectorGWTTest.class);
         return suite;
     }
 }

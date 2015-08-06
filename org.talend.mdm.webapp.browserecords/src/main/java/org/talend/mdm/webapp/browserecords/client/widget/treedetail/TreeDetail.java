@@ -41,7 +41,8 @@ import org.talend.mdm.webapp.browserecords.client.util.MultiOccurrenceManager;
 import org.talend.mdm.webapp.browserecords.client.util.ViewUtil;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemDetailToolBar;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsDetailPanel;
-import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeySelector;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatDateField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatNumberField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatTextField;
@@ -476,10 +477,10 @@ public class TreeDetail extends ContentPanel {
                 multiManager.handleOptIcons();
             }
         });
-        
+
         ColumnTreeLayoutModel columnLayoutModel = viewBean.getColumnLayoutModel();
         ItemNodeModel customModel = rootModel;
-        if(columnLayoutModel != null && columnLayoutModel.getColumnTreeModels().size() > 0 ){
+        if (columnLayoutModel != null && columnLayoutModel.getColumnTreeModels().size() > 0) {
             customModel = ViewUtil.transformToCustomLayoutModel(rootModel, columnLayoutModel.getColumnTreeModels());
         }
         root = buildGWTTree(customModel, null, false, operation);
@@ -979,13 +980,13 @@ public class TreeDetail extends ContentPanel {
                                     fdf.setValidateFlag(false);
                                 }
 
-                            } else if (field instanceof ForeignKeyField) {
-                                ForeignKeyField fkf = (ForeignKeyField) field;
-                                ForeignKeyBean value = fkf.getValue();
+                            } else if (field instanceof ForeignKeySelector) {
+                                ForeignKeySelector foreignKeySelector = (ForeignKeySelector) field;
+                                ForeignKeyBean value = foreignKeySelector.getValue();
                                 if (value != null) {
-                                    fkf.setValidateFlag(true);
-                                    fkf.validateValue(value.getId());
-                                    fkf.setValidateFlag(false);
+                                    foreignKeySelector.setValidateFlag(true);
+                                    foreignKeySelector.validateValue(value.getId());
+                                    foreignKeySelector.setValidateFlag(false);
                                 }
                             }
                         }
@@ -1054,21 +1055,21 @@ public class TreeDetail extends ContentPanel {
                 fdf.setValidateFlag(false);
             }
 
-        } else if (field instanceof ForeignKeyField) {
-            ForeignKeyField fkf = (ForeignKeyField) field;
-            ForeignKeyBean value = fkf.getValue();
+        } else if (field instanceof ForeignKeySelector) {
+            ForeignKeySelector foreignKeySelector = (ForeignKeySelector) field;
+            ForeignKeyBean value = foreignKeySelector.getValue();
             if (value == null) {
                 if (isParentMandatory) {
-                    fkf.markInvalid(fkf.getMessages().getBlankText());
+                    foreignKeySelector.markInvalid(foreignKeySelector.getMessages().getBlankText());
                 } else {
                     if (checkSameLevelNode((ItemNodeModel) itemNodeModel.getParent())) {
-                        fkf.markInvalid(fkf.getMessages().getBlankText());
+                        foreignKeySelector.markInvalid(foreignKeySelector.getMessages().getBlankText());
                     }
                 }
             } else {
-                fkf.setValidateFlag(true);
-                fkf.validateValue(value.getId());
-                fkf.setValidateFlag(false);
+                foreignKeySelector.setValidateFlag(true);
+                foreignKeySelector.validateValue(value.getId());
+                foreignKeySelector.setValidateFlag(false);
             }
 
         } else if (field instanceof FormatTextField) {

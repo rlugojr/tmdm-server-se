@@ -321,8 +321,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             String language) throws ServiceException {
         try {
             String foreignKeyConcept = foreignKeyPath.split("/")[0]; //$NON-NLS-1$
-            return ForeignKeyHelper.getForeignKeyList(config, foreignKeyPath, foreignKeyInfo, foreignKeyFilter, filterValue,
-                    model, getEntityModel(foreignKeyConcept, language), dataClusterPK);
+            return ForeignKeyHelper.getForeignKeyList(config, foreignKeyPath, foreignKeyInfo,
+                    org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), filterValue, model,
+                    getEntityModel(foreignKeyConcept, language), dataClusterPK);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
@@ -338,7 +339,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         model.setForeignkey(foreignKey);
         model.setForeignKeyInfo(foreignKeyInfo);
         model.setRetrieveFKinfos(true);
-        model.setFkFilter(foreignKeyFilter);
+        model.setFkFilter(org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter));
         EntityModel foreignKeyEntityModel = getEntityModel(model.getForeignkey().split("/")[0], language); //$NON-NLS-1$
         try {
             return ForeignKeyHelper.getForeignKeyBean(model, foreignKeyEntityModel, currentDataCluster, ids, xml, currentXpath,
@@ -1162,6 +1163,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             this.unsortedViewsMap = unsortedViewsMap;
         }
 
+        @Override
         public int compare(String viewName1, String viewName2) {
             String viewLabel1 = unsortedViewsMap.get(viewName1);
             int comparison = viewLabel1.compareTo(unsortedViewsMap.get(viewName2));
@@ -1171,7 +1173,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                 return -1;
             } else {
                 // Even if it should not be the case, there might be views with same label.
-                // So do not return 0, otherwise in such case the duplicated map entry would be overwritten, but log an error
+                // So do not return 0, otherwise in such case the duplicated map entry would be overwritten, but log an
+                // error
                 LOG.error("Found duplicated label '" + viewLabel1 + "' defined by view '" + viewName1 + "'."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 return 1;
             }
@@ -2388,7 +2391,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
             keyWords = keyWords.replaceAll(pattern, ""); //$NON-NLS-1$
             ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, foregnKey,
-                    foregnKeyInfo, foreignKeyFilter, keyWords, typeModel, entityModel, dataClusterPK);
+                    foregnKeyInfo, org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), keyWords,
+                    typeModel, entityModel, dataClusterPK);
             return loadResult.getData();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

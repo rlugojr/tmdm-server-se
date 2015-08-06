@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
+package org.talend.mdm.webapp.browserecords.client.widget.foreignKey;
 
 import java.util.List;
 
@@ -70,6 +70,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
         suggestBox = new SuggestComboBoxField(this);
         showInput = true;
         showSelectButton = true;
+        setFireChangeEventOnSetValue(true);
     }
 
     @Override
@@ -78,7 +79,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
         addButtonListener();
         setAutoWidth(true);
         setElement(wrap.dom, target, index);
-        // updateCtrlButton();
+
         super.onRender(target, index);
     }
 
@@ -86,6 +87,8 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
     protected void onResize(int width, int height) {
         if ("SearchFieldCreator".equals(usageField)) { //$NON-NLS-1$
             suggestBox.setWidth(width - selectButton.getWidth() - 20);
+        } else if (!showSelectButton) {
+            suggestBox.setWidth(width);
         } else {
             suggestBox.setWidth(width - selectButton.getWidth());
         }
@@ -118,8 +121,6 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
     protected El renderField() {
         El wrap = new El(DOM.createTable());
         wrap.setElementAttribute("cellSpacing", "0"); //$NON-NLS-1$ //$NON-NLS-2$
-        wrap.addStyleName("x-form-field-wrap"); //$NON-NLS-1$
-        wrap.addStyleName("x-form-file-wrap"); //$NON-NLS-1$
         Element tbody = DOM.createTBody();
         Element foreignKeyTR = DOM.createTR();
         tbody.appendChild(foreignKeyTR);
@@ -184,7 +185,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
         return this.currentPath;
     }
 
-    public String getForeignKeyFilter() {
+    public String parseForeignKeyFilter() {
         return ""; //$NON-NLS-1$
     }
 
@@ -238,7 +239,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
             @Override
             public void onClick(ClickEvent ce) {
                 if (foreignKeyListWindow != null) {
-                    foreignKeyListWindow.setForeignKeyFilter(getForeignKeyFilter());
+                    foreignKeyListWindow.setForeignKeyFilter(parseForeignKeyFilter());
                     showForeignKeyListWindow();
                 }
             }

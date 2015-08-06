@@ -23,7 +23,7 @@ import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
 import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyField;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -75,13 +75,11 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
     }
 
     protected void init() {
-
         initKeyCodeList();
         setDisplayField(displayFieldName);
         setTypeAhead(true);
         setTriggerAction(TriggerAction.ALL);
         setFireChangeEventOnSetValue(true);
-
         setStore(foreignKeyStore);
         setListener();
     }
@@ -104,9 +102,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         public void handleEvent(BaseEvent be) {
             String inputValue = getInputValue();
             if (inputValue != null && inputValue.length() > 0) {
-                String foreignKeyFilter = foreignKeyField.getForeignKeyFilter();
-                final boolean hasForeignKeyFilter = foreignKeyFilter != null && foreignKeyFilter.trim().length() > 0 ? true
-                        : false;
+                String foreignKeyFilter = foreignKeyField.parseForeignKeyFilter();
                 BasePagingLoadConfigImpl config = new BasePagingLoadConfigImpl();
                 config.setLimit(listLimitCount);
                 config.set("currentXpath", foreignKeyField.getCurrentPath()); //$NON-NLS-1$
@@ -132,6 +128,7 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
     protected void onRender(Element target, int index) {
         super.onRender(target, index);
         this.setMinChars(1000);
+        getElement().setAttribute("style", "top:0px"); //$NON-NLS-1$ //$NON-NLS-2$
         getInputEl().dom.setAttribute("autocomplete", "off"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 

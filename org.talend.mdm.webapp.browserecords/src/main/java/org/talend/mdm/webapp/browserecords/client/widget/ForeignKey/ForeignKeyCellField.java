@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.mdm.webapp.browserecords.client.widget.ForeignKey;
+package org.talend.mdm.webapp.browserecords.client.widget.foreignKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class ForeignKeyCellField extends ForeignKeyField {
     }
 
     @Override
-    public String getForeignKeyFilter() {
+    public String parseForeignKeyFilter() {
         if (foreignKeyFilter != null) {
             String[] criterias = org.talend.mdm.webapp.base.shared.util.CommonUtil
                     .getCriteriasByForeignKeyFilter(foreignKeyFilter);

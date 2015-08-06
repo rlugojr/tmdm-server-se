@@ -44,11 +44,10 @@ import org.talend.mdm.webapp.browserecords.client.widget.ItemsMainTabPanel;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsSearchContainer;
 import org.talend.mdm.webapp.browserecords.client.widget.ItemsToolBar;
 import org.talend.mdm.webapp.browserecords.client.widget.LineagePanel;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyCellField;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
-import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyCellField;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.creator.FieldCreator;
-import org.talend.mdm.webapp.browserecords.client.widget.treedetail.ForeignKeyListWindow;
 import org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeDetailUtil;
 import org.talend.mdm.webapp.browserecords.shared.ViewBean;
 import org.talend.mdm.webapp.browserecords.shared.VisibleRuleResult;
@@ -113,9 +112,6 @@ public class BrowseRecordsView extends View {
             break;
         case BrowseRecordsEvents.CreateForeignKeyViewCode:
             onCreateForeignKeyView(event);
-            break;
-        case BrowseRecordsEvents.SelectForeignKeyViewCode:
-            onSelectForeignKeyView(event);
             break;
         case BrowseRecordsEvents.ViewItemCode:
             onViewItem(event);
@@ -310,13 +306,6 @@ public class BrowseRecordsView extends View {
         itemsDetailPanel.initBreadCrumb(new BreadCrumb(breads, itemsDetailPanel));
 
         return itemsDetailPanel;
-    }
-
-    private void onSelectForeignKeyView(AppEvent event) {
-        EntityModel entityModel = event.getData();
-        ForeignKeyListWindow fkListWindow = (ForeignKeyListWindow) event.getSource();
-        ItemsDetailPanel itemsDetailPanel = event.getData("detailPanel"); //$NON-NLS-1$
-        fkListWindow.show(entityModel, itemsDetailPanel, null);
     }
 
     private void onCreateForeignKeyView(AppEvent event) {
