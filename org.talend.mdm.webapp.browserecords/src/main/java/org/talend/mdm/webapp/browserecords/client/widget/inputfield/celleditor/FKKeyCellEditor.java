@@ -2,8 +2,8 @@ package org.talend.mdm.webapp.browserecords.client.widget.inputfield.celleditor;
 
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 import org.talend.mdm.webapp.base.shared.TypeModel;
-import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyCellField;
-import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ReturnCriteriaFK;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyCellField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;

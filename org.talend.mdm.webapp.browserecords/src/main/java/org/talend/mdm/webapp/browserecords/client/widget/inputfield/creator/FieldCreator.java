@@ -20,7 +20,7 @@ import org.talend.mdm.webapp.base.client.model.DataTypeConstants;
 import org.talend.mdm.webapp.base.client.widget.MultiLanguageField;
 import org.talend.mdm.webapp.base.shared.SimpleTypeModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
-import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ForeignKeyField;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeyField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.MultipleField;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.converter.BooleanConverter;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.converter.DateConverter;
