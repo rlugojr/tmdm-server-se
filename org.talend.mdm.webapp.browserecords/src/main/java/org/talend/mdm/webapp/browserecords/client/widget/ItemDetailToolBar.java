@@ -36,7 +36,7 @@ import org.talend.mdm.webapp.browserecords.client.util.CommonUtil;
 import org.talend.mdm.webapp.browserecords.client.util.Locale;
 import org.talend.mdm.webapp.browserecords.client.util.UserSession;
 import org.talend.mdm.webapp.browserecords.client.util.ViewUtil;
-import org.talend.mdm.webapp.browserecords.client.widget.foreignKey.ReturnCriteriaFK;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ReturnCriteriaFK;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.ComboBoxField;
 import org.talend.mdm.webapp.browserecords.client.widget.integrity.CloseLineageTabPostDeleteAction;
 import org.talend.mdm.webapp.browserecords.client.widget.integrity.CloseTabPostDeleteAction;
@@ -1014,7 +1014,8 @@ public class ItemDetailToolBar extends ToolBar {
                                             .process_done(), new Listener<MessageBoxEvent>() {
 
                                         @Override
-                                        public void handleEvent(MessageBoxEvent be) {
+                                        public void run() {
+                                            msgBox.close();
                                             if (urlResult != null && urlResult.length() > 0) {
                                                 openWindow(urlResult);
                                             }
@@ -1148,7 +1149,8 @@ public class ItemDetailToolBar extends ToolBar {
                 public void selectionChanged(SelectionChangedEvent<ItemBaseModel> se) {
                     if (itemsDetailPanel.getFirstTabWidget() instanceof ItemPanel) {
                         ItemPanel itemPanel = (ItemPanel) itemsDetailPanel.getFirstTabWidget();
-                        String frameUrl = "/browserecords/secure/SmartViewServlet?ids=" + URL.encodeQueryString(itemBean.getIds()) + "&concept=" //$NON-NLS-1$ //$NON-NLS-2$
+                        String frameUrl = GWT.getHostPageBaseURL()
+                                + "/browserecords/SmartViewServlet?ids=" + URL.encodeQueryString(itemBean.getIds()) + "&concept=" //$NON-NLS-1$ //$NON-NLS-2$
                                 + itemBean.getConcept() + "&isStaging=" + isStaging + "&language=" + Locale.getLanguage(); //$NON-NLS-1$ //$NON-NLS-2$
                         if (se.getSelectedItem().get("key") != null) { //$NON-NLS-1$
                             frameUrl += ("&name=" + se.getSelectedItem().get("key")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1187,7 +1189,7 @@ public class ItemDetailToolBar extends ToolBar {
                 if (smartViewCombo.getSelection() != null && smartViewCombo.getSelection().size() > 0) {
 
                     StringBuilder url = new StringBuilder();
-                    url.append("/browserecords/secure/SmartViewServlet?ids=") //$NON-NLS-1$
+                    url.append(GWT.getHostPageBaseURL()).append("/browserecords/SmartViewServlet?ids=") //$NON-NLS-1$
                             .append(URL.encodeQueryString(itemBean.getIds())).append("&concept=") //$NON-NLS-1$
                             .append(itemBean.getConcept()).append("&isStaging=").append(isStaging).append("&language=") //$NON-NLS-1$ //$NON-NLS-2$
                             .append(Locale.getLanguage()).append("&name=") //$NON-NLS-1$
