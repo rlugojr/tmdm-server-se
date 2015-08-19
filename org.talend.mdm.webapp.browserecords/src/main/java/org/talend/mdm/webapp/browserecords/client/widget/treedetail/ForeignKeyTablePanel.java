@@ -605,12 +605,23 @@ public class ForeignKeyTablePanel extends ContentPanel implements ReturnCriteria
     public void setCriteriaFK(ForeignKeyBean fk) {
         // TODO check fk exist
         if (currentNodeModel != null) {
-            currentNodeModel.setObjectValue(fk);
-            currentNodeModel.setTypeName(fk.getConceptName());
-            currentNodeModel.setChangeValue(true);
-            grid.getView().refresh(false);
-            updateMandatory();
+            if (currentNodeModel.getObjectValue() != null) {
+                ForeignKeyBean currentForeignKeyBean = (ForeignKeyBean) currentNodeModel.getObjectValue();
+                if (!currentForeignKeyBean.getId().equals(fk.getId()) || !currentForeignKeyBean.toString().equals(fk.toString())) {
+                    changeCriteriaFK(fk);
+                }
+            } else {
+                changeCriteriaFK(fk);
+            }
         }
+    }
+
+    private void changeCriteriaFK(ForeignKeyBean fk) {
+        currentNodeModel.setObjectValue(fk);
+        currentNodeModel.setTypeName(fk.getConceptName());
+        currentNodeModel.setChangeValue(true);
+        grid.getView().refresh(false);
+        updateMandatory();
     }
 
     private void updateMandatory() {
