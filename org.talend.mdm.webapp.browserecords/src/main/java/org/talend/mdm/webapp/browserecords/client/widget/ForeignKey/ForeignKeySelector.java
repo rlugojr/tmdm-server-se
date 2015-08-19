@@ -243,8 +243,15 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
                         }
                         ItemNodeModel targetNode = findTarget(targetPath, parentNode);
                         if (targetNode != null && targetNode.getObjectValue() != null) {
-                            filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode
-                                    .getObjectValue().toString());
+                            Object targetValue = targetNode.getObjectValue();
+                            if (targetValue instanceof ForeignKeyBean) {
+                                ForeignKeyBean targetForeignKeyBean = (ForeignKeyBean) targetValue;
+                                filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                                        .unwrapFkValue(targetForeignKeyBean.getId());
+                            } else {
+                                filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode
+                                        .getObjectValue().toString());
+                            }
                         } else {
                             filterValue = ""; //$NON-NLS-1$
                         }
@@ -275,8 +282,15 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
                             }
                             ItemNodeModel targetNode = findTarget(filterValue, parentNode);
                             if (targetNode != null && targetNode.getObjectValue() != null) {
-                                filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode
-                                        .getObjectValue().toString());
+                                Object targetValue = targetNode.getObjectValue();
+                                if (targetValue instanceof ForeignKeyBean) {
+                                    ForeignKeyBean targetForeignKeyBean = (ForeignKeyBean) targetValue;
+                                    filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                                            .unwrapFkValue(targetForeignKeyBean.getId());
+                                } else {
+                                    filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode
+                                            .getObjectValue().toString());
+                                }
                             } else {
                                 filterValue = ""; //$NON-NLS-1$
                             }
