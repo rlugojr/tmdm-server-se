@@ -402,7 +402,6 @@ public class BrowseRecordsView extends View {
                     typeModel), 200);
             if (typeModel instanceof SimpleTypeModel && !keys.contains(xpath) && !typeModel.isMultiOccurrence()) {
                 Field<?> field = FieldCreator.createField((SimpleTypeModel) typeModel, null, false, Locale.getLanguage());
-                fieldMap.put(xpath, field);
                 if (field instanceof ForeignKeyField) {
                     ForeignKeyCellField foreignKeyCellField = new ForeignKeyCellField((ForeignKeyField) field,
                             typeModel.getFkFilter());
@@ -412,6 +411,7 @@ public class BrowseRecordsView extends View {
                     }
                     field = foreignKeyCellField;
                 }
+                fieldMap.put(xpath, field);
                 CellEditor cellEditor = CellEditorCreator.createCellEditor(field);
                 if (cellEditor != null) {
                     cc.setEditor(cellEditor);

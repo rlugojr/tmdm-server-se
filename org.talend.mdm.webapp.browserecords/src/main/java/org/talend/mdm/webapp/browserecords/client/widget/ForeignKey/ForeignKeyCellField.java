@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
+
 import com.extjs.gxt.ui.client.widget.form.Field;
 
 public class ForeignKeyCellField extends ForeignKeyField {
@@ -54,9 +56,16 @@ public class ForeignKeyCellField extends ForeignKeyField {
                 } else {
                     if (targetFields != null && targetFields.get(i) != null) {
                         Field<?> targetField = targetFields.get(i);
-                        if (targetField.getValue() != null) {
-                            filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetField.getValue()
-                                    .toString());
+                        Object targetValue = targetField.getValue();
+                        if (targetValue != null) {
+                            if (targetValue instanceof ForeignKeyBean) {
+                                filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil
+                                        .unwrapFkValue(((ForeignKeyBean) targetValue).getId());
+                            } else {
+                                filterValue = targetField.getValue().toString();
+                            }
+                        } else {
+                            filterValue = ""; //$NON-NLS-1$
                         }
                     }
                 }

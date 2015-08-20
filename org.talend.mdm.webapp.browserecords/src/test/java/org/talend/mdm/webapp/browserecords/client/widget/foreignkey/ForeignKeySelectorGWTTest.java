@@ -15,6 +15,7 @@ package org.talend.mdm.webapp.browserecords.client.widget.foreignkey;
 import java.util.ArrayList;
 
 import org.talend.mdm.webapp.base.client.ServiceEnhancer;
+import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 import org.talend.mdm.webapp.base.shared.EntityModel;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsService;
@@ -68,10 +69,13 @@ public class ForeignKeySelectorGWTTest extends GWTTestCase {
         price.setObjectValue("9999"); //$NON-NLS-1$
         price.setParent(product);
         product.add(price);
+        ForeignKeyBean foreignKeyBean = new ForeignKeyBean();
+        foreignKeyBean.setId("[123]"); //$NON-NLS-1$
+        foreignKeyBean.setDisplayInfo("ForeignKey DispalyInfo"); //$NON-NLS-1$
         ItemNodeModel family = new ItemNodeModel();
         family.setTypeName("Family"); //$NON-NLS-1$
         family.setTypePath("Product/Family"); //$NON-NLS-1$
-        family.setObjectValue("[123]"); //$NON-NLS-1$
+        family.setObjectValue(foreignKeyBean);
         family.setParent(product);
         product.add(family);
         ForeignKeySelector foreignKeySelector = new ForeignKeySelector("ProductFamily/Id", new ArrayList<String>(), //$NON-NLS-1$
@@ -116,10 +120,14 @@ public class ForeignKeySelectorGWTTest extends GWTTestCase {
         addrs.setTypePath("Person/addrs"); //$NON-NLS-1$
         addrs.setParent(person);
         person.add(addrs);
+
+        foreignKeyBean = new ForeignKeyBean();
+        foreignKeyBean.setId("[123]"); //$NON-NLS-1$
+        foreignKeyBean.setDisplayInfo("ForeignKey DispalyInfo"); //$NON-NLS-1$
         ItemNodeModel add_cod = new ItemNodeModel();
         add_cod.setTypeName("add_code"); //$NON-NLS-1$
         add_cod.setTypePath("Person/addrs/add_code"); //$NON-NLS-1$
-        add_cod.setObjectValue("[123]"); //$NON-NLS-1$
+        add_cod.setObjectValue(foreignKeyBean);
         add_cod.setParent(addrs);
         addrs.add(add_cod);
         name = new ItemNodeModel();

@@ -249,8 +249,7 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
                                 filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil
                                         .unwrapFkValue(targetForeignKeyBean.getId());
                             } else {
-                                filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode
-                                        .getObjectValue().toString());
+                                filterValue = targetNode.getObjectValue().toString();
                             }
                         } else {
                             filterValue = ""; //$NON-NLS-1$
@@ -288,8 +287,7 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
                                     filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil
                                             .unwrapFkValue(targetForeignKeyBean.getId());
                                 } else {
-                                    filterValue = org.talend.mdm.webapp.base.shared.util.CommonUtil.unwrapFkValue(targetNode
-                                            .getObjectValue().toString());
+                                    filterValue = targetNode.getObjectValue().toString();
                                 }
                             } else {
                                 filterValue = ""; //$NON-NLS-1$
