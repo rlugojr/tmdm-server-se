@@ -80,35 +80,35 @@ public class XtentisWebPort implements XtentisPort {
      * @return A {@link java.rmi.RemoteException exception} suited for Web UI display.
      */
     public static RemoteException handleException(Throwable throwable, String errorMessage) {
-        WebCoreException webCoreException;
-        if (WebCoreException.class.isInstance(throwable)) {
-            webCoreException = (WebCoreException) throwable;
+        CoreException webCoreException;
+        if (CoreException.class.isInstance(throwable)) {
+            webCoreException = (CoreException) throwable;
         } else if (ValidateException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(VALIDATE_EXCEPTION_MESSAGE, throwable);
+            webCoreException = new CoreException(VALIDATE_EXCEPTION_MESSAGE, throwable);
         } else if (SchematronValidateException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(VALIDATE_EXCEPTION_MESSAGE, throwable.getMessage(), WebCoreException.INFO);
+            webCoreException = new CoreException(VALIDATE_EXCEPTION_MESSAGE, throwable.getMessage(), CoreException.INFO);
         } else if (CVCException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(CVC_EXCEPTION_MESSAGE, throwable);
+            webCoreException = new CoreException(CVC_EXCEPTION_MESSAGE, throwable);
         } else if (JobNotFoundException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(JOB_NOT_FOUND_EXCEPTION_MESSAGE, throwable);
+            webCoreException = new CoreException(JOB_NOT_FOUND_EXCEPTION_MESSAGE, throwable);
         } else if (com.amalto.core.jobox.util.JoboxException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(JOBOX_EXCEPTION_MESSAGE, throwable);
+            webCoreException = new CoreException(JOBOX_EXCEPTION_MESSAGE, throwable);
         } else if (BeforeSavingErrorException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(SAVE_PROCESS_BEFORE_SAVING_FAILURE_MESSAGE, throwable);
+            webCoreException = new CoreException(SAVE_PROCESS_BEFORE_SAVING_FAILURE_MESSAGE, throwable);
         } else if (BeforeSavingFormatException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(BEFORE_SAVING_FORMAT_ERROR_MESSAGE, throwable);
+            webCoreException = new CoreException(BEFORE_SAVING_FORMAT_ERROR_MESSAGE, throwable);
             webCoreException.setClient(true);
         } else if (OutputReportMissingException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(OUTPUT_REPORT_MISSING_ERROR_MESSAGE, throwable);
+            webCoreException = new CoreException(OUTPUT_REPORT_MISSING_ERROR_MESSAGE, throwable);
         } else if (RoutingException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(ROUTING_ERROR_MESSAGE, throwable);
+            webCoreException = new CoreException(ROUTING_ERROR_MESSAGE, throwable);
         } else if (FullTextQueryCompositeKeyException.class.isInstance(throwable)) {
-            webCoreException = new WebCoreException(FULLTEXT_QUERY_COMPOSITE_KEY_EXCEPTION_MESSAGE, throwable);
+            webCoreException = new CoreException(FULLTEXT_QUERY_COMPOSITE_KEY_EXCEPTION_MESSAGE, throwable);
         } else {
             if (throwable.getCause() != null) {
                 return handleException(throwable.getCause(), errorMessage);
             } else {
-                webCoreException = new WebCoreException(errorMessage, throwable);
+                webCoreException = new CoreException(errorMessage, throwable);
             }
         }
         return new RemoteException(StringUtils.EMPTY, webCoreException);
@@ -272,7 +272,7 @@ public class XtentisWebPort implements XtentisPort {
             String entityNotFoundErrorMessage = "entity_not_found"; //$NON-NLS-1$
             if (com.amalto.webapp.core.util.Util.causeIs(e, com.amalto.core.util.EntityNotFoundException.class)) {
                 EntityNotFoundException cause = Util.cause(e, EntityNotFoundException.class);
-                throw new RemoteException(StringUtils.EMPTY, new WebCoreException(entityNotFoundErrorMessage, cause));
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(entityNotFoundErrorMessage, cause));
             }
             throw (new RemoteException(e.getLocalizedMessage(), e));
         }
@@ -406,13 +406,13 @@ public class XtentisWebPort implements XtentisPort {
         } catch (RemoteException e) {
             if (Util.causeIs(e, com.amalto.core.storage.exception.ConstraintViolationException.class)) {
                 ConstraintViolationException cause = Util.cause(e, ConstraintViolationException.class);
-                throw new RemoteException(StringUtils.EMPTY, new WebCoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
                         cause));
             }
             if (Util.causeIs(e, com.amalto.core.util.BeforeDeletingErrorException.class)) {
                 BeforeDeletingErrorException causeException = Util.cause(e,
                         com.amalto.core.util.BeforeDeletingErrorException.class);
-                throw new RemoteException(StringUtils.EMPTY, new WebCoreException(causeException.getLocalizedMessage(),
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(causeException.getLocalizedMessage(),
                         causeException));
             }
             throw new RemoteException(e.getLocalizedMessage(), e);
@@ -430,7 +430,7 @@ public class XtentisWebPort implements XtentisPort {
             return delegate.deleteItems(wsDeleteItems);
         } catch (RemoteException e) {
             if (Util.causeIs(e, com.amalto.core.storage.exception.ConstraintViolationException.class)) {
-                throw new RemoteException(StringUtils.EMPTY, new WebCoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
                         e.getCause()));
             }
             throw new RemoteException(e.getLocalizedMessage(), e);
@@ -444,7 +444,7 @@ public class XtentisWebPort implements XtentisPort {
         } catch (RemoteException e) {
             if (Util.causeIs(e, com.amalto.core.storage.exception.ConstraintViolationException.class)) {
                 ConstraintViolationException cause = Util.cause(e, ConstraintViolationException.class);
-                throw new RemoteException(StringUtils.EMPTY, new WebCoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
                         cause));
             }
             throw new RemoteException(e.getLocalizedMessage(), e);

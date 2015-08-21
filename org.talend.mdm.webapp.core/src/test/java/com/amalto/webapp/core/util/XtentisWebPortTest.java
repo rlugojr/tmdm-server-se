@@ -59,15 +59,15 @@ public class XtentisWebPortTest extends TestCase {
         for (int i = 0; i < exceptionList.size(); i++) {
             RemoteException processedException = XtentisWebPort.handleException(exceptionList.get(i),
                     XtentisWebPort.DEFAULT_REMOTE_ERROR_MESSAGE);
-            assertTrue(processedException.getCause() instanceof WebCoreException);
-            WebCoreException webCoreException = (WebCoreException) processedException.getCause();
+            assertTrue(processedException.getCause() instanceof CoreException);
+            CoreException webCoreException = (CoreException) processedException.getCause();
             assertEquals(titleList.get(i), webCoreException.getTitle());
             if (i == 0) {
                 assertEquals(messageList.get(i), webCoreException.getLocalizedMessage());
-                assertEquals(WebCoreException.INFO, webCoreException.getLevel());
+                assertEquals(CoreException.INFO, webCoreException.getLevel());
             } else {
                 assertEquals(messageList.get(i), webCoreException.getCause().getLocalizedMessage());
-                assertEquals(WebCoreException.Error, webCoreException.getLevel());
+                assertEquals(CoreException.Error, webCoreException.getLevel());
             }
         }
     }

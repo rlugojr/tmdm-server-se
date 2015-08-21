@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -10,12 +10,9 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package com.amalto.webapp.core.util;
+package com.amalto.core.util;
 
-/**
- * DOC talend2 class global comment. Detailled comment
- */
-public class WebCoreException extends RuntimeException {
+public class CoreException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
@@ -29,12 +26,12 @@ public class WebCoreException extends RuntimeException {
 
     private int level = 2;
 
-    public WebCoreException(String title, Throwable cause) {
+    public CoreException(String title, Throwable cause) {
         super(cause);
         this.title = title;
     }
 
-    public WebCoreException(String title, String message, int level) {
+    public CoreException(String title, String message, int level) {
         super(message);
         this.title = title;
         this.level = level;
@@ -75,5 +72,4 @@ public class WebCoreException extends RuntimeException {
     public int getLevel() {
         return this.level;
     }
-
 }

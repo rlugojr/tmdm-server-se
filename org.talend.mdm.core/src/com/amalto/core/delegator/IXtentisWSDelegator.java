@@ -33,6 +33,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
@@ -45,6 +46,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import com.amalto.core.integrity.FKIntegrityCheckResult;
+import com.amalto.core.jobox.util.JobNotFoundException;
 import com.amalto.core.metadata.ClassRepository;
 import com.amalto.core.migration.MigrationRepository;
 import com.amalto.core.objects.DroppedItemPOJO;
@@ -103,13 +105,21 @@ import com.amalto.core.storage.Storage;
 import com.amalto.core.storage.StorageMetadataUtils;
 import com.amalto.core.storage.StorageResults;
 import com.amalto.core.storage.StorageType;
+import com.amalto.core.storage.exception.FullTextQueryCompositeKeyException;
 import com.amalto.core.storage.record.DataRecord;
 import com.amalto.core.util.BeforeDeletingErrorException;
+import com.amalto.core.util.BeforeSavingErrorException;
+import com.amalto.core.util.BeforeSavingFormatException;
+import com.amalto.core.util.CVCException;
+import com.amalto.core.util.CoreException;
 import com.amalto.core.util.DigestHelper;
 import com.amalto.core.util.EntityNotFoundException;
 import com.amalto.core.util.LocalUser;
+import com.amalto.core.util.OutputReportMissingException;
 import com.amalto.core.util.PluginRegistry;
 import com.amalto.core.util.RemoteExceptionFactory;
+import com.amalto.core.util.RoutingException;
+import com.amalto.core.util.SchematronValidateException;
 import com.amalto.core.util.Util;
 import com.amalto.core.util.ValidateException;
 import com.amalto.core.util.Version;
@@ -134,6 +144,39 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
     public static final String SUCCESS_KEYWORD = "SUCCESS";//$NON-NLS-1$
 
     public static final String FAIL_KEYWORD = "FAIL";//$NON-NLS-1$
+
+    // validate not null field is null
+    public static final String VALIDATE_EXCEPTION_MESSAGE = "save_validationrule_fail"; //$NON-NLS-1$
+
+    // don't exist job was called
+    public static final String JOB_NOT_FOUND_EXCEPTION_MESSAGE = "save_failure_job_notfound"; //$NON-NLS-1$
+
+    // don't exist job was called
+    public static final String JOBOX_EXCEPTION_MESSAGE = "save_failure_job_ox"; //$NON-NLS-1$
+
+    // call by core util.defaultValidate,but it will be wrap as ValidateException
+    public static final String CVC_EXCEPTION_MESSAGE = "save_fail_cvc_exception"; //$NON-NLS-1$
+
+    // default save exception message
+    public static final String SAVE_EXCEPTION_MESSAGE = "save_fail"; //$NON-NLS-1$
+
+    // define before saving report in error level
+    public static final String SAVE_PROCESS_BEFORE_SAVING_FAILURE_MESSAGE = "save_failure_beforesaving_validate_error"; //$NON-NLS-1$ 
+
+    // define before saving report xml format error in studio
+    public static final String BEFORE_SAVING_FORMAT_ERROR_MESSAGE = "save_failure_beforesaving_format_error"; //$NON-NLS-1$ 
+
+    // define trigger to execute process error in studio
+    public static final String ROUTING_ERROR_MESSAGE = "save_success_rounting_fail"; //$NON-NLS-1$
+
+    // missing output report (before saving)
+    public static final String OUTPUT_REPORT_MISSING_ERROR_MESSAGE = "output_report_missing"; //$NON-NLS-1$
+
+    // full text query entity include composite key
+    public static final String FULLTEXT_QUERY_COMPOSITE_KEY_EXCEPTION_MESSAGE = "fulltext_query_compositekey_fail"; //$NON-NLS-1$
+
+    // default remote error
+    public static final String DEFAULT_REMOTE_ERROR_MESSAGE = "default_remote_error_message"; //$NON-NLS-1$
 
     @Override
     public WSVersion getComponentVersion(WSGetComponentVersion wsGetComponentVersion) throws RemoteException {
@@ -523,7 +566,7 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
                     wsViewSearch.getSkip(), wsViewSearch.getMaxItems());
             return new WSStringArray((String[]) res.toArray(new String[res.size()]));
         } catch (Exception e) {
-            throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
+            throw handleException(e, DEFAULT_REMOTE_ERROR_MESSAGE);
         }
     }
 
@@ -914,7 +957,7 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             return new WSItemPKArray(pks.toArray(new WSItemPK[pks.size()]));
         } catch (Exception e) {
             LOGGER.error("Error during save.", e); //$NON-NLS-1$
-            throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
+            throw handleException(e, SAVE_EXCEPTION_MESSAGE);
         }
     }
 
@@ -960,7 +1003,7 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             return new WSItemPK(dataClusterPK, conceptName, savedId);
         } catch (Exception e) {
             LOGGER.error("Error during save.", e); //$NON-NLS-1$
-            throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
+            throw handleException(e, SAVE_EXCEPTION_MESSAGE);
         }
     }
 
@@ -1447,7 +1490,8 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             String dataModelName = clusterName;
             String conceptName = itemPK.getConceptName();
             String[] ids = itemPK.getIds();
-            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, UpdateReportPOJO.GENERIC_UI_SOURCE, operationType, null); 
+            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, UpdateReportPOJO.GENERIC_UI_SOURCE,
+                    operationType, null);
             return XConverter.POJO2WS(itemPOJOPK);
         } catch (XtentisException e) {
             throw (new RemoteException(e.getLocalizedMessage(), e));
@@ -1472,7 +1516,8 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             }
             // Generate physical delete event in journal
             WSDroppedItemPK droppedItemPK = wsRemoveDroppedItem.getWsDroppedItemPK();
-            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, UpdateReportPOJO.GENERIC_UI_SOURCE, operationType, null); 
+            pushToUpdateReport(clusterName, dataModelName, conceptName, ids, true, UpdateReportPOJO.GENERIC_UI_SOURCE,
+                    operationType, null);
             // Removes item from recycle bin
             DroppedItem droppedItemCtrl = Util.getDroppedItemCtrlLocal();
             DroppedItemPOJOPK droppedItemPOJOPK = droppedItemCtrl.removeDroppedItem(XConverter.WS2POJO(droppedItemPK));
@@ -2488,5 +2533,40 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             WSProcessFileUsingTransformerAsBackgroundJob wsProcessFileUsingTransformerAsBackgroundJob) throws RemoteException {
         // TODO
         throw new NotImplementedException();
+    }
+
+    private RemoteException handleException(Throwable throwable, String errorMessage) {
+        CoreException coreException;
+        if (CoreException.class.isInstance(throwable)) {
+            coreException = (CoreException) throwable;
+        } else if (ValidateException.class.isInstance(throwable)) {
+            coreException = new CoreException(VALIDATE_EXCEPTION_MESSAGE, throwable);
+        } else if (SchematronValidateException.class.isInstance(throwable)) {
+            coreException = new CoreException(VALIDATE_EXCEPTION_MESSAGE, throwable.getMessage(), CoreException.INFO);
+        } else if (CVCException.class.isInstance(throwable)) {
+            coreException = new CoreException(CVC_EXCEPTION_MESSAGE, throwable);
+        } else if (JobNotFoundException.class.isInstance(throwable)) {
+            coreException = new CoreException(JOB_NOT_FOUND_EXCEPTION_MESSAGE, throwable);
+        } else if (com.amalto.core.jobox.util.JoboxException.class.isInstance(throwable)) {
+            coreException = new CoreException(JOBOX_EXCEPTION_MESSAGE, throwable);
+        } else if (BeforeSavingErrorException.class.isInstance(throwable)) {
+            coreException = new CoreException(SAVE_PROCESS_BEFORE_SAVING_FAILURE_MESSAGE, throwable);
+        } else if (BeforeSavingFormatException.class.isInstance(throwable)) {
+            coreException = new CoreException(BEFORE_SAVING_FORMAT_ERROR_MESSAGE, throwable);
+            coreException.setClient(true);
+        } else if (OutputReportMissingException.class.isInstance(throwable)) {
+            coreException = new CoreException(OUTPUT_REPORT_MISSING_ERROR_MESSAGE, throwable);
+        } else if (RoutingException.class.isInstance(throwable)) {
+            coreException = new CoreException(ROUTING_ERROR_MESSAGE, throwable);
+        } else if (FullTextQueryCompositeKeyException.class.isInstance(throwable)) {
+            coreException = new CoreException(FULLTEXT_QUERY_COMPOSITE_KEY_EXCEPTION_MESSAGE, throwable);
+        } else {
+            if (throwable.getCause() != null) {
+                return handleException(throwable.getCause(), errorMessage);
+            } else {
+                coreException = new CoreException(errorMessage, throwable);
+            }
+        }
+        return new RemoteException(StringUtils.EMPTY, coreException);
     }
 }

@@ -102,6 +102,7 @@ import com.amalto.core.objects.customform.CustomFormPOJOPK;
 import com.amalto.core.objects.datacluster.DataClusterPOJOPK;
 import com.amalto.core.server.ServerContext;
 import com.amalto.core.storage.task.StagingConstants;
+import com.amalto.core.util.CoreException;
 import com.amalto.core.util.EntityNotFoundException;
 import com.amalto.core.util.FieldNotFoundException;
 import com.amalto.core.util.LocalUser;
@@ -154,7 +155,6 @@ import com.amalto.webapp.core.bean.Configuration;
 import com.amalto.webapp.core.dmagent.SchemaWebAgent;
 import com.amalto.webapp.core.util.DataModelAccessor;
 import com.amalto.webapp.core.util.Util;
-import com.amalto.webapp.core.util.WebCoreException;
 import com.amalto.webapp.core.util.Webapp;
 import com.amalto.webapp.core.util.XmlUtil;
 import com.extjs.gxt.ui.client.Style.SortDir;
@@ -235,9 +235,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                 throw new ServiceException(BASEMESSAGE.getMessage(locale, e.getMessage(), e.getArgs()));
             } catch (Exception exception) {
                 String errorMessage;
-                if (WebCoreException.class.isInstance(exception.getCause())) {
-                    errorMessage = getErrorMessageFromWebCoreException(((WebCoreException) exception.getCause()),
-                            item.getConcept(), item.getIds(), locale);
+                if (CoreException.class.isInstance(exception.getCause())) {
+                    errorMessage = getErrorMessageFromWebCoreException(((CoreException) exception.getCause()), item.getConcept(),
+                            item.getIds(), locale);
                 } else {
                     errorMessage = exception.getMessage();
                 }
@@ -507,8 +507,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             throw new ServiceException(BASEMESSAGE.getMessage(new Locale(language), e.getMessage(), e.getArgs()));
         } catch (Exception exception) {
             String errorMessage;
-            if (WebCoreException.class.isInstance(exception.getCause())) {
-                WebCoreException webCoreException = (WebCoreException) exception.getCause();
+            if (CoreException.class.isInstance(exception.getCause())) {
+                CoreException webCoreException = (CoreException) exception.getCause();
                 errorMessage = getErrorMessageFromWebCoreException(webCoreException, itemBean.getConcept(), itemBean.getIds(),
                         new Locale(language));
             } else {
@@ -687,8 +687,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             throw new ServiceException(BASEMESSAGE.getMessage(e.getMessage(), e.getArgs()));
         } catch (Exception exception) {
             String errorMessage;
-            if (WebCoreException.class.isInstance(exception.getCause())) {
-                errorMessage = getErrorMessageFromWebCoreException(((WebCoreException) exception.getCause()), item.getConcept(),
+            if (CoreException.class.isInstance(exception.getCause())) {
+                errorMessage = getErrorMessageFromWebCoreException(((CoreException) exception.getCause()), item.getConcept(),
                         item.getIds(), null);
             } else {
                 errorMessage = exception.getMessage();
@@ -749,8 +749,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                 throw new ServiceException(cause.getCause().getLocalizedMessage());
             }
             String errorMessage;
-            if (WebCoreException.class.isInstance(exception.getCause())) {
-                WebCoreException webCoreException = (WebCoreException) exception.getCause();
+            if (CoreException.class.isInstance(exception.getCause())) {
+                CoreException webCoreException = (CoreException) exception.getCause();
                 errorMessage = getErrorMessageFromWebCoreException(webCoreException, "", null, new Locale(language)); //$NON-NLS-1$
             } else {
                 errorMessage = exception.getLocalizedMessage();
@@ -780,8 +780,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             throw new ServiceException(BASEMESSAGE.getMessage(new Locale(language), e.getMessage(), e.getArgs()));
         } catch (Exception exception) {
             String errorMessage;
-            if (WebCoreException.class.isInstance(exception.getCause())) {
-                WebCoreException webCoreException = (WebCoreException) exception.getCause();
+            if (CoreException.class.isInstance(exception.getCause())) {
+                CoreException webCoreException = (CoreException) exception.getCause();
                 errorMessage = getErrorMessageFromWebCoreException(webCoreException, "", null, new Locale(language)); //$NON-NLS-1$
             } else {
                 errorMessage = exception.getLocalizedMessage();
@@ -1115,7 +1115,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             Map<String, String> unsortedViewsMap = new HashMap<String, String>();
             String model = getCurrentDataModel();
             if (model != null) {
-                MetadataRepository repository = ServerContext.INSTANCE.get().getMetadataRepositoryAdmin().get(model);                
+                MetadataRepository repository = ServerContext.INSTANCE.get().getMetadataRepositoryAdmin().get(model);
                 Set<String> userRoles = LocalUser.getLocalUser().getRoles();
                 // It is faster to retrieve all view then look on them (alternatives imply "search by exception").
                 WSViewPKArray viewPKs = CommonUtil.getPort().getViewPKs(new WSGetViewPKs(".*")); //$NON-NLS-1$
@@ -1123,7 +1123,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                     String typeName = ViewHelper.getConceptFromDefaultViewName(viewPK.getPk());
                     ComplexTypeMetadata type = repository.getComplexType(typeName);
                     if (type != null) {
-                        // Hides the entity if at least one of user's role is in the "hide" roles (i.e. "No Access" roles).
+                        // Hides the entity if at least one of user's role is in the "hide" roles (i.e. "No Access"
+                        // roles).
                         if (type.getHideUsers().isEmpty() || Collections.disjoint(type.getHideUsers(), userRoles)) {
                             WSView view = CommonUtil.getPort().getView(new WSGetView(viewPK));
                             String viewLabel = ViewHelper.getViewLabel(language, view);
@@ -1710,13 +1711,13 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             throw new ServiceException(BASEMESSAGE.getMessage(new Locale(language), e.getMessage(), e.getArgs()));
         } catch (Exception exception) {
             String errorMessage;
-            if (WebCoreException.class.isInstance(exception.getCause())) {
-                WebCoreException webCoreException = (WebCoreException) exception.getCause();
-                errorMessage = getErrorMessageFromWebCoreException(webCoreException, concept, ids, locale);
-                if (webCoreException.isClient()) {
+            if (CoreException.class.isInstance(exception.getCause())) {
+                CoreException coreException = (CoreException) exception.getCause();
+                errorMessage = getErrorMessageFromWebCoreException(coreException, concept, ids, locale);
+                if (coreException.isClient()) {
                     throw new ServiceException(errorMessage);
                 }
-                if (webCoreException.getLevel() == WebCoreException.INFO) {
+                if (coreException.getLevel() == CoreException.INFO) {
                     LOG.info(errorMessage);
                 } else {
                     LOG.error(errorMessage, exception);
@@ -2210,7 +2211,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             LOG.error(e.getMessage(), e);
             Locale locale = new Locale(language);
             Throwable cause = e.getCause();
-            if (cause != null && cause instanceof WebCoreException) {
+            if (cause != null && cause instanceof CoreException) {
                 cause = cause.getCause();
                 if (cause != null && cause instanceof EntityNotFoundException) {
                     throw new ServiceException(MESSAGES.getMessage(locale, "record_not_found_msg")); //$NON-NLS-1$
@@ -2355,15 +2356,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         }
     }
 
-    private String getErrorMessageFromWebCoreException(WebCoreException webCoreException, String concept, String ids,
-            Locale locale) {
+    private String getErrorMessageFromWebCoreException(CoreException coreException, String concept, String ids, Locale locale) {
         String localizedMessage = ""; //$NON-NLS-1$
-        if (webCoreException.getCause() != null && webCoreException.getCause().getLocalizedMessage() != null) {
-            localizedMessage = webCoreException.getCause().getLocalizedMessage();
+        if (coreException.getCause() != null && coreException.getCause().getLocalizedMessage() != null) {
+            localizedMessage = coreException.getCause().getLocalizedMessage();
         } else {
-            localizedMessage = webCoreException.getLocalizedMessage();
+            localizedMessage = coreException.getLocalizedMessage();
         }
-        String errorMessage = MESSAGES.getMessage(locale, webCoreException.getTitle(), concept
+        String errorMessage = MESSAGES.getMessage(locale, coreException.getTitle(), concept
                 + ((ids != null && !"".equals(ids)) ? "." + ids : ""), localizedMessage); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         return errorMessage;
     }

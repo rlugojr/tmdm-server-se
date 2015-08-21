@@ -66,6 +66,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.amalto.core.util.CoreException;
 import com.amalto.core.util.Messages;
 import com.amalto.core.util.MessagesFactory;
 import com.amalto.core.util.Util;
@@ -76,7 +77,6 @@ import com.amalto.core.webservice.WSStringArray;
 import com.amalto.core.webservice.WSView;
 import com.amalto.core.webservice.WSViewSearch;
 import com.amalto.core.webservice.XtentisPort;
-import com.amalto.webapp.core.util.WebCoreException;
 import com.amalto.webapp.core.util.XmlUtil;
 import com.extjs.gxt.ui.client.data.ModelData;
 
@@ -702,12 +702,12 @@ public class BrowseRecordsActionTest extends TestCase {
 
     public void testGetErrorMessageFromWebCoreException() throws Exception {
         RuntimeException runtimeException = new RuntimeException("throw a runtimeException");
-        WebCoreException webCoreException = new WebCoreException("delete_failure_constraint_violation", runtimeException);
+        CoreException coreException = new CoreException("delete_failure_constraint_violation", runtimeException);
         Method[] methods = BrowseRecordsAction.class.getDeclaredMethods();
         for (Method method : methods) {
             if ("getErrorMessageFromWebCoreException".equals(method.getName())) {
                 method.setAccessible(true);
-                Object para[] = { webCoreException, "TestModel", "1", new Locale("en") };
+                Object para[] = { coreException, "TestModel", "1", new Locale("en") };
                 Object result = method.invoke(action, para);
                 String expectedMsg = MESSAGES.getMessage(new Locale("en"), "delete_failure_constraint_violation", "TestModel.1");
                 assertEquals(expectedMsg, result);
