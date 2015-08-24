@@ -105,6 +105,7 @@ import com.amalto.core.storage.Storage;
 import com.amalto.core.storage.StorageMetadataUtils;
 import com.amalto.core.storage.StorageResults;
 import com.amalto.core.storage.StorageType;
+import com.amalto.core.storage.exception.ConstraintViolationException;
 import com.amalto.core.storage.exception.FullTextQueryCompositeKeyException;
 import com.amalto.core.storage.record.DataRecord;
 import com.amalto.core.util.BeforeDeletingErrorException;
@@ -171,6 +172,8 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
 
     // missing output report (before saving)
     public static final String OUTPUT_REPORT_MISSING_ERROR_MESSAGE = "output_report_missing"; //$NON-NLS-1$
+
+    private static final String INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE = "delete_failure_constraint_violation"; //$NON-NLS-1$
 
     // full text query entity include composite key
     public static final String FULLTEXT_QUERY_COMPOSITE_KEY_EXCEPTION_MESSAGE = "fulltext_query_compositekey_fail"; //$NON-NLS-1$
@@ -735,7 +738,11 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
                 String err = "ERROR SYSTRACE: " + e.getMessage(); //$NON-NLS-1$
                 LOGGER.debug(err, e);
             }
-            throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
+            EntityNotFoundException cause = getCauseExceptionByType(e, EntityNotFoundException.class);
+            if (cause != null) {
+                throw new RemoteException(StringUtils.EMPTY, new CoreException("entity_not_found", cause)); //$NON-NLS-1$
+            }
+            throw (new RemoteException(e.getLocalizedMessage(), e));
         }
     }
 
@@ -1112,10 +1119,21 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
                     LocalUser.getLocalUser().getUsername(), wsDeleteItem.getInvokeBeforeDeleting(), wsDeleteItem.getWithReport(),
                     wsDeleteItem.getOverride()));
             return itemPK;
-        } catch (XtentisException e) {
-            throw (new RemoteException(e.getLocalizedMessage(), e));
         } catch (Exception e) {
-            throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
+            e = (e instanceof XtentisException && e.getCause() != null) ? (Exception) e.getCause() : e;
+            ConstraintViolationException causeException1 = getCauseExceptionByType(e,
+                    com.amalto.core.storage.exception.ConstraintViolationException.class);
+            if (causeException1 != null) {
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
+                        causeException1));
+            }
+            BeforeDeletingErrorException causeException2 = getCauseExceptionByType(e,
+                    com.amalto.core.util.BeforeDeletingErrorException.class);
+            if (causeException2 != null) {
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(causeException2.getLocalizedMessage(),
+                        causeException2));
+            }
+            throw new RemoteException(e.getLocalizedMessage(), e);
         }
     }
 
@@ -1215,6 +1233,10 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
                     wsDeleteItems.getOverride());
             return new WSInt(numItems);
         } catch (Exception e) {
+            if (getCauseExceptionByType(e, com.amalto.core.storage.exception.ConstraintViolationException.class) != null) {
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
+                        e.getCause()));
+            }
             throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
         }
     }
@@ -1229,6 +1251,12 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
                     wsDropItem.getOverride()));
             return new WSDroppedItemPK(wsItemPK, wsDropItem.getPartPath()); // TODO Revision
         } catch (Exception e) {
+            ConstraintViolationException causeException = getCauseExceptionByType(e,
+                    com.amalto.core.storage.exception.ConstraintViolationException.class);
+            if (causeException != null) {
+                throw new RemoteException(StringUtils.EMPTY, new CoreException(INTEGRITY_CONSTRAINT_CHECK_FAILED_MESSAGE,
+                        causeException));
+            }
             throw new RemoteException((e.getCause() == null ? e.getLocalizedMessage() : e.getCause().getLocalizedMessage()), e);
         }
     }
@@ -2568,5 +2596,16 @@ public abstract class IXtentisWSDelegator implements IBeanDelegator, XtentisPort
             }
         }
         return new RemoteException(StringUtils.EMPTY, coreException);
+    }
+
+    private <T> T getCauseExceptionByType(Throwable throwable, Class<T> cls) {
+        Throwable currentCause = throwable;
+        while (currentCause != null) {
+            if (cls.isInstance(currentCause)) {
+                return (T) currentCause;
+            }
+            currentCause = currentCause.getCause();
+        }
+        return null;
     }
 }
