@@ -33,6 +33,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.amalto.core.metadata.LongString;
 import com.amalto.core.storage.HibernateMetadataUtils;
 import com.amalto.core.storage.datasource.RDBMSDataSource;
 
@@ -681,7 +682,14 @@ public class MappingGenerator extends DefaultMetadataVisitor<Element> {
         }
         // TMDM-4975: Oracle doesn't like when there are too many LONG columns.
         if (dialect == RDBMSDataSource.DataSourceDialect.ORACLE_10G && TypeMapping.SQL_TYPE_TEXT.equals(elementTypeName)) {
-            elementTypeName = TypeMapping.SQL_TYPE_CLOB;
+            if (field.getType().getData(LongString.PREFER_LONGVARCHAR) == null) {
+                elementTypeName = TypeMapping.SQL_TYPE_CLOB;
+            } else {// DATA_CLUSTER_POJO.X_VOCABULARY still need to use VARCHAR2(4000 CHAR)
+                elementTypeName = "string"; //$NON-NLS-1$
+                Attr length = document.createAttribute("length"); //$NON-NLS-1$
+                length.setValue("4000"); //$NON-NLS-1$
+                propertyElement.getAttributes().setNamedItem(length);
+            }
         }
         elementType.setValue(elementTypeName);
         propertyElement.getAttributes().setNamedItem(elementType);

@@ -64,6 +64,7 @@ class TypeComparison extends DefaultMetadataVisitor<Set<String>> {
 
     @Override
     public Set<String> visit(ContainedTypeFieldMetadata containedField) {
+        String currentPath = getCurrentPath(containedField);
         pathPrefix.push(containedField.getName());
         {
             if (type.hasField(containedField.getName())) {
@@ -71,7 +72,7 @@ class TypeComparison extends DefaultMetadataVisitor<Set<String>> {
                 super.visit(containedField);
                 type = containedField.getContainingType();
             } else {
-                paths.add(containedField.getName());
+                paths.add(currentPath);
                 containedField.getContainedType().accept(this);
             }
         }

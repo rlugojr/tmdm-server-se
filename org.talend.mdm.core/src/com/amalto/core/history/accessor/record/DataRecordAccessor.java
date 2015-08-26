@@ -51,6 +51,7 @@ public class DataRecordAccessor implements Accessor {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static LinkedList<PathElement> getPath(DataRecord dataRecord, String path) {
         LinkedList<PathElement> elements = new LinkedList<PathElement>();
         StringTokenizer tokenizer = new StringTokenizer(path, "/"); //$NON-NLS-1$
@@ -64,26 +65,26 @@ public class DataRecordAccessor implements Accessor {
                 pathElement.getter = TypeValue.GET;
             } else {
                 if (current == null) {
-                    throw new IllegalStateException("Cannot update '" + path + "'.");
+                    throw new IllegalStateException("Cannot update '" + path + "'."); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 if (element.indexOf('[') > 0) {
                     pathElement.field = current.getType().getField(StringUtils.substringBefore(element, "[")); //$NON-NLS-1$
                     if (!pathElement.field.isMany()) {
-                        throw new IllegalStateException("Expected a repeatable field for '" + element + "' in path '" + path
-                                + "'.");
+                        throw new IllegalStateException("Expected a repeatable field for '" + element + "' in path '" + path //$NON-NLS-1$ //$NON-NLS-2$
+                                + "'."); //$NON-NLS-1$
                     }
                     int indexStart = element.indexOf('[');
                     int indexEnd = element.indexOf(']');
                     if (indexStart < 0 || indexEnd < 0) {
-                        throw new RuntimeException("Field name '" + element + "' did not match many field pattern in path '"
-                                + path + "'.");
+                        throw new RuntimeException("Field name '" + element + "' did not match many field pattern in path '" //$NON-NLS-1$ //$NON-NLS-2$
+                                + path + "'."); //$NON-NLS-1$
                     }
                     pathElement.index = Integer.parseInt(element.substring(indexStart + 1, indexEnd)) - 1;
                     pathElement.setter = ManyValue.SET;
                     pathElement.getter = ManyValue.GET;
                     List list = (List) current.get(pathElement.field);
                     if (list == null || pathElement.index > list.size() - 1) {
-                        throw new IllegalStateException("Cannot update '" + path + "'.");
+                        throw new IllegalStateException("Cannot update '" + path + "'."); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                     Object value = list.get(pathElement.index);
                     if (value instanceof DataRecord) {
@@ -109,6 +110,7 @@ public class DataRecordAccessor implements Accessor {
         return elements;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void set(String value) {
         try {
@@ -147,6 +149,7 @@ public class DataRecordAccessor implements Accessor {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public String get() {
         initPath();
@@ -180,7 +183,7 @@ public class DataRecordAccessor implements Accessor {
         if (pathElement != null) {
             return pathElement.getter.get(current, pathElement);
         }
-        throw new IllegalArgumentException("Path '" + path + "' does not exist in document.");
+        throw new IllegalArgumentException("Path '" + path + "' does not exist in document."); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -188,6 +191,7 @@ public class DataRecordAccessor implements Accessor {
         // No need to implement anything for this kind of accessor.
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void create() {
         try {
@@ -202,14 +206,14 @@ public class DataRecordAccessor implements Accessor {
                     if (element.indexOf('[') > 0) {
                         FieldMetadata field = current.getType().getField(StringUtils.substringBefore(element, "[")); //$NON-NLS-1$
                         if (!field.isMany()) {
-                            throw new IllegalStateException("Expected a repeatable field for '" + element + "' in path '" + path
-                                    + "'.");
+                            throw new IllegalStateException("Expected a repeatable field for '" + element + "' in path '" + path //$NON-NLS-1$ //$NON-NLS-2$
+                                    + "'."); //$NON-NLS-1$
                         }
                         int indexStart = element.indexOf('[');
                         int indexEnd = element.indexOf(']');
                         if (indexStart < 0 || indexEnd < 0) {
-                            throw new RuntimeException("Field name '" + element + "' did not match many field pattern in path '"
-                                    + path + "'.");
+                            throw new RuntimeException("Field name '" + element + "' did not match many field pattern in path '" //$NON-NLS-1$ //$NON-NLS-2$
+                                    + path + "'."); //$NON-NLS-1$
                         }
                         int index = Integer.parseInt(element.substring(indexStart + 1, indexEnd)) - 1;
                         List list = (List) current.get(field);
@@ -258,6 +262,7 @@ public class DataRecordAccessor implements Accessor {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void insert() {
         try {
@@ -300,6 +305,7 @@ public class DataRecordAccessor implements Accessor {
         set(value);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void delete() {
         if (!exist()) {
@@ -347,6 +353,7 @@ public class DataRecordAccessor implements Accessor {
         }
     }
 
+    @SuppressWarnings({ "rawtypes" })
     @Override
     public boolean exist() {
         if (cachedExist != null) {
@@ -365,21 +372,21 @@ public class DataRecordAccessor implements Accessor {
                     return false;
                 }
                 if (element.indexOf('[') > 0) {
-                    String fieldName = StringUtils.substringBefore(element, "[");
+                    String fieldName = StringUtils.substringBefore(element, "["); //$NON-NLS-1$
                     if (!current.getType().hasField(fieldName)) {
                         cachedExist = false;
                         return false;
                     }
                     FieldMetadata field = current.getType().getField(fieldName);
                     if (!field.isMany()) {
-                        throw new IllegalStateException("Expected a repeatable field for '" + element + "' in path '" + path
-                                + "'.");
+                        throw new IllegalStateException("Expected a repeatable field for '" + element + "' in path '" + path //$NON-NLS-1$ //$NON-NLS-2$
+                                + "'."); //$NON-NLS-1$
                     }
                     int indexStart = element.indexOf('[');
                     int indexEnd = element.indexOf(']');
                     if (indexStart < 0 || indexEnd < 0) {
-                        throw new RuntimeException("Field name '" + element + "' did not match many field pattern in path '"
-                                + path + "'.");
+                        throw new RuntimeException("Field name '" + element + "' did not match many field pattern in path '" //$NON-NLS-1$ //$NON-NLS-2$
+                                + path + "'."); //$NON-NLS-1$
                     }
                     int index = Integer.parseInt(element.substring(indexStart + 1, indexEnd)) - 1;
                     List list = (List) current.get(field);
@@ -420,6 +427,7 @@ public class DataRecordAccessor implements Accessor {
         // No need to implement anything for this kind of accessor.
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public int size() {
         if (!exist()) {
@@ -436,6 +444,8 @@ public class DataRecordAccessor implements Accessor {
                     Object o = current.get(pathElement.field);
                     if (o == null) {
                         return 0;
+                    } else if (pathElement == pathElements.getLast()) {
+                        return 1;
                     }
                     current = (DataRecord) o;
                 } else {
@@ -464,6 +474,7 @@ public class DataRecordAccessor implements Accessor {
         return 0;
     }
 
+    @SuppressWarnings({ "rawtypes" })
     @Override
     public String getActualType() {
         initPath();

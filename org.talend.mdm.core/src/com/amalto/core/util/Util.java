@@ -1007,7 +1007,7 @@ public class Util {
                 }
             }
 
-            whereItem = "*".equals(condition.getRightValueOrPath()) || StringUtils.isEmpty(condition.getRightValueOrPath()) //$NON-NLS-1$
+            whereItem = "*".equals(condition.getRightValueOrPath()) 
                     || ".*".equals(condition.getRightValueOrPath()) ? null : whereItem; //$NON-NLS-1$
         } else {
             throw new XmlServerException("Unknown Where Type : " + whereItem.getClass().getName());

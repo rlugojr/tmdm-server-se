@@ -1,0 +1,12 @@
+<WorkingDraftsObj>
+  <Id>3</Id>
+  <Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="nsi_draft_CustomsPreferentialDutyType">
+    <AutoField>b</AutoField>
+    <CustomsPreferentialDuty>
+      <Name>b</Name>
+      <DictRecordDetails>
+        <Action>b</Action>
+      </DictRecordDetails>
+    </CustomsPreferentialDuty>
+  </Dictionary>
+</WorkingDraftsObj>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:element name="WorkingDraftsObj" type="nsi_WorkingDraftsType">
+		<xsd:annotation>
+			<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:unique name="WorkingDraftsObj">
+			<xsd:selector xpath="." />
+			<xsd:field xpath="Id" />
+		</xsd:unique>
+	</xsd:element>
+	<xsd:complexType abstract="false" name="nsi_WorkingDraftsType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Id"
+				type="AUTO_INCREMENT">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="Dictionary"
+				type="nsi_DictionaryType">
+				<xsd:annotation>
+					<xsd:appinfo source="X_AutoExpand">true</xsd:appinfo>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType abstract="true" name="nsi_DictionaryType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="AutoField"
+				type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType abstract="false"
+		name="nsi_draft_CustomsPreferentialDutyType">
+		<xsd:complexContent>
+			<xsd:extension base="nsi_DictionaryType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0"
+						name="CustomsPreferentialDuty" type="opnsi_draft_CustomsPreferentialDutyType">
+						<xsd:annotation>
+							<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType abstract="false" name="nsi_draft_CurrencyType">
+		<xsd:complexContent>
+			<xsd:extension base="nsi_DictionaryType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="Currency"
+						type="opnsi_draft_CurrencyType">
+						<xsd:annotation>
+							<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="opnsi_draft_CustomsPreferentialDutyType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Name"
+				type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="DictRecordDetails"
+				type="nsi_DictRecordDetailsDraftType">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="opnsi_draft_CurrencyType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Code"
+				type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="DictRecordDetails"
+				type="nsi_DictRecordDetailsDraftType">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType abstract="false"
+		name="nsi_DictRecordDetailsDraftType">
+		<xsd:all>
+			<xsd:element maxOccurs="1" minOccurs="1" name="Action"
+				type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:simpleType name="AUTO_INCREMENT">
+		<xsd:restriction base="xsd:string" />
+	</xsd:simpleType>
+</xsd:schema>
