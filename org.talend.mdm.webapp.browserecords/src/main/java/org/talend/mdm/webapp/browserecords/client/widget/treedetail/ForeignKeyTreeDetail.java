@@ -132,7 +132,7 @@ public class ForeignKeyTreeDetail extends ContentPanel {
                                         if (parentModel.getChildCount() > 0) {
                                             ItemNodeModel child = (ItemNodeModel) parentModel.getChild(0);
                                             Field<?> field = fieldMap.get(child.getId().toString());
-                                            if (field != null) {
+                                            if (field != null && !itemsDetailPanel.isStaging()) {
                                                 TreeDetailGridFieldCreator.updateMandatory(field, child, fieldMap);
                                             }
                                         }
