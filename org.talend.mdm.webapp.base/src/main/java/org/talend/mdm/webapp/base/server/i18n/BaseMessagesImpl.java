@@ -151,6 +151,11 @@ public final class BaseMessagesImpl implements BaseMessages {
     }
 
     @Override
+    public String save_more_btn() {
+        return MESSAGES.getMessage("save_more_btn");
+    }
+
+    @Override
     public String add_btn() {
         return MESSAGES.getMessage("add_btn");
     }
@@ -224,5 +229,4 @@ public final class BaseMessagesImpl implements BaseMessages {
     public String restore_fail_prefix() {
         return MESSAGES.getMessage("restore_fail_prefix");
     }
-
 }

@@ -583,5 +583,10 @@ public class CommonUtilTest extends TestCase {
         public String restore_fail_prefix() {
             return "";
         }
+
+        @Override
+        public String save_more_btn() {
+            return "";
+        }
     }
 }
