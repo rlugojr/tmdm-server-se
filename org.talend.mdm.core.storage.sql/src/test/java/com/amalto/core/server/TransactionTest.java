@@ -330,6 +330,11 @@ public class TransactionTest extends TestCase {
             public boolean hasFailed() {
                 return false;
             }
+
+            @Override
+            public boolean isClean() {
+                return true;
+            }
         }
     }
 }

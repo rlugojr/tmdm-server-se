@@ -112,6 +112,11 @@ public abstract class StorageTransaction {
      * rollback was called to revert all commit changes.
      */
     public abstract boolean hasFailed();
+    
+    /**
+     * @return true if the storage transaction was completely proceeded (either commit or rollback called)
+     */
+    public abstract boolean isClean();
 
     public void setLockStrategy(Transaction.LockStrategy lockStrategy) {
         synchronized (lockChange) {

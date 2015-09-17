@@ -12,27 +12,10 @@
 // ============================================================================
 package com.amalto.core.query;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import junit.framework.Assert;
 
-import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
-
-import com.amalto.core.query.user.UserQueryBuilder;
 import com.amalto.core.server.ServerContext;
 import com.amalto.core.storage.Storage;
-import com.amalto.core.storage.StorageResults;
-import com.amalto.core.storage.record.DataRecord;
-import com.amalto.core.storage.record.metadata.DataRecordMetadataImpl;
 import com.amalto.core.storage.transaction.Transaction;
 import com.amalto.core.storage.transaction.Transaction.Lifetime;
 import com.amalto.core.storage.transaction.TransactionManager;
@@ -53,7 +36,6 @@ public class LongTransactionTest extends LongTransactionAbstractTestCase {
         transaction.include(storage);
         transaction.begin();
 
-        transaction.begin(); // this should have no effect
         storage.begin(); // this should have no effect
 
         // create record
@@ -246,5 +228,119 @@ public class LongTransactionTest extends LongTransactionAbstractTestCase {
         Assert.assertEquals(0, countCountriesInAnotherThread());
         longTransaction.commit();
         Assert.assertEquals(nbThreads, countCountriesInAnotherThread());
+    }
+    
+    /**
+     * Tests nested implicit transactions work well
+     * Begin a transaction with {@link Storage#begin()} twice
+     * make a change then commit these changes twice
+     * 
+     * @throws Exception
+     */
+    public void testNestingImplicitAdHocTransactions() throws Exception {
+        Assert.assertEquals(0, countCountries());
+        storage.begin();
+        storage.begin();
+        storage.update(createDataRecord(1));
+        storage.commit();
+        storage.commit();
+        Assert.assertEquals(1, countCountries());
+    }
+    
+    /**
+     * Try to save an invalid data record (missing mandatory field)
+     * rollback storage and make sure it can be used again.
+     * 
+     * @throws Exception
+     */
+    public void testFailureThenReuseStorage() throws Exception {
+        Assert.assertEquals(0, countCountries());
+        storage.begin();
+        
+        try {
+            storage.update(createInvalidRecord(1));
+            fail("Exception expected");
+        }
+        catch(Exception e){
+            storage.rollback();
+        }
+        Assert.assertEquals(0, countCountries());
+        
+        storage.begin();
+        storage.update(createDataRecord(1));
+        storage.commit();
+        
+        Assert.assertEquals(1, countCountries());
+    }
+    
+    /**
+     * Create nested AdHoc transactions with a failure
+     * in the nested transaction, make sure the upper level commit
+     * will fail and the storage can still be used.
+     * 
+     * @throws Exception
+     */
+    public void testNestedAdHocWithFailure() throws Exception {
+        Assert.assertEquals(0, countCountries());
+        storage.begin();
+        storage.begin();
+        
+        try {
+            storage.update(createInvalidRecord(1));
+            fail("Exception expected");
+        }
+        catch(Exception e){
+            storage.rollback();
+        }
+        try {
+            storage.commit();
+            fail("Exception expected");
+        }
+        catch(Exception e){
+            storage.rollback();
+        }
+        
+        Assert.assertEquals(0, countCountries());
+        storage.begin();
+        storage.update(createDataRecord(1));
+        storage.commit();
+        
+        Assert.assertEquals(1, countCountries());
+    }
+    
+    /**
+     * Create nested AdHoc transactions. Store a record at first level
+     * then store an invalid record at second level.
+     * make sure the upper level commit will fail 
+     * and the storage can still be used.
+     * 
+     * @throws Exception
+     */
+    public void testNestedAdHocWithFailureAndValidRecordAtTopLevel() throws Exception {
+        Assert.assertEquals(0, countCountries());
+        storage.begin();
+        storage.update(createDataRecord(1));
+        storage.begin();
+        try {
+            storage.update(createInvalidRecord(2));
+            fail("Exception expected");
+        }
+        catch(Exception e){
+            storage.rollback();
+        }
+        try {
+            storage.commit();
+            fail("Exception expected");
+        }
+        catch(Exception e){
+            storage.rollback();
+        }
+        
+        Assert.assertEquals(0, countCountries());
+        storage.begin();
+        storage.update(createDataRecord(1));
+        storage.commit();
+        
+        Assert.assertEquals(1, countCountries());
     }
 }
