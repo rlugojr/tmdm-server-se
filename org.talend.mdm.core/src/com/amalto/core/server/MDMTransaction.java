@@ -57,6 +57,9 @@ class MDMTransaction implements Transaction {
                 if (!storageTransaction.hasFailed()) {
                     iterator.remove();
                 }
+                else if(!storageTransaction.isClean()){
+                    LOGGER.warn("StorageTransaction " + storageTransaction.toString() + " is not clean but transactionComplete is called !"); //$NON-NLS-1$ //$NON-NLS-2$
+                }
                 else {
                     LOGGER.warn("Remaining failed storageTransaction while transactionComplete is called !"); //$NON-NLS-1$
                 }

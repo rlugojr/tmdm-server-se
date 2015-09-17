@@ -11,8 +11,12 @@
 
 package com.amalto.core.storage.hibernate;
 
+import java.io.StringWriter;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,6 +60,11 @@ class HibernateStorageTransaction extends StorageTransaction {
 
     private boolean hasFailed;
 
+    // a stack keeping track of all begin calls on this StorageTransaction
+    private Stack<BeginEvent> beginStack = new Stack<BeginEvent>();
+    
+    private final String id = UUID.randomUUID().toString();
+
     public HibernateStorageTransaction(HibernateStorage storage, Session session) {
         super();
         this.storage = storage;
@@ -81,10 +90,16 @@ class HibernateStorageTransaction extends StorageTransaction {
             }
             Transaction transaction = session.getTransaction();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Transaction begin (session " + session.hashCode() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                debug("Transaction begin"); //$NON-NLS-1$
             }
             if (!transaction.isActive()) {
                 session.beginTransaction();
+            }
+            // push a new event to the begin stack
+            BeginEvent event = new BeginEvent();
+            this.beginStack.push(event);
+            if(LOGGER.isDebugEnabled()){
+                debug("Begin event pushed: " + event.toString()); //$NON-NLS-1$
             }
         }
         finally {
@@ -93,8 +108,8 @@ class HibernateStorageTransaction extends StorageTransaction {
     }
     
     public void acquireLock() {
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("Trying to acquire lock for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
+        if(LOGGER.isTraceEnabled()){
+            debug("Trying to acquire lock for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
         }
         try {
             if(!this.lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)){
@@ -104,18 +119,18 @@ class HibernateStorageTransaction extends StorageTransaction {
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted while trying to acquire lock on " + this); //$NON-NLS-1$
         }
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("Lock acquired for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
+        if(LOGGER.isTraceEnabled()){
+            debug("Lock acquired for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
     
     public void releaseLock(){
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("Trying to release for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
+        if(LOGGER.isTraceEnabled()){
+            debug("Trying to release for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
         }
         lock.unlock();
-        if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("Lock released for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
+        if(LOGGER.isTraceEnabled()){
+            debug("Lock released for " + this + " on thread " + Thread.currentThread().getName()); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -123,11 +138,14 @@ class HibernateStorageTransaction extends StorageTransaction {
     public void commit() {
         this.acquireLock();
         try {
+            if (!mustProceed()) {
+                return;
+            }
             if (isAutonomous) {
                 Transaction transaction = session.getTransaction();
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[" + storage + "] Transaction #" + transaction.hashCode() + " -> Commit includes " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                            + session.getStatistics().getEntityCount() + " not-flushed record(s)..."); //$NON-NLS-1$
+                    debug("Transaction #" + transaction.hashCode() + " -> Commit includes "
+                            + session.getStatistics().getEntityCount() + " not-flushed record(s)...");
                 }
                 if (!transaction.isActive()) {
                     throw new IllegalStateException("Can not commit transaction, no transaction is active."); //$NON-NLS-1$
@@ -137,7 +155,7 @@ class HibernateStorageTransaction extends StorageTransaction {
                         session.flush();
                         transaction.commit();
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("[" + storage + "] Transaction #" + transaction.hashCode() + " -> Commit done."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                            debug("Transaction #" + transaction.hashCode() + " -> Commit done.");
                         }
                     } else {
                         LOGGER.warn("Transaction was already committed."); //$NON-NLS-1$
@@ -260,7 +278,7 @@ class HibernateStorageTransaction extends StorageTransaction {
     public void rollback() {
         this.acquireLock();
         try {
-            if (isAutonomous) {
+            if(isAutonomous && mustProceed()){
                 try {
                     Transaction transaction = session.getTransaction();
                     if (!transaction.isActive()) {
@@ -315,6 +333,33 @@ class HibernateStorageTransaction extends StorageTransaction {
             this.releaseLock();
         }
     }
+    
+    /**
+     * @return true if the current state of this HibernateStorageTransaction authorizes a commit or 
+     * a rollback to be really performed. This is true only if the internal begin events stack 
+     * contains one element.
+     */
+    private boolean mustProceed(){
+        // pop the first begin element from the stack
+        if(!beginStack.isEmpty()){
+            BeginEvent event = beginStack.pop();
+            if(LOGGER.isDebugEnabled()){
+                debug("Popped begin event: " + event.toString()); //$NON-NLS-1$
+            }
+        }
+        // the stack is already empty. A begin is missing ... keep things happen anyway 
+        else {
+            LOGGER.warn("mustProceed was called on HibernateStorageTransaction but the begin stack is empty. A begin is missing", new IllegalStateException()); //$NON-NLS-1$
+        }
+        // if the stack is still not empty, it means we should not perform neither commit nor rollback.
+        if(!beginStack.isEmpty()){
+            if(LOGGER.isDebugEnabled()){
+                debug("Nested transactions: A begin event prevents to proceed:" + beginStack.peek().toString()); //$NON-NLS-1$
+            }
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public boolean hasFailed() {
@@ -334,11 +379,57 @@ class HibernateStorageTransaction extends StorageTransaction {
     }
 
     @Override
+    public boolean isClean() {
+        return this.beginStack.isEmpty();
+    }
+    
+    @Override
     public String toString() {
         return "HibernateStorageTransaction {" + //$NON-NLS-1$
                 "storage=" + storage + //$NON-NLS-1$
                 ", session=" + session + //$NON-NLS-1$
                 ", initiatorThread=" + initiatorThread + //$NON-NLS-1$
                 '}';
+    }
+    
+    /**
+     * debug utility method
+     * @param msg
+     */
+    private void debug(String msg){
+        LOGGER.debug(id + "[" + storage + "] (" + (session != null ? session.hashCode() : "null") + ") " + msg); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    }
+    
+    /**
+     * A simple pojo representing a call to {@link HibernateStorageTransaction#begin()}.
+     */
+    private class BeginEvent {
+        
+        private final String id;
+        
+        private final StackTraceElement[] stackTrace;
+        
+        private final long timestamp;
+        
+        public BeginEvent() {
+            this.id = UUID.randomUUID().toString();
+            this.stackTrace = Thread.currentThread().getStackTrace();
+            this.timestamp = System.currentTimeMillis();
+        }
+        
+        public String toString(){
+            String eol = System.getProperty("line.separator"); //$NON-NLS-1$
+            StringWriter writer = new StringWriter();
+            writer.append("ID = " + id); //$NON-NLS-1$
+            writer.append(", CreationDate: " + new Date(this.timestamp)); //$NON-NLS-1$
+            if(this.stackTrace != null){
+                writer.append(eol);
+                for(StackTraceElement s : this.stackTrace){
+                    writer.append(s.toString());
+                    writer.append(eol);
+                }
+            }
+            return writer.toString();
+        }
     }
 }

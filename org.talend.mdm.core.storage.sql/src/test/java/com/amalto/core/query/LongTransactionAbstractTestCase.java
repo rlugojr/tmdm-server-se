@@ -27,6 +27,8 @@ import com.amalto.core.query.user.UserQueryBuilder;
 import com.amalto.core.server.ServerContext;
 import com.amalto.core.storage.StorageResults;
 import com.amalto.core.storage.record.DataRecord;
+import com.amalto.core.storage.record.DataRecordReader;
+import com.amalto.core.storage.record.XmlStringDataRecordReader;
 import com.amalto.core.storage.record.metadata.DataRecordMetadataImpl;
 import com.amalto.core.storage.transaction.Transaction;
 import com.amalto.core.storage.transaction.TransactionManager;
@@ -210,6 +212,11 @@ public class LongTransactionAbstractTestCase extends StorageTestCase {
         result.set(country.getField("creationTime"), new Timestamp(new Date().getTime())); //$NON-NLS-1$
         result.set(country.getField("creationDate"), new Timestamp(new Date().getTime())); //$NON-NLS-1$
         return result;
+    }
+    
+    protected static DataRecord createInvalidRecord(int id){
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        return factory.read(repository, country, "<Country><id>"+id+"</id><creationDate>2011-10-10</creationDate><creationTime>2011-10-10T01:01:01</creationTime><name>USA</name><notes><comment>repeatable comment 1</comment></notes></Country>");
     }
     
     protected static DataRecord createRole(){

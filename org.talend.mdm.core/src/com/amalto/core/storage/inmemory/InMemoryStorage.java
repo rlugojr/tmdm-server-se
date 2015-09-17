@@ -235,6 +235,11 @@ public class InMemoryStorage implements Storage {
         public boolean hasFailed() {
             return false;
         }
+
+        @Override
+        public boolean isClean() {
+            return true;
+        }
     }
 
     private static class InMemoryStorageResults implements StorageResults {
