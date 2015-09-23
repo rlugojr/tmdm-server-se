@@ -10,9 +10,7 @@
 
 package com.amalto.core.storage.hibernate;
 
-import static com.amalto.core.query.user.UserQueryBuilder.and;
-import static com.amalto.core.query.user.UserQueryBuilder.eq;
-import static com.amalto.core.query.user.UserQueryBuilder.from;
+import static com.amalto.core.query.user.UserQueryBuilder.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -151,6 +149,8 @@ import com.amalto.core.storage.transaction.StorageTransaction;
 import com.amalto.core.storage.transaction.TransactionManager;
 
 public class HibernateStorage implements Storage {
+
+    private int DEFAULT_FETCH_SIZE = 500;
 
     public static final HibernateStorage.LocalEntityResolver ENTITY_RESOLVER = new HibernateStorage.LocalEntityResolver();
 
@@ -300,7 +300,8 @@ public class HibernateStorage implements Storage {
                     catalog = getObjectNameNormalizer().normalizeIdentifierQuoting(catalog);
                     String key = subSelect == null ? Table.qualify(catalog, schema, name) : subSelect;
                     if (tables.containsKey(key)) {
-                        throw new DuplicateMappingException("Table " + key + " is duplicated.", DuplicateMappingException.Type.TABLE, name); //$NON-NLS-1$
+                        throw new DuplicateMappingException(
+                                "Table " + key + " is duplicated.", DuplicateMappingException.Type.TABLE, name); //$NON-NLS-1$
                     }
                     Table table = new DenormalizedTable(includedTable) {
 
@@ -449,35 +450,36 @@ public class HibernateStorage implements Storage {
                         }
                         // Database specific behaviors
                         switch (dataSource.getDialectName()) {
-                            case SQL_SERVER:
-                                // TMDM-8144: Don't index field name on SQL Server when size > 900
-                                String maxLengthStr = indexedField.getType().getData(MetadataRepository.DATA_MAX_LENGTH);                                 
-                                if(maxLengthStr == null) {  // go up the type inheritance tree to find max length annotation
-                                    TypeMetadata type = indexedField.getType();
-                                    while (!XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(type.getNamespace()) && !type.getSuperTypes().isEmpty()) {
-                                        type = type.getSuperTypes().iterator().next();
-                                        maxLengthStr = type.getData(MetadataRepository.DATA_MAX_LENGTH);
-                                        if(maxLengthStr != null){
-                                            break;
-                                        }
+                        case SQL_SERVER:
+                            // TMDM-8144: Don't index field name on SQL Server when size > 900
+                            String maxLengthStr = indexedField.getType().getData(MetadataRepository.DATA_MAX_LENGTH);
+                            if (maxLengthStr == null) { // go up the type inheritance tree to find max length annotation
+                                TypeMetadata type = indexedField.getType();
+                                while (!XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(type.getNamespace())
+                                        && !type.getSuperTypes().isEmpty()) {
+                                    type = type.getSuperTypes().iterator().next();
+                                    maxLengthStr = type.getData(MetadataRepository.DATA_MAX_LENGTH);
+                                    if (maxLengthStr != null) {
+                                        break;
                                     }
                                 }
-                                if (maxLengthStr != null) {
-                                    Integer maxLength = Integer.parseInt(maxLengthStr);
-                                    if (maxLength > 900) {
-                                        LOGGER.warn("Skip index on field '" + indexedField.getPath() + "' (too long value).");
-                                        continue;
-                                    }
+                            }
+                            if (maxLengthStr != null) {
+                                Integer maxLength = Integer.parseInt(maxLengthStr);
+                                if (maxLength > 900) {
+                                    LOGGER.warn("Skip index on field '" + indexedField.getPath() + "' (too long value).");
+                                    continue;
                                 }
-                                break;
-                            case H2:
-                            case MYSQL:
-                            case POSTGRES:
-                            case DB2:
-                            case ORACLE_10G:
-                            default:
-                                // Nothing to do for these databases
-                                break;
+                            }
+                            break;
+                        case H2:
+                        case MYSQL:
+                        case POSTGRES:
+                        case DB2:
+                        case ORACLE_10G:
+                        default:
+                            // Nothing to do for these databases
+                            break;
                         }
                         databaseIndexedFields.add(databaseField);
                         if (!databaseField.getContainingType().isInstantiable()) {
@@ -529,11 +531,11 @@ public class HibernateStorage implements Storage {
                 }
             }
             switch (dataSource.getDialectName()) {
-                case ORACLE_10G:
-                    tableResolver = new OracleStorageTableResolver(databaseIndexedFields, dataSource.getNameMaxLength());
-                    break;
-                default:
-                    tableResolver = new StorageTableResolver(databaseIndexedFields, dataSource.getNameMaxLength());
+            case ORACLE_10G:
+                tableResolver = new OracleStorageTableResolver(databaseIndexedFields, dataSource.getNameMaxLength());
+                break;
+            default:
+                tableResolver = new StorageTableResolver(databaseIndexedFields, dataSource.getNameMaxLength());
             }
             storageClassLoader.setTableResolver(tableResolver);
             // Master, Staging and System share same class creator.
@@ -847,13 +849,13 @@ public class HibernateStorage implements Storage {
         StorageTransaction storageTransaction = this.getCurrentStorageTransaction();
         storageTransaction.rollback();
     }
-    
-    private StorageTransaction getCurrentStorageTransaction(){
+
+    private StorageTransaction getCurrentStorageTransaction() {
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         com.amalto.core.storage.transaction.Transaction currentTransaction = transactionManager.currentTransaction();
         StorageTransaction storageTransaction = currentTransaction.include(this);
-        if(!storageTransaction.getCoordinator().equals(currentTransaction)){
-            LOGGER.warn("Current transaction returned by TransactionManager [" + currentTransaction + "] does not match storageTransaction coordinator ["+ storageTransaction.getCoordinator()+ "]. There is something wrong in TransactionManager"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (!storageTransaction.getCoordinator().equals(currentTransaction)) {
+            LOGGER.warn("Current transaction returned by TransactionManager [" + currentTransaction + "] does not match storageTransaction coordinator [" + storageTransaction.getCoordinator() + "]. There is something wrong in TransactionManager"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
         return storageTransaction;
     }
@@ -876,12 +878,8 @@ public class HibernateStorage implements Storage {
             MassIndexer indexer = Search.getFullTextSession(session).createIndexer();
             indexer.optimizeOnFinish(true);
             indexer.optimizeAfterPurge(true);
-            indexer
-                .idFetchSize(Integer.MIN_VALUE)
-                .threadsToLoadObjects(1)
-                .typesToIndexInParallel(5)
-                .batchSizeToLoadObjects(batchSize)
-                .startAndWait();
+            indexer.idFetchSize(generateIdFetchSize()).threadsToLoadObjects(1).typesToIndexInParallel(5)
+                    .batchSizeToLoadObjects(batchSize).startAndWait();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -1200,7 +1198,7 @@ public class HibernateStorage implements Storage {
         Session session = this.getCurrentSession();
         try {
             storageClassLoader.bind(Thread.currentThread());
-            //Session session = factory.getCurrentSession();
+            // Session session = factory.getCurrentSession();
             userQuery = userQuery.normalize(); // First do a normalize for correct optimization detection.
             // Check if optimized delete for one type (and no filter) is applicable
             if (userQuery instanceof Select) {
@@ -1276,7 +1274,7 @@ public class HibernateStorage implements Storage {
                                 FullTextSession fullTextSession = Search.getFullTextSession(session);
                                 Set<Class<?>> indexedTypes = fullTextSession.getSearchFactory().getIndexedTypes();
                                 Class<? extends Wrapper> entityType = storageClassLoader.getClassFromType(mapping.getDatabase());
-                                if(indexedTypes.contains(entityType)) {
+                                if (indexedTypes.contains(entityType)) {
                                     fullTextSession.purgeAll(entityType);
                                 } else {
                                     LOGGER.warn("Unable to delete full text indexes for '" + entityType + "' (not indexed).");
@@ -1337,7 +1335,7 @@ public class HibernateStorage implements Storage {
         Session session = this.getCurrentSession();
         try {
             storageClassLoader.bind(Thread.currentThread());
-            //Session session = factory.getCurrentSession();
+            // Session session = factory.getCurrentSession();
             ComplexTypeMetadata currentType = record.getType();
             TypeMapping mapping = mappingRepository.getMappingFromUser(currentType);
             if (mapping == null) {
@@ -1494,20 +1492,20 @@ public class HibernateStorage implements Storage {
     public StorageClassLoader getClassLoader() {
         return storageClassLoader;
     }
-    
-    private Session getCurrentSession(){
+
+    private Session getCurrentSession() {
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         com.amalto.core.storage.transaction.Transaction currentTransaction = transactionManager.currentTransaction();
-        HibernateStorageTransaction storageTransaction = (HibernateStorageTransaction)currentTransaction.include(this);
+        HibernateStorageTransaction storageTransaction = (HibernateStorageTransaction) currentTransaction.include(this);
         storageTransaction.acquireLock();
         return storageTransaction.getSession();
-        
+
     }
-    
-    private void releaseSession(){
+
+    private void releaseSession() {
         TransactionManager transactionManager = ServerContext.INSTANCE.get().getTransactionManager();
         com.amalto.core.storage.transaction.Transaction currentTransaction = transactionManager.currentTransaction();
-        HibernateStorageTransaction storageTransaction = (HibernateStorageTransaction)currentTransaction.include(this);
+        HibernateStorageTransaction storageTransaction = (HibernateStorageTransaction) currentTransaction.include(this);
         storageTransaction.releaseLock();
     }
 
@@ -1603,6 +1601,19 @@ public class HibernateStorage implements Storage {
             referencedType.accept(this);
             return types;
         }
+    }
+
+    private int generateIdFetchSize() {
+        int fetchSize = DEFAULT_FETCH_SIZE;
+        if (dataSource.getDialectName() == RDBMSDataSource.DataSourceDialect.MYSQL) {
+            // for using "stream resultset" to resolve OOM
+            fetchSize = Integer.MIN_VALUE;
+        } else {
+            if (configuration.getProperty(Environment.STATEMENT_FETCH_SIZE) != null) {
+                fetchSize = Integer.parseInt(configuration.getProperty(Environment.STATEMENT_FETCH_SIZE));
+            }
+        }
+        return fetchSize;
     }
 
     private class TableClosureVisitor implements PersistentClassVisitor {

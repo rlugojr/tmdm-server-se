@@ -18,12 +18,17 @@ import static com.amalto.core.query.user.UserStagingQueryBuilder.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 
 import com.amalto.core.query.user.BinaryLogicOperator;
@@ -36,6 +41,7 @@ import com.amalto.core.query.user.UserQueryHelper;
 import com.amalto.core.storage.FullTextResultsWriter;
 import com.amalto.core.storage.Storage;
 import com.amalto.core.storage.StorageResults;
+import com.amalto.core.storage.datasource.RDBMSDataSource;
 import com.amalto.core.storage.exception.FullTextQueryCompositeKeyException;
 import com.amalto.core.storage.hibernate.HibernateStorage;
 import com.amalto.core.storage.record.DataRecord;
@@ -858,5 +864,53 @@ public class StorageFullTextTest extends StorageTestCase {
         } finally {
             results.close();
         }
+    }
+
+    public void testGenerateIdFetchSize() throws Exception {
+        // Test "stream resultset"
+        RDBMSDataSource dataSource = new RDBMSDataSource("TestDataSource", "MySQL", "", "", "", 0, 0, "", "", false, "update",
+                false, new HashMap(), "", "", null, "", "", "", false);
+        Configuration configuration = new Configuration();
+        configuration.setProperty(Environment.STATEMENT_FETCH_SIZE, "1000");
+        HibernateStorage storage = new HibernateStorage("HibernateStorage");
+        storage.init(getDatasource("RDBMS-1-NO-FT"));
+        storage.prepare(repository, Collections.<Expression> emptySet(), false, false);
+
+        Class storageClass = storage.getClass();
+        Field dataSourceField = storageClass.getDeclaredField("dataSource");
+        dataSourceField.setAccessible(true);
+        dataSourceField.set(storage, dataSource);
+
+        Field configurationField = storageClass.getDeclaredField("configuration");
+        configurationField.setAccessible(true);
+        configurationField.set(storage, configuration);
+
+        Method generateIdFetchSizeMethod = storageClass.getDeclaredMethod("generateIdFetchSize", null);
+        generateIdFetchSizeMethod.setAccessible(true);
+        assertEquals(Integer.MIN_VALUE, generateIdFetchSizeMethod.invoke(storage, null));
+
+        // Test config batch size
+        dataSource = new RDBMSDataSource("TestDataSource", "H2", "", "", "", 0, 0, "", "", false, "update", false, new HashMap(),
+                "", "", null, "", "", "", false);
+        storage = new HibernateStorage("HibernateStorage");
+        storage.init(getDatasource("RDBMS-1-NO-FT"));
+        storage.prepare(repository, Collections.<Expression> emptySet(), false, false);
+        storageClass = storage.getClass();
+
+        dataSourceField = storageClass.getDeclaredField("dataSource");
+        dataSourceField.setAccessible(true);
+        dataSourceField.set(storage, dataSource);
+
+        configurationField = storageClass.getDeclaredField("configuration");
+        configurationField.setAccessible(true);
+        configurationField.set(storage, configuration);
+        assertEquals(1000, generateIdFetchSizeMethod.invoke(storage, null));
+
+        // Test default batch size
+        configuration = new Configuration();
+        configurationField = storageClass.getDeclaredField("configuration");
+        configurationField.setAccessible(true);
+        configurationField.set(storage, configuration);
+        assertEquals(500, generateIdFetchSizeMethod.invoke(storage, null));
     }
 }
