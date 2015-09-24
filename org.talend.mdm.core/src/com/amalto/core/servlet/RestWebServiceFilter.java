@@ -37,6 +37,6 @@ public class RestWebServiceFilter implements Filter {
 
     @Override
     public void destroy() {
-        // Destroy of the transaction manager is moved to Server#close();
+        // do nothing
     }
 }
