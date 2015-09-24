@@ -76,6 +76,11 @@
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
+    <!-- rest filter -->
+    <filter>
+    	<filter-name>restWebServiceFilter</filter-name>
+    	<filter-class>com.amalto.core.servlet.RestWebServiceFilter</filter-class>    	
+    </filter>
     <filter-mapping>
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
@@ -89,6 +94,10 @@
     <filter-mapping>
         <filter-name>transactionFilter</filter-name>
         <url-pattern>/services/bulkload</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+    	<filter-name>restWebServiceFilter</filter-name>
+        <url-pattern>/services/rest/*</url-pattern>
     </filter-mapping>
     <!-- Web services -->
     <servlet>
