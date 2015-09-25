@@ -359,6 +359,10 @@ public class ForeignKeyListWindow extends Window {
             }
             Map<String, TypeModel> dataTypes = entityModel.getMetaDataTypes();
             for (String info : foreignKeyInfo) {
+                TypeModel metaDataType = dataTypes.get(info);
+                String id = CommonUtil.getElementFromXpath(info);
+                ColumnConfig columnConfig = new ColumnConfig(id, metaDataType == null ? id : ViewUtil.getViewableLabel(
+                        Locale.getLanguage(), metaDataType), COLUMN_WIDTH);
                 columns.add(columnConfig);
                 if (entityModel.getTypeModel(info).getType().equals(DataTypeConstants.MLS)) {
 

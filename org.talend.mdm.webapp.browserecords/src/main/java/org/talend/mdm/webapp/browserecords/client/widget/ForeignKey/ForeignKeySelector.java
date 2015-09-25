@@ -370,7 +370,7 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
                                     setValue(foreignKeyBean);
                                 } else {
                                     MessageBox.alert(MessagesFactory.getMessages().warning_title(), MessagesFactory.getMessages()
-                                            .foreignkey_filter_warning(), null);
+                                            .foreignkeybean_filter_warnging(), null);
                                 }
                             }
                         });

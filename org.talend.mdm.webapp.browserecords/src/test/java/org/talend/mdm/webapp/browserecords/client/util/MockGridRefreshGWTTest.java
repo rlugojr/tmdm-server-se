@@ -523,8 +523,8 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         }
 
         @Override
-        public void updateItem(String concept, String ids, Map<String, String> changedNodes, String xml, EntityModel entityModel, String language,
-                AsyncCallback<ItemResult> callback) {
+        public void updateItem(String concept, String ids, Map<String, String> changedNodes, String xml, EntityModel entityModel,
+                String language, AsyncCallback<ItemResult> callback) {
 
         }
 
@@ -598,27 +598,9 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         }
 
         @Override
-        public void checkTask(String dataClusterPK, String concept, String groupId, AsyncCallback<Integer> callback) {
-
-        @Override
         public void getForeignKeyBean(String concept, String ids, String xml, String currentXpath, String foreignKey,
                 List<String> foreignKeyInfo, String foreignKeyFilter, boolean staging, String language,
                 AsyncCallback<ForeignKeyBean> callback) {
-        }
-
-        /* (non-Javadoc)
-         * @see org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync#checkTask(java.lang.String, java.lang.String, java.lang.String, com.google.gwt.user.client.rpc.AsyncCallback)
-         */
-        @Override
-        public void checkTask(String dataClusterPK, String concept, String groupId, AsyncCallback<Boolean> callback) {
-            // TODO Auto-generated method stub
-            
-        }
-
-        @Override
-        public void getForeignKeyList(BasePagingLoadConfigImpl config, String foreignKeyPath, List<String> foreignKeyInfo,
-                String foreignKeyFilter, String filterValue, TypeModel model, String dataClusterPK, String language,
-                AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
         }
 
         @Override
@@ -632,6 +614,19 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
                 String foreignKeyFilter, String dataClusterPK, String input, String language,
                 AsyncCallback<List<ForeignKeyBean>> callback) {
         }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync#checkTask(java.lang.String,
+         * java.lang.String, java.lang.String, com.google.gwt.user.client.rpc.AsyncCallback)
+         */
+        @Override
+        public void checkTask(String dataClusterPK, String concept, String groupId, AsyncCallback<Boolean> callback) {
+            // TODO Auto-generated method stub
+
+        }
+
     }
 
     @Override
