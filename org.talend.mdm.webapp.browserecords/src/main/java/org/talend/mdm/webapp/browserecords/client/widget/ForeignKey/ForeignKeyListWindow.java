@@ -380,6 +380,7 @@ public class ForeignKeyListWindow extends Window {
                 }
             }
             if (columns.size() > 0) {
+                config.setSortField(columns.get(0).getId());
                 config.setSortDir(SortDir.ASC);
             }
         }
