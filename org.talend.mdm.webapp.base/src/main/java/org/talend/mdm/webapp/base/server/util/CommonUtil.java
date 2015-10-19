@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.talend.mdm.commmon.metadata.MetadataRepository;
 import org.talend.mdm.commmon.util.datamodel.management.BusinessConcept;
 import org.talend.mdm.webapp.base.client.exception.ParserException;
 import org.talend.mdm.webapp.base.client.model.Criteria;
@@ -29,6 +30,7 @@ import org.talend.mdm.webapp.base.client.util.Parser;
 import org.talend.mdm.webapp.base.server.exception.ExceptionConstants;
 import org.talend.mdm.webapp.base.server.exception.WebBaseException;
 
+import com.amalto.core.server.ServerContext;
 import com.amalto.core.util.Messages;
 import com.amalto.core.util.MessagesFactory;
 import com.amalto.core.webservice.WSDataClusterPK;
@@ -40,6 +42,7 @@ import com.amalto.core.webservice.WSWhereCondition;
 import com.amalto.core.webservice.WSWhereItem;
 import com.amalto.core.webservice.WSWhereOr;
 import com.amalto.core.webservice.XtentisPort;
+import com.amalto.webapp.core.bean.Configuration;
 import com.amalto.webapp.core.dmagent.SchemaWebAgent;
 import com.amalto.webapp.core.util.Util;
 import com.amalto.webapp.core.util.XtentisWebappException;
@@ -293,5 +296,9 @@ public class CommonUtil {
             }
         }
         return idList.toArray(new String[idList.size()]);
+    }
+
+    public static MetadataRepository getCurrentRepository() throws Exception {
+        return ServerContext.INSTANCE.get().getMetadataRepositoryAdmin().get(Configuration.getConfiguration().getModel());
     }
 }

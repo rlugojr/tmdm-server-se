@@ -13,6 +13,7 @@
 package org.talend.mdm.webapp.base.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -21,6 +22,17 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
+import org.talend.mdm.commmon.metadata.ContainedComplexTypeMetadata;
+import org.talend.mdm.commmon.metadata.ContainedTypeFieldMetadata;
+import org.talend.mdm.commmon.metadata.EnumerationFieldMetadata;
+import org.talend.mdm.commmon.metadata.FieldMetadata;
+import org.talend.mdm.commmon.metadata.MetadataRepository;
+import org.talend.mdm.commmon.metadata.MetadataVisitor;
+import org.talend.mdm.commmon.metadata.ReferenceFieldMetadata;
+import org.talend.mdm.commmon.metadata.SimpleTypeFieldMetadata;
+import org.talend.mdm.commmon.metadata.SimpleTypeMetadata;
+import org.talend.mdm.commmon.metadata.Types;
 import org.talend.mdm.commmon.util.core.EDBType;
 import org.talend.mdm.commmon.util.core.MDMConfiguration;
 import org.talend.mdm.commmon.util.datamodel.management.BusinessConcept;
@@ -41,6 +53,7 @@ import org.w3c.dom.NodeList;
 import com.amalto.core.objects.ItemPOJO;
 import com.amalto.core.objects.ItemPOJOPK;
 import com.amalto.core.objects.datacluster.DataClusterPOJOPK;
+import com.amalto.core.storage.StorageMetadataUtils;
 import com.amalto.core.webservice.WSDataClusterPK;
 import com.amalto.core.webservice.WSGetItemsByCustomFKFilters;
 import com.amalto.core.webservice.WSInt;
@@ -48,11 +61,13 @@ import com.amalto.core.webservice.WSStringArray;
 import com.amalto.core.webservice.WSWhereAnd;
 import com.amalto.core.webservice.WSWhereCondition;
 import com.amalto.core.webservice.WSWhereItem;
+import com.amalto.core.webservice.WSWhereOperator;
 import com.amalto.core.webservice.WSXPathsSearch;
 import com.amalto.webapp.core.dmagent.SchemaAbstractWebAgent;
 import com.amalto.webapp.core.dmagent.SchemaWebAgent;
 import com.amalto.webapp.core.util.Util;
 import com.amalto.webapp.core.util.XmlUtil;
+import com.amalto.xmlserver.interfaces.WhereCondition;
 import com.extjs.gxt.ui.client.Style.SortDir;
 
 public class ForeignKeyHelper {
@@ -346,7 +361,7 @@ public class ForeignKeyHelper {
             // build query - add a content condition on the pivot if we search for a particular value
             if (filterValue != null
                     && !"".equals(filterValue.trim()) && !".*".equals(filterValue.trim()) && !"'*'".equals(filterValue.trim())) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                WSWhereItem queryWhereItem = getFKQueryCondition(foreignKeyPath, xpathInfoForeignKey, filterValue);
+                WSWhereItem queryWhereItem = getFKQueryCondition(conceptName, foreignKeyPath, xpathInfoForeignKey, filterValue);
                 if (queryWhereItem != null) {
                     conditions.add(queryWhereItem);
                 }
@@ -390,8 +405,8 @@ public class ForeignKeyHelper {
         return null;
     }
 
-    protected static WSWhereItem getFKQueryCondition(String xpathForeignKey, String xpathInfoForeignKey, String keyValue)
-            throws Exception {
+    protected static WSWhereItem getFKQueryCondition(String concept, String xpathForeignKey, String xpathInfoForeignKey,
+            String keyValue) throws Exception {
         String initxpathForeignKey = Util.getForeignPathFromPath(xpathForeignKey);
         initxpathForeignKey = initxpathForeignKey.split("/")[0]; //$NON-NLS-1$
         String[] xpathInfos = new String[1];
@@ -402,7 +417,7 @@ public class ForeignKeyHelper {
             xpathInfos[0] = initxpathForeignKey;
         }
 
-        String fkWhere = initxpathForeignKey + "/../* CONTAINS " + keyValue; //$NON-NLS-1$
+        String fkWhere = initxpathForeignKey + "/../* " + WhereCondition.CONTAINS + " " + keyValue; //$NON-NLS-1$ //$NON-NLS-2$
         if (xpathInfoForeignKey.trim().length() > 0) {
             StringBuffer ids = new StringBuffer();
             String realXpathForeignKey = null; // In studio, ForeignKey = ConceptName, but not ConceptName/Id
@@ -411,7 +426,7 @@ public class ForeignKeyHelper {
                 if (fks != null && fks.length > 0) {
                     realXpathForeignKey = fks[0];
                     for (int i = 0; i < fks.length; i++) {
-                        ids.append(fks[i] + " CONTAINS " + keyValue); //$NON-NLS-1$
+                        ids.append(fks[i] + " " + WhereCondition.CONTAINS + " " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
                         if (i != fks.length - 1) {
                             ids.append(" OR "); //$NON-NLS-1$
                         }
@@ -419,17 +434,25 @@ public class ForeignKeyHelper {
                 }
             }
             StringBuffer sb = new StringBuffer();
+            MetadataRepository repository = CommonUtil.getCurrentRepository();
+            ComplexTypeMetadata foreignType = repository.getComplexType(concept);
+            FieldSearchMetadataVisitor visitor = new FieldSearchMetadataVisitor();
+            visitor.setValue(keyValue);
             for (String fkInfo : xpathInfos) {
-                sb.append((fkInfo.startsWith(".") ? XpathUtil.convertAbsolutePath( //$NON-NLS-1$
-                        (realXpathForeignKey != null && realXpathForeignKey.trim().length() > 0) ? realXpathForeignKey
-                                : xpathForeignKey, fkInfo) : fkInfo)
-                        + " CONTAINS " + keyValue); //$NON-NLS-1$
-                sb.append(" OR "); //$NON-NLS-1$
+                visitor.setFieldPath(fkInfo.split("/")); //$NON-NLS-1$
+                String operater = foreignType.accept(visitor);
+                if (operater != null) {
+                    sb.append((fkInfo.startsWith(".") ? XpathUtil.convertAbsolutePath( //$NON-NLS-1$
+                            (realXpathForeignKey != null && realXpathForeignKey.trim().length() > 0) ? realXpathForeignKey
+                                    : xpathForeignKey, fkInfo) : fkInfo)
+                            + " " + operater + " " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
+                    sb.append(" OR "); //$NON-NLS-1$
+                }
             }
             if (realXpathForeignKey != null) {
                 sb.append(ids.toString());
             } else {
-                sb.append(xpathForeignKey + " CONTAINS " + keyValue); //$NON-NLS-1$
+                sb.append(xpathForeignKey + " " + WhereCondition.CONTAINS + " " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
             }
             fkWhere = sb.toString();
         }
@@ -656,5 +679,111 @@ public class ForeignKeyHelper {
         }
 
         return result;
+    }
+
+    private static class FieldSearchMetadataVisitor implements MetadataVisitor<String> {
+
+        private static int level;
+
+        private static String[] fieldPath;
+
+        private static String value;
+
+        @Override
+        public String visit(MetadataRepository repository) {
+            return null;
+        }
+
+        @Override
+        public String visit(SimpleTypeMetadata simpleType) {
+            return null;
+        }
+
+        @Override
+        public String visit(ComplexTypeMetadata complexType) {
+            if (fieldPath.length >= level) {
+                if (complexType.getName().equals(fieldPath[level])) {
+                    return WhereCondition.FULLTEXTSEARCH;
+                } else {
+                    Collection<FieldMetadata> fields = complexType.getFields();
+                    for (FieldMetadata field : fields) {
+                        if (field.getName().equals(fieldPath[level])) {
+                            level++;
+                            return field.accept(this);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String visit(ContainedComplexTypeMetadata containedType) {
+            return null;
+        }
+
+        @Override
+        public String visit(SimpleTypeFieldMetadata simpleField) {
+            String typeName = simpleField.getType().getName();
+            if (!(Types.STRING.equals(typeName) || Types.TOKEN.equals(typeName) || Types.DURATION.equals(typeName))) {
+                value = value.replace("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+            if (StorageMetadataUtils.isValueAssignable(value, simpleField.getType().getName())) {
+                if (Types.STRING.equals(typeName) || Types.TOKEN.equals(typeName) || Types.DURATION.equals(typeName)) {
+                    return WSWhereOperator.CONTAINS.toString();
+                } else if (Types.INTEGER.equals(typeName) || Types.POSITIVE_INTEGER.equals(typeName)
+                        || Types.NEGATIVE_INTEGER.equals(typeName) || Types.NON_NEGATIVE_INTEGER.equals(typeName)
+                        || Types.NON_POSITIVE_INTEGER.equals(typeName) || Types.INT.equals(typeName)
+                        || Types.UNSIGNED_INT.equals(typeName)) {
+                    return WSWhereOperator.EQUALS.toString();
+                } else if (Types.DATE.equals(typeName) || Types.DATETIME.equals(typeName) || Types.TIME.equals(typeName)) {
+                    return WSWhereOperator.EQUALS.toString();
+                } else if (Types.BOOLEAN.equals(typeName)) {
+                    return WSWhereOperator.EQUALS.toString();
+                } else if (Types.DECIMAL.equals(typeName)) {
+                    return WSWhereOperator.EQUALS.toString();
+                } else if (Types.FLOAT.equals(typeName) || Types.LONG.equals(typeName) || Types.UNSIGNED_LONG.equals(typeName)
+                        || Types.SHORT.equals(typeName) || Types.UNSIGNED_SHORT.equals(typeName) || Types.DOUBLE.equals(typeName)
+                        || Types.UNSIGNED_DOUBLE.equals(typeName) || Types.DOUBLE.equals(typeName)
+                        || Types.UNSIGNED_DOUBLE.equals(typeName) || Types.BYTE.equals(typeName)
+                        || Types.UNSIGNED_BYTE.equals(typeName)) {
+                    return WSWhereOperator.EQUALS.toString();
+                } else {
+                    LOG.error("No support for type '" + typeName + "'");
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String visit(EnumerationFieldMetadata enumField) {
+            return null;
+        }
+
+        @Override
+        public String visit(ReferenceFieldMetadata referenceField) {
+            return null;
+        }
+
+        @Override
+        public String visit(ContainedTypeFieldMetadata containedField) {
+            return null;
+        }
+
+        @Override
+        public String visit(FieldMetadata fieldMetadata) {
+            return null;
+        }
+
+        public void setFieldPath(String[] fieldPath) {
+            this.fieldPath = fieldPath;
+            this.level = 1;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 }
