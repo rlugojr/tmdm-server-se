@@ -23,7 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit3.PowerMockSuite;
+import org.talend.mdm.commmon.metadata.MetadataRepository;
 import org.talend.mdm.commmon.util.core.EDBType;
 import org.talend.mdm.commmon.util.core.MDMConfiguration;
 import org.talend.mdm.commmon.util.datamodel.management.DataModelID;
@@ -41,11 +47,24 @@ import com.amalto.core.webservice.WSWhereItem;
 import com.amalto.core.webservice.WSWhereOperator;
 import com.amalto.webapp.core.util.Util;
 
+@PrepareForTest({ ForeignKeyHelper.class, org.talend.mdm.webapp.base.server.util.CommonUtil.class })
 @SuppressWarnings("nls")
 public class ForeignKeyHelperTest extends TestCase {
 
+    private MetadataRepository repository;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        repository = new MetadataRepository();
+        PowerMockito.mockStatic(org.talend.mdm.webapp.base.server.util.CommonUtil.class);
+        Mockito.when(org.talend.mdm.webapp.base.server.util.CommonUtil.getCurrentRepository()).thenReturn(repository);
+    }
+
     // TODO Refactor FK handler, also this JUnit case
     public void testGetForeignKeyHolder() throws Exception {
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("product.xsd");
+        repository.load(resourceAsStream);
 
         TypeModel model = new SimpleTypeModel("family", DataTypeConstants.STRING); //$NON-NLS-1$
         model.setForeignkey("ProductFamily/Id"); //$NON-NLS-1$
@@ -88,14 +107,14 @@ public class ForeignKeyHelperTest extends TestCase {
         assertEquals(WSWhereOperator._CONTAINS, condition2.getOperator().getValue());
         assertEquals("Hats", condition2.getRightValueOrPath()); //$NON-NLS-1$
 
-        // 2. foreignKeyInfo = ProductFamily/Name,ProductFaimly/Description
-        foreignKeyInfos.add("ProductFamily/Description"); //$NON-NLS-1$
+        // 2. foreignKeyInfo = ProductFamily/Name,ProductFaimly/Id
+        foreignKeyInfos.add("ProductFamily/Id"); //$NON-NLS-1$
         result = ForeignKeyHelper.getForeignKeyHolder(xml, dataCluster, currentXpath, model, ifFKFilter, value);
 
         List<String> viewableXpaths = result.xpaths;
         assertTrue(viewableXpaths.size() > 0);
         assertEquals("ProductFamily/Name", viewableXpaths.get(0));
-        assertEquals("ProductFamily/Description", viewableXpaths.get(1));
+        assertEquals("ProductFamily/Id", viewableXpaths.get(1));
         assertEquals("ProductFamily/../../i", viewableXpaths.get(2));
 
         whereItem = result.whereItem;
@@ -108,16 +127,9 @@ public class ForeignKeyHelperTest extends TestCase {
 
         whereItem2 = whereItem1.getWhereOr().getWhereItems()[1];
         condition2 = whereItem2.getWhereAnd().getWhereItems()[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("ProductFamily/Description", condition2.getLeftPath()); //$NON-NLS-1$
-        assertEquals(WSWhereOperator._CONTAINS, condition2.getOperator().getValue());
+        assertEquals("ProductFamily/Id", condition2.getLeftPath()); //$NON-NLS-1$
+        assertEquals(WSWhereOperator.CONTAINS, condition2.getOperator());
         assertEquals("Hats", condition2.getRightValueOrPath()); //$NON-NLS-1$
-
-        WSWhereItem whereItem3 = whereItem1.getWhereOr().getWhereItems()[2];
-        WSWhereCondition condition3 = whereItem3.getWhereAnd().getWhereItems()[0].getWhereAnd().getWhereItems()[0]
-                .getWhereCondition();
-        assertEquals("ProductFamily/Id", condition3.getLeftPath()); //$NON-NLS-1$
-        assertEquals(WSWhereOperator._CONTAINS, condition3.getOperator().getValue());
-        assertEquals("Hats", condition3.getRightValueOrPath()); //$NON-NLS-1$
 
         // 3. foreignKeyInfo is null
         foreignKeyInfos.clear();
@@ -323,6 +335,8 @@ public class ForeignKeyHelperTest extends TestCase {
     }
 
     public void testForeignKeyBean_From_ForeignKeyHolder_WhereItem() throws Exception {
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("product.xsd");
+        repository.load(resourceAsStream);
 
         TypeModel model = new SimpleTypeModel("family", DataTypeConstants.STRING); //$NON-NLS-1$
         model.setForeignkey("ProductFamily/Id"); //$NON-NLS-1$
@@ -569,5 +583,68 @@ public class ForeignKeyHelperTest extends TestCase {
             assertEquals(fkBeans[i].getId() + "-> Expected displayInfo is not equal to actual displayInfo", fKInfoExpected[i],
                     fkBeans[i].getDisplayInfo());
         }
+    }
+
+    public void testGetFKQueryCondition() throws Exception {
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("TMDM-8966.xsd");
+        repository.load(resourceAsStream);
+        String concept = "TMDM-8966FK";
+        String xpathForeignKey = "TMDM-8966FK/Id";
+        String xpathInfoForeignKey = "TMDM-8966FK/city,TMDM-8966FK/state,TMDM-8966FK/zipCode";
+        String keyValue = "testValue";
+        WSWhereItem fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey,
+                keyValue);
+        WSWhereItem[] whereItems = fkQueryCondition.getWhereOr().getWhereItems();
+        assertEquals(3, whereItems.length);
+        WSWhereItem[] whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/city", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
+        assertEquals("testValue", whereCondition1.getRightValueOrPath());
+
+        WSWhereItem[] whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/state", whereCondition2.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
+        assertEquals("testValue", whereCondition2.getRightValueOrPath());
+
+        WSWhereItem[] whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/Id", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition3.getOperator());
+        assertEquals("testValue", whereCondition3.getRightValueOrPath());
+
+        keyValue = "123";
+        fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey, keyValue);
+        whereItems = fkQueryCondition.getWhereOr().getWhereItems();
+        assertEquals(4, whereItems.length);
+        whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
+        whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/city", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
+        assertEquals("123", whereCondition1.getRightValueOrPath());
+
+        whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
+        whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/state", whereCondition2.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
+        assertEquals("123", whereCondition2.getRightValueOrPath());
+
+        whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/zipCode", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.EQUALS, whereCondition3.getOperator());
+        assertEquals("123", whereCondition3.getRightValueOrPath());
+
+        WSWhereItem[] whereItems4 = whereItems[3].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition4 = whereItems4[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/Id", whereCondition4.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition4.getOperator());
+        assertEquals("123", whereCondition4.getRightValueOrPath());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static TestSuite suite() throws Exception {
+        return new PowerMockSuite("Unit tests for " + ForeignKeyHelperTest.class.getSimpleName(), ForeignKeyHelperTest.class);
     }
 }

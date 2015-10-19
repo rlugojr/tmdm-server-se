@@ -1,0 +1,45 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element name="TMDM-8966">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Id"
+                    type="xsd:string" />
+                <xsd:element maxOccurs="1" minOccurs="0" name="field1"
+                    type="xsd:string" />
+                <xsd:element maxOccurs="1" minOccurs="0" name="fkField"
+                    type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:appinfo source="X_ForeignKey">TMDM-8966FK/Id</xsd:appinfo>
+                        <xsd:appinfo source="X_ForeignKey_NotSep">false</xsd:appinfo>
+                        <xsd:appinfo source="X_ForeignKeyInfo">TMDM-8966FK/city</xsd:appinfo>
+                        <xsd:appinfo source="X_ForeignKeyInfo">TMDM-8966FK/state</xsd:appinfo>
+                        <xsd:appinfo source="X_ForeignKeyInfo">TMDM-8966FK/zipCode</xsd:appinfo>
+                        <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:all>
+        </xsd:complexType>
+        <xsd:unique name="TMDM-8966">
+            <xsd:selector xpath="." />
+            <xsd:field xpath="Id" />
+        </xsd:unique>
+    </xsd:element>
+    <xsd:element name="TMDM-8966FK">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Id"
+                    type="xsd:string" />
+                <xsd:element maxOccurs="1" minOccurs="0" name="city"
+                    type="xsd:string" />
+                <xsd:element maxOccurs="1" minOccurs="0" name="state"
+                    type="xsd:string" />
+                <xsd:element maxOccurs="1" minOccurs="0" name="zipCode"
+                    type="xsd:int" />
+            </xsd:all>
+        </xsd:complexType>
+        <xsd:unique name="TMDM-8966FK">
+            <xsd:selector xpath="." />
+            <xsd:field xpath="Id" />
+        </xsd:unique>
+    </xsd:element>
+</xsd:schema>
