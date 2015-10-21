@@ -384,11 +384,12 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
             @Override
             public void onSuccess(List<ItemResult> result) {
                 assertNotNull(result);
-                    // Click "Open master record" from staging browser, then delete the master record, it shoudn't reload staging browser.
+                // Click "Open master record" from staging browser, then delete the master record, it shoudn't reload
+                // staging browser.
                 if (dataClusterPK.contains("#STAGING") && !bar.isStaging()) {
 
                 } else {
-                        gridRefresh();
+                    gridRefresh();
                 }
             }
         });
@@ -630,13 +631,13 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         }
 
         @Override
-        public void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK, String language,
-                AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
+        public void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue,
+                String dataClusterPK, String language, AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
         }
 
         @Override
-        public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK,
-                String language, AsyncCallback<List<ForeignKeyBean>> callback) {
+        public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue,
+                String dataClusterPK, String language, AsyncCallback<List<ForeignKeyBean>> callback) {
         }
     }
 

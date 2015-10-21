@@ -80,13 +80,11 @@ public class ForeignKeyHelper {
         ForeignKeyHolder holder;
         String foreignKeyFilter = getForeignKeyFilter(hasForeignKeyFilter, currentXpath.split("/")[0], xml, currentXpath, model); //$NON-NLS-1$
         if (hasCompositeKey && ids.contains(".")) { //$NON-NLS-1$
-            model.setForeignKeyFilter(foreignKeyFilter);
             model.setFilterValue(ids.split("[.]")[0]); //$NON-NLS-1$
-            holder = getForeignKeyHolder(model);
+            holder = getForeignKeyHolder(model, foreignKeyFilter);
         } else {
-            model.setForeignKeyFilter(foreignKeyFilter);
             model.setFilterValue(ids);
-            holder = getForeignKeyHolder(model);
+            holder = getForeignKeyHolder(model, foreignKeyFilter);
         }
         String[] results = null;
         if (holder != null) {
@@ -147,8 +145,8 @@ public class ForeignKeyHelper {
     }
 
     public static ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            EntityModel entityModel, String dataClusterPK) throws Exception {
-        ForeignKeyHolder holder = getForeignKeyHolder(model);
+            EntityModel entityModel, String foreignKeyFilterValue, String dataClusterPK) throws Exception {
+        ForeignKeyHolder holder = getForeignKeyHolder(model, foreignKeyFilterValue);
         return _getForeignKeyList(config, model, entityModel, dataClusterPK, holder);
     }
 
@@ -298,10 +296,9 @@ public class ForeignKeyHelper {
         String fkFilter;
     }
 
-    protected static ForeignKeyHolder getForeignKeyHolder(TypeModel model) throws Exception {
+    protected static ForeignKeyHolder getForeignKeyHolder(TypeModel model, String foreignKeyFilterValue) throws Exception {
         String foreignKeyPath = model.getForeignkey();
         List<String> foreignKeyInfo = model.getForeignKeyInfo();
-        String foreignKeyFilter = model.getForeignKeyFilter();
         String filterValue = model.getFilterValue();
         // to verify
         String xpathInfoForeignKey;
@@ -318,10 +315,10 @@ public class ForeignKeyHelper {
         if (whereCondition != null) {
             conditions.add(new WSWhereItem(whereCondition, null, null));
         }
-        if (!Util.isCustomFilter(foreignKeyFilter)) {
+        if (!Util.isCustomFilter(foreignKeyFilterValue)) {
             // get FK filter
-            WSWhereItem filterWhereItem = Util.getConditionFromFKFilter(foreignKeyPath, xpathInfoForeignKey, foreignKeyFilter,
-                    false);
+            WSWhereItem filterWhereItem = Util.getConditionFromFKFilter(foreignKeyPath, xpathInfoForeignKey,
+                    foreignKeyFilterValue, false);
             if (filterWhereItem != null) {
                 conditions.add(filterWhereItem);
             }
@@ -384,7 +381,7 @@ public class ForeignKeyHelper {
             holder.orderbyPath = orderbyPath;
             holder.conceptName = conceptName;
             holder.whereItem = whereItem;
-            holder.fkFilter = foreignKeyFilter;
+            holder.fkFilter = foreignKeyFilterValue;
             return holder;
         }
         return null;

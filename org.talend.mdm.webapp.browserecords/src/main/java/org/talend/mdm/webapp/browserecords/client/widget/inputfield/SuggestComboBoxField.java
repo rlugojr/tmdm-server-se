@@ -107,11 +107,11 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
                 config.set("language", Locale.getLanguage()); //$NON-NLS-1$
 
                 final TypeModel fieldTypeModel = foreignKeyField.getDataType();
-                fieldTypeModel.setForeignKeyFilter(foreignKeyField.parseForeignKeyFilter());
                 fieldTypeModel.setFilterValue(inputValue);
                 String dataCluster = foreignKeyField.getDataCluster();
-                service.getForeignKeySuggestion(config, fieldTypeModel, dataCluster, Locale.getLanguage(),
-                        new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
+                service.getForeignKeySuggestion(config, fieldTypeModel,
+                        org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyField.parseForeignKeyFilter()),
+                        dataCluster, Locale.getLanguage(), new SessionAwareAsyncCallback<List<ForeignKeyBean>>() {
 
                             @Override
                             public void onSuccess(List<ForeignKeyBean> result) {
@@ -178,8 +178,8 @@ public class SuggestComboBoxField extends ComboBoxEx<ForeignKeyBean> {
         }
 
         public native BoxComponent getBoxComponent() /*-{
-                                                     return this.@com.extjs.gxt.ui.client.fx.Resizable::resize;
-                                                     }-*/;
+			return this.@com.extjs.gxt.ui.client.fx.Resizable::resize;
+        }-*/;
 
     }
 
