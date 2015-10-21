@@ -317,10 +317,11 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
     @Override
     public ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String dataClusterPK, String language) throws ServiceException {
+            String foreignKeyFilterValue, String dataClusterPK, String language) throws ServiceException {
         try {
             String foreignKeyConcept = model.getForeignkey().split("/")[0]; //$NON-NLS-1$
-            return ForeignKeyHelper.getForeignKeyList(config, model, getEntityModel(foreignKeyConcept, language), dataClusterPK);
+            return ForeignKeyHelper.getForeignKeyList(config, model, getEntityModel(foreignKeyConcept, language),
+                    foreignKeyFilterValue, dataClusterPK);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
@@ -1165,9 +1166,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
 
         @Override
         public int compare(String viewName1, String viewName2) {
-            //for some reason the first value to be inserted is compared to itself
-            //so we need to add this so we don't go into the duplicate label every time
-            //anyway the put method will always replace the value if the key already exist
+            // for some reason the first value to be inserted is compared to itself
+            // so we need to add this so we don't go into the duplicate label every time
+            // anyway the put method will always replace the value if the key already exist
             if (viewName1.equals(viewName2)) {
                 return 0;
             }
@@ -2373,8 +2374,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     }
 
     @Override
-    public List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK,
-            String language) throws ServiceException {
+    public List<ForeignKeyBean> getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model,
+            String foreignKeyFilterValue, String dataClusterPK, String language) throws ServiceException {
         try {
             String keyWords = model.getFilterValue();
             String pattern = "[^a-zA-Z0-9\\s\\@\\.\\-\\_\\'\"]"; //$NON-NLS-1$
@@ -2396,10 +2397,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             if (keyWords != null && keyWords.length() > 0) {
                 keyWords = keyWords.replaceAll(pattern, ""); //$NON-NLS-1$
             }
-            model.setForeignKeyFilter(org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(model.getForeignKeyFilter()));
             model.setFilterValue(keyWords);
             ItemBasePageLoadResult<ForeignKeyBean> loadResult = ForeignKeyHelper.getForeignKeyList(config, model, entityModel,
-                    dataClusterPK);
+                    foreignKeyFilterValue, dataClusterPK);
             return loadResult.getData();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

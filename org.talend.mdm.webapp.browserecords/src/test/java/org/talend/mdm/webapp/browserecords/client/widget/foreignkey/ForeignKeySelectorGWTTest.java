@@ -83,7 +83,7 @@ public class ForeignKeySelectorGWTTest extends GWTTestCase {
         product.add(family);
         SimpleTypeModel subelementType = new SimpleTypeModel();
         subelementType.setForeignkey("ProductFamily/Id"); //$NON-NLS-1$
-        subelementType.setForeignKeyInfo(new ArrayList<String>()); //$NON-NLS-1$
+        subelementType.setForeignKeyInfo(new ArrayList<String>());
         subelementType.setXpath("Product/Family"); //$NON-NLS-1$
         subelementType.setForeignKeyFilter("ProductFamily/Name$$=$$Product/Name$$#"); //$NON-NLS-1$
         ForeignKeySelector foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
@@ -104,6 +104,18 @@ public class ForeignKeySelectorGWTTest extends GWTTestCase {
         subelementType.setForeignKeyFilter("ProductFamily/Name$$=$$\'talend\'$$#"); //$NON-NLS-1$
         foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
         assertEquals("ProductFamily/Name$$=$$talend$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
+
+        subelementType.setForeignKeyFilter("ProductFamily/Name$$=$$\"1\"$$#"); //$NON-NLS-1$
+        foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
+        assertEquals("ProductFamily/Name$$=$$1$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
+
+        subelementType.setForeignKeyFilter("ProductFamily/Name$$=$$\'1\'$$#"); //$NON-NLS-1$
+        foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
+        assertEquals("ProductFamily/Name$$=$$1$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
+
+        subelementType.setForeignKeyFilter("ProductFamily/Name$$=$$1$$#"); //$NON-NLS-1$
+        foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
+        assertEquals("ProductFamily/Name$$=$$1$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
 
         // test Person datamodel
         ItemNodeModel person = new ItemNodeModel();

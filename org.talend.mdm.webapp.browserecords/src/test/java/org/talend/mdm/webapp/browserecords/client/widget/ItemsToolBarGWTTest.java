@@ -440,13 +440,13 @@ public class ItemsToolBarGWTTest extends GWTTestCase {
         }
 
         @Override
-        public void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK, String language,
-                AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
+        public void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue,
+                String dataClusterPK, String language, AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback) {
         }
 
         @Override
-        public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String dataClusterPK,
-                String language, AsyncCallback<List<ForeignKeyBean>> callback) {
+        public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue,
+                String dataClusterPK, String language, AsyncCallback<List<ForeignKeyBean>> callback) {
         }
     }
 }

@@ -162,8 +162,9 @@ public class ForeignKeyListWindow extends Window {
 
                 typeModel.setForeignkey(foreignKeyPath);
                 typeModel.setFilterValue(currentFilterText);
-                service.getForeignKeyList(baseConfig, typeModel, dataCluster, Locale.getLanguage(),
-                        new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
+                service.getForeignKeyList(baseConfig, typeModel,
+                        org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), dataCluster,
+                        Locale.getLanguage(), new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
 
                             @Override
                             protected void doOnFailure(Throwable caught) {
