@@ -268,7 +268,7 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
             @Override
             public void onClick(ClickEvent ce) {
                 if (foreignKeyListWindow != null) {
-                    foreignKeyListWindow.setForeignKeyFilter(parseForeignKeyFilter());
+                    foreignKeyListWindow.setForeignKeyFilterValue(parseForeignKeyFilter());
                     showForeignKeyListWindow();
                 }
             }

@@ -87,7 +87,7 @@ public class ForeignKeyListWindow extends Window {
 
     private List<String> foreignKeyInfo;
 
-    private String foreignKeyFilter;
+    private String foreignKeyFilterValue;
 
     private static final int COLUMN_WIDTH = 100;
 
@@ -130,8 +130,8 @@ public class ForeignKeyListWindow extends Window {
         this.sourceField = foreignKeyField;
     }
 
-    public void setForeignKeyFilter(String foreignKeyFilter) {
-        this.foreignKeyFilter = foreignKeyFilter;
+    public void setForeignKeyFilterValue(String foreignKeyFilterValue) {
+        this.foreignKeyFilterValue = foreignKeyFilterValue;
     }
 
     private String getFilterValue() {
@@ -163,7 +163,7 @@ public class ForeignKeyListWindow extends Window {
                 typeModel.setForeignkey(foreignKeyPath);
                 typeModel.setFilterValue(currentFilterText);
                 service.getForeignKeyList(baseConfig, typeModel,
-                        org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilter), dataCluster,
+                        org.talend.mdm.webapp.base.shared.util.CommonUtil.unescapeXml(foreignKeyFilterValue), dataCluster,
                         Locale.getLanguage(), new SessionAwareAsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>>() {
 
                             @Override

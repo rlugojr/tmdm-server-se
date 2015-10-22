@@ -43,7 +43,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface BrowseRecordsServiceAsync {
 
-    void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilter, String dataClusterPK,
+    void getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue, String dataClusterPK,
             String language, AsyncCallback<ItemBasePageLoadResult<ForeignKeyBean>> callback);
 
     void getForeignKeyPolymTypeList(String xpathForeignKey, String language, AsyncCallback<List<Restriction>> callback);

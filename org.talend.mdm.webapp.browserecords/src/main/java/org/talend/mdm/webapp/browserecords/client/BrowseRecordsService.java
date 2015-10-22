@@ -57,7 +57,7 @@ public interface BrowseRecordsService extends RemoteService {
     String saveItemBean(ItemBean item, String language) throws ServiceException;
 
     ItemBasePageLoadResult<ForeignKeyBean> getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
-            String foreignKeyFilter, String dataClusterPK, String language) throws ServiceException;
+            String foreignKeyFilterValue, String dataClusterPK, String language) throws ServiceException;
 
     List<Restriction> getForeignKeyPolymTypeList(String xpathForeignKey, String language) throws ServiceException;
 
