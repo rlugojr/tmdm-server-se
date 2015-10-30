@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
-import org.talend.mdm.webapp.base.client.model.DataTypeConstants;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
 import org.talend.mdm.webapp.base.client.util.UrlUtil;
 import org.talend.mdm.webapp.base.shared.ComplexTypeModel;
@@ -300,10 +299,17 @@ public class TreeDetail extends ContentPanel {
                 final DynamicTreeItem parentItem = item;
                 if (typeModels.size() == 1) {
                     TypeModel fkType = typeModels.get(0);
-                    // For case TMDM-5439 and TMDM-8801
-                    if (fkType.getForeignkey() != null && fkType.getForeignkey().trim().length() > 0 && !fkType.isNotSeparateFk()
-                            && DataTypeConstants.UNKNOW.getTypeName().equals(typeModel.getType().getTypeName())) {
-                        item.getElement().setPropertyBoolean("EmptyFkContainer", true); //$NON-NLS-1$
+                    if (fkType.getForeignkey() != null && fkType.getForeignkey().trim().length() > 0 && !fkType.isNotSeparateFk()) {
+                        // For case TMDM-5439,TMDM-8801 and TMDM-8920
+                        // when element model type is Polymorphism and it contains FK,this FK must render in main tab.
+                        boolean isRenderInMain = false;
+                        if (typeModel instanceof ComplexTypeModel) {
+                            List<ComplexTypeModel> reusableTypes = ((ComplexTypeModel) typeModel).getReusableComplexTypes();
+                            if (reusableTypes != null && reusableTypes.size() > 0) {
+                                isRenderInMain = true;
+                            }
+                        }
+                        item.getElement().setPropertyBoolean("EmptyFkContainer", !isRenderInMain); //$NON-NLS-1$
                     }
                 }
 
@@ -689,8 +695,8 @@ public class TreeDetail extends ContentPanel {
         }
 
         private native Element getContentElement()/*-{
-                                                  return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::contentElem;
-                                                  }-*/;
+			return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::contentElem;
+        }-*/;
 
         public void insertItem(DynamicTreeItem item, int beforeIndex) {
             // Detach item from existing parent.
@@ -720,29 +726,29 @@ public class TreeDetail extends ContentPanel {
         }
 
         private native ArrayList<TreeItemEx> _getChildren()/*-{
-                                                           return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::children;
-                                                           }-*/;
+			return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::children;
+        }-*/;
 
         private native void _initChildren() /*-{
-                                            this
-                                            .@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::initChildren()
-                                            }-*/;
+			this
+					.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::initChildren()
+        }-*/;
 
         private native void _setParentItem(TreeItemEx parent)/*-{
-                                                             this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::setParentItem(Lorg/talend/mdm/webapp/browserecords/client/widget/treedetail/TreeItemEx;)(parent);
-                                                             }-*/;
+			this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::setParentItem(Lorg/talend/mdm/webapp/browserecords/client/widget/treedetail/TreeItemEx;)(parent);
+        }-*/;
 
         private native void _updateState(boolean animate, boolean updateTreeSelection)/*-{
-                                                                                      this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::updateState(ZZ)(animate, updateTreeSelection);
-                                                                                      }-*/;
+			this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::updateState(ZZ)(animate, updateTreeSelection);
+        }-*/;
 
         private native void _setTree(TreeEx tree)/*-{
-                                                 this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::setTree(Lorg/talend/mdm/webapp/browserecords/client/widget/treedetail/TreeEx;)(tree);
-                                                 }-*/;
+			this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::setTree(Lorg/talend/mdm/webapp/browserecords/client/widget/treedetail/TreeEx;)(tree);
+        }-*/;
 
         private native Element _getChildSpanElem()/*-{
-                                                  return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::childSpanElem;
-                                                  }-*/;
+			return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::childSpanElem;
+        }-*/;
 
         public void removeItem(DynamicTreeItem item) {
             super.removeItem(item);
@@ -767,20 +773,20 @@ public class TreeDetail extends ContentPanel {
         }
 
         private native boolean getOpen()/*-{
-                                        return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::open;
-                                        }-*/;
+			return this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::open;
+        }-*/;
 
         private native void setOpen(boolean open)/*-{
-                                                 this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::open = open;
-                                                 }-*/;
+			this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::open = open;
+        }-*/;
 
         private native void __updateState(boolean animate, boolean updateTreeSelection)/*-{
-                                                                                       this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::updateState(ZZ)(animate, updateTreeSelection);
-                                                                                       }-*/;
+			this.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeItemEx::updateState(ZZ)(animate, updateTreeSelection);
+        }-*/;
 
         private native void fireTreeStateChanged(TreeEx tree, TreeItemEx item, boolean open)/*-{
-                                                                                            tree.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeEx::fireStateChanged(Lorg/talend/mdm/webapp/browserecords/client/widget/treedetail/TreeItemEx;Z)(item,open);
-                                                                                            }-*/;
+			tree.@org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeEx::fireStateChanged(Lorg/talend/mdm/webapp/browserecords/client/widget/treedetail/TreeItemEx;Z)(item,open);
+        }-*/;
 
         public void setItemNodeModel(ItemNodeModel treeNode) {
             itemNode = treeNode;
