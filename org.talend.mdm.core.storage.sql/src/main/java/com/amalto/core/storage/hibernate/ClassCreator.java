@@ -462,6 +462,16 @@ class ClassCreator extends DefaultMetadataVisitor<Void> {
                                 annotations.addAnnotation(docIdAnnotation);
                                 Annotation fieldBridge = new Annotation(FieldBridge.class.getName(), cp);
                                 fieldBridge.addMemberValue("impl", new ClassMemberValue(ToLowerCaseFieldBridge.class.getName(), cp)); //$NON-NLS-1$
+
+                                TypeMetadata type = metadata.getType();
+                                //checking if the type is an integer
+                                //if that's the case assigning a specific field bridge
+                                type = MetadataUtils.getSuperConcreteType(type);
+                                if (!metadata.isMany()) {
+                                    if (Types.INTEGERS.contains(type.getName())) {
+                                        fieldBridge.addMemberValue("impl", new ClassMemberValue(IntegerIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
+                                    }
+                                } 
                                 annotations.addAnnotation(fieldBridge);
                             }
                         } else {
