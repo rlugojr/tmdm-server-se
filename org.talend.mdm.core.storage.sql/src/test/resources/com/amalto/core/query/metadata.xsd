@@ -228,6 +228,56 @@
 			<xsd:field xpath="id" />
 		</xsd:unique>
 	</xsd:element>
+	
+	<xsd:element name="CountryLong">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="id" type="xsd:long" />
+				<xsd:element name="creationDate" type="xsd:date" />
+				<xsd:element name="creationTime" type="xsd:dateTime" />
+				<xsd:element name="name" type="xsd:string" />
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="notes">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element minOccurs="1" maxOccurs="1" name="note"
+								type="xsd:string" />
+							<xsd:element minOccurs="0" maxOccurs="unbounded"
+								name="comment" type="xsd:string" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:unique name="CountryLong">
+			<xsd:selector xpath="." />
+			<xsd:field xpath="id" />
+		</xsd:unique>
+	</xsd:element>
+	
+	<xsd:element name="CountryShort">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="id" type="xsd:short" />
+				<xsd:element name="creationDate" type="xsd:date" />
+				<xsd:element name="creationTime" type="xsd:dateTime" />
+				<xsd:element name="name" type="xsd:string" />
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="notes">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element minOccurs="1" maxOccurs="1" name="note"
+								type="xsd:string" />
+							<xsd:element minOccurs="0" maxOccurs="unbounded"
+								name="comment" type="xsd:string" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:unique name="CountryShort">
+			<xsd:selector xpath="." />
+			<xsd:field xpath="id" />
+		</xsd:unique>
+	</xsd:element>
 
 	<!-- TYPE TEST DATA MODEL (field type coverage) -->
 

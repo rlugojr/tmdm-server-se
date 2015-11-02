@@ -464,12 +464,18 @@ class ClassCreator extends DefaultMetadataVisitor<Void> {
                                 fieldBridge.addMemberValue("impl", new ClassMemberValue(ToLowerCaseFieldBridge.class.getName(), cp)); //$NON-NLS-1$
 
                                 TypeMetadata type = metadata.getType();
-                                //checking if the type is an integer
+                                //checking if the type is an integer, Long or Short
                                 //if that's the case assigning a specific field bridge
                                 type = MetadataUtils.getSuperConcreteType(type);
                                 if (!metadata.isMany()) {
                                     if (Types.INTEGERS.contains(type.getName())) {
                                         fieldBridge.addMemberValue("impl", new ClassMemberValue(IntegerIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
+                                    }
+                                    if (Types.LONGS.contains(type.getName())) {
+                                        fieldBridge.addMemberValue("impl", new ClassMemberValue(LongIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
+                                    }
+                                    if (Types.SHORTS.contains(type.getName())) {
+                                        fieldBridge.addMemberValue("impl", new ClassMemberValue(ShortIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
                                     }
                                 } 
                                 annotations.addAnnotation(fieldBridge);

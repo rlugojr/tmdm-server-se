@@ -104,6 +104,107 @@ public class StorageFullTextTest extends StorageTestCase {
                         .read(repository,
                                 country,
                                 "<Country><id>1</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France</name></Country>"));
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>2</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France1</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>3</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France2</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>4</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France3</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>5</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France4</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>6</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France5</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>7</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France6</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>8</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France7</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>9</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France8</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>10</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France9</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        country,
+                        "<Country><id>11</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France10</name></Country>"));
+
+        allRecords
+            .add(factory
+                .read(repository,
+                        countryLong,
+                        "<CountryLong><id>1</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France1</name></CountryLong>"));
+        
+        allRecords
+            .add(factory
+                .read(repository,
+                        countryLong,
+                        "<CountryLong><id>2</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France2</name></CountryLong>"));
+        
+        allRecords
+            .add(factory
+                .read(repository,
+                        countryLong,
+                        "<CountryLong><id>3</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France3</name></CountryLong>"));
+
+        allRecords
+        .add(factory
+            .read(repository,
+                    countryShort,
+                    "<CountryShort><id>1</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France1</name></CountryShort>"));
+    
+        allRecords
+            .add(factory
+                .read(repository,
+                        countryShort,
+                        "<CountryShort><id>2</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France2</name></CountryShort>"));
+        
+        allRecords
+            .add(factory
+                .read(repository,
+                        countryShort,
+                        "<CountryShort><id>3</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France3</name></CountryShort>"));
+        allRecords
+        .add(factory
+            .read(repository,
+                    countryShort,
+                    "<CountryShort><id>4</id><creationDate>2010-10-10</creationDate><creationTime>2010-10-10T00:00:01</creationTime><name>France3</name></CountryShort>"));
+
         try {
             storage.begin();
             storage.update(allRecords);
@@ -279,6 +380,57 @@ public class StorageFullTextTest extends StorageTestCase {
         StorageResults results = storage.fetch(qb.getSelect());
         try {
             assertEquals(1, results.getCount());
+        } finally {
+            results.close();
+        }
+    }
+    
+    /**
+     * TMDM-8970 : exception occured when launching this test before fix
+     * test for id of int type
+     * 
+     * @throws Exception
+     */
+    public void testFullSearchCountry() throws Exception {
+        UserQueryBuilder qb = from(country).where(fullText("F"));
+        qb.limit(2);
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(11, results.getCount());
+        } finally {
+            results.close();
+        }
+    }
+    
+    /**
+     * TMDM-8970 : exception occured when launching this test before fix
+     * test for id of long type
+     *
+     * @throws Exception
+     */
+    public void testFullSearchCountryLong() throws Exception {
+        UserQueryBuilder qb = from(countryLong).where(fullText("F"));
+        qb.limit(2);
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(3, results.getCount());
+        } finally {
+            results.close();
+        }
+    }
+    
+    /**
+     * TMDM-8970 : exception occured when launching this test before fix
+     * test for id of short type
+     * 
+     * @throws Exception
+     */
+    public void testFullSearchCountryShort() throws Exception {
+        UserQueryBuilder qb = from(countryShort).where(fullText("F"));
+        qb.limit(2);
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(4, results.getCount());
         } finally {
             results.close();
         }
