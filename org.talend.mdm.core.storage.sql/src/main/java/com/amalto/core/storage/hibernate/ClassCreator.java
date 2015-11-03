@@ -39,6 +39,7 @@ import javassist.bytecode.annotation.AnnotationMemberValue;
 import javassist.bytecode.annotation.ClassMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
 
+import org.apache.log4j.Logger;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -77,6 +78,8 @@ class ClassCreator extends DefaultMetadataVisitor<Void> {
     private final ClassPool classPool;
 
     private final CtClass listType;
+    
+    private static final Logger LOGGER = Logger.getLogger(ClassCreator.class);
 
     public ClassCreator(StorageClassLoader storageClassLoader) {
         this.storageClassLoader = storageClassLoader;
@@ -471,11 +474,16 @@ class ClassCreator extends DefaultMetadataVisitor<Void> {
                                     if (Types.INTEGERS.contains(type.getName())) {
                                         fieldBridge.addMemberValue("impl", new ClassMemberValue(IntegerIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
                                     }
-                                    if (Types.LONGS.contains(type.getName())) {
+                                    else if (Types.LONGS.contains(type.getName())) {
                                         fieldBridge.addMemberValue("impl", new ClassMemberValue(LongIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
                                     }
-                                    if (Types.SHORTS.contains(type.getName())) {
+                                    else if (Types.SHORTS.contains(type.getName())) {
                                         fieldBridge.addMemberValue("impl", new ClassMemberValue(ShortIdFieldBridge.class.getName(), cp)); //$NON-NLS-1$
+                                    }
+                                    else {
+                                        if (!Types.STRING.equals(type.getName())) {
+                                            LOGGER.warn("Unexpected error : the id type doesn't match any compatible type"); //$NON-NLS-1$
+                                        }
                                     }
                                 } 
                                 annotations.addAnnotation(fieldBridge);
