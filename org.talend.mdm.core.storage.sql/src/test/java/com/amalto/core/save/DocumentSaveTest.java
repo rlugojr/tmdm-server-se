@@ -3156,6 +3156,24 @@ public class DocumentSaveTest extends TestCase {
         assertEquals("", evaluate(committedElement, "/Product/OnlineStore"));
     }
 
+    public void testCreateRecordContainsReadOnlyFieldWithDefaultValueSetted() throws Exception {
+        final MetadataRepository repository = new MetadataRepository();
+        repository.load(DocumentSaveTest.class.getResourceAsStream("metadataProductFamily.xsd"));
+        MockMetadataRepositoryAdmin.INSTANCE.register("ProductFamily", repository);
+
+        SaverSource source = new TestSaverSource(repository, false, "", "metadataProductFamily.xsd");
+
+        SaverSession session = SaverSession.newSession(source);
+        InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("ProductFamilyRecords.xml");
+        DocumentSaverContext context = session.getContextFactory().create("MDM", "ProductFamily", "Source", recordXml, true, true, true,
+                true, false);
+        DocumentSaver saver = context.createSaver();
+        saver.save(session, context);
+        MockCommitter committer = new MockCommitter();
+        session.end(committer);
+        assertTrue(committer.hasSaved());
+    }
+    
     private static class MockCommitter implements SaverSession.Committer {
 
         private MutableDocument lastSaved;

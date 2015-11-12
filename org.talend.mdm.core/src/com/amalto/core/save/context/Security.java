@@ -13,6 +13,7 @@ package com.amalto.core.save.context;
 
 import com.amalto.core.history.Action;
 import com.amalto.core.history.MutableDocument;
+import com.amalto.core.history.action.FieldUpdateAction;
 import com.amalto.core.save.DocumentSaverContext;
 import com.amalto.core.save.SaverSession;
 import com.amalto.core.save.UserAction;
@@ -81,6 +82,12 @@ class Security implements DocumentSaver {
             // Then check security on all actions (updates...)
             Set<Action> failedActions = new HashSet<Action>();
             for (Action action : actions) {
+                // If it's create action, ignore permission check on field update
+                if(userAction == UserAction.CREATE) {
+                    if(action instanceof FieldUpdateAction) {
+                        continue;
+                    }
+                }
                 if (!action.isAllowed(currentUserRoles)) {
                     failedActions.add(action);
                 }
