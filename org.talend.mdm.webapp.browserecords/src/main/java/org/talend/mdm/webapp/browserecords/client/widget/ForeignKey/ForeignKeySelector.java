@@ -307,13 +307,24 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
         }
     }
 
-    private ItemNodeModel findTarget(String targetPath, ItemNodeModel node) {
+    protected ItemNodeModel findTarget(String targetPath, ItemNodeModel node) {
         List<ModelData> childrenList = node.getChildren();
         if (childrenList != null && childrenList.size() > 0) {
             for (int i = 0; i < childrenList.size(); i++) {
                 ItemNodeModel child = (ItemNodeModel) childrenList.get(i);
-                if (targetPath.contains(child.getTypePath())) {
-                    if (targetPath.equals(child.getTypePath())) {
+                String typePath = child.getTypePath();
+                if (typePath.contains(":")) { //$NON-NLS-1$
+                    String[] pathArray = typePath.split("/"); //$NON-NLS-1$
+                    for (int j = 0; j < pathArray.length; j++) {
+                        String nodePath = pathArray[j];
+                        if (nodePath.contains(":")) { //$NON-NLS-1$
+                            pathArray[j] = nodePath.split(":")[0]; //$NON-NLS-1$
+                        }
+                    }
+                    typePath = transformPath(pathArray);
+                }
+                if (targetPath.contains(typePath)) {
+                    if (targetPath.equals(typePath)) {
                         return child;
                     } else {
                         findTarget(targetPath, child);
@@ -408,5 +419,16 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
         if (suggestBox != null) {
             suggestBox.clear();
         }
+    }
+
+    protected String transformPath(String[] pathArray) {
+        StringBuilder pathBuilder = new StringBuilder();
+        for (int i = 0; i < pathArray.length; i++) {
+            pathBuilder.append(pathArray[i]);
+            if (i < pathArray.length - 1) {
+                pathBuilder.append("/"); //$NON-NLS-1$
+            }
+        }
+        return pathBuilder.toString();
     }
 }
