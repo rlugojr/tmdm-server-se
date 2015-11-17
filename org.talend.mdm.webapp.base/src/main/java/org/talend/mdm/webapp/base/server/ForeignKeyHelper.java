@@ -83,24 +83,21 @@ public class ForeignKeyHelper {
         schemaManager = _schemaManager;
     }
 
-    public static ForeignKeyBean getForeignKeyBean(TypeModel model, EntityModel entityModel, String dataClusterPK, String ids,
-            String xml, String currentXpath, String language) throws Exception {
+    public static ForeignKeyBean getForeignKeyBean(TypeModel model, EntityModel entityModel, String foreignKeyFilterValue,
+            String dataClusterPK, String ids, String xml, String currentXpath, String language) throws Exception {
         ForeignKeyBean foreignKeyBean = null;
-        boolean hasForeignKeyFilter = model.getForeignKeyFilter() != null && model.getForeignKeyFilter().trim().length() > 0 ? true
-                : false;
+
         boolean hasCompositeKey = false;
         if (entityModel.getKeys() != null && entityModel.getKeys().length > 1) {
             hasCompositeKey = true;
         }
         ForeignKeyHolder holder;
-        String foreignKeyFilter = getForeignKeyFilter(hasForeignKeyFilter, currentXpath.split("/")[0], xml, currentXpath, model); //$NON-NLS-1$
         if (hasCompositeKey && ids.contains(".")) { //$NON-NLS-1$
             model.setFilterValue(ids.split("[.]")[0]); //$NON-NLS-1$
-            holder = getForeignKeyHolder(model, foreignKeyFilter);
         } else {
             model.setFilterValue(ids);
-            holder = getForeignKeyHolder(model, foreignKeyFilter);
         }
+        holder = getForeignKeyHolder(model, foreignKeyFilterValue);
         String[] results = null;
         if (holder != null) {
             String conceptName = holder.conceptName;
@@ -167,7 +164,6 @@ public class ForeignKeyHelper {
 
     public static ItemBasePageLoadResult<ForeignKeyBean> _getForeignKeyList(BasePagingLoadConfigImpl config, TypeModel model,
             EntityModel entityModel, String dataClusterPK, ForeignKeyHolder holder) throws Exception {
-        String foreignKeyPath = model.getForeignkey();
         List<String> foreignKeyInfo = model.getForeignKeyInfo();
         String[] results = null;
         if (holder != null) {
