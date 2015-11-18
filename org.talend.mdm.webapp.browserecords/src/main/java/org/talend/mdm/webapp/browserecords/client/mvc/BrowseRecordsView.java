@@ -441,7 +441,8 @@ public class BrowseRecordsView extends View {
                 Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
                         .buildConditionByCriteria(criterias[i]);
                 String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
-                if (!org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
+                if (filterValue != null && !filterValue.isEmpty()
+                        && !org.talend.mdm.webapp.base.shared.util.CommonUtil.isFilterValue(filterValue)) {
                     String targetPath;
                     if (org.talend.mdm.webapp.base.shared.util.CommonUtil.isRelativePath(filterValue)) {
                         if (filterValue.startsWith(".")) { //$NON-NLS-1$

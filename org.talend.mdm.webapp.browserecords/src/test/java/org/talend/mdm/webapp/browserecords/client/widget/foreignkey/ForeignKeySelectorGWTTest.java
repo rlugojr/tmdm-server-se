@@ -117,6 +117,20 @@ public class ForeignKeySelectorGWTTest extends GWTTestCase {
         foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
         assertEquals("ProductFamily/Name$$=$$1$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
 
+        subelementType.setForeignKeyFilter("ProductFamily/ChangeStatus$$Is Empty Or Null$$$$#"); //$NON-NLS-1$
+        foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
+        assertEquals("ProductFamily/ChangeStatus$$Is Empty Or Null$$$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
+
+        subelementType.setForeignKeyFilter("ProductFamily/ChangeStatus$$Is Empty Or Null$$123456$$#"); //$NON-NLS-1$
+        foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
+        assertEquals("ProductFamily/ChangeStatus$$Is Empty Or Null$$123456$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
+
+        subelementType
+                .setForeignKeyFilter("ProductFamily/ChangeStatus$$Is Empty Or Null$$ProductFamily/Name$$=$$Product/Name$$#"); //$NON-NLS-1$
+        foreignKeySelector = new ForeignKeySelector(subelementType, itemsDetailPanel, family);
+        assertEquals(
+                "ProductFamily/ChangeStatus$$Is Empty Or Null$$ProductFamily/Name$$=$$Product/Name$$#", foreignKeySelector.parseForeignKeyFilter()); //$NON-NLS-1$
+
         // test Person datamodel
         ItemNodeModel person = new ItemNodeModel();
         person.setTypeName("Person"); //$NON-NLS-1$

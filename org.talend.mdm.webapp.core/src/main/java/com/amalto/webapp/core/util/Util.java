@@ -40,7 +40,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.talend.mdm.commmon.util.core.ICoreConstants;
-import org.talend.mdm.commmon.util.core.MDMConfiguration;
 import org.talend.mdm.commmon.util.datamodel.management.BusinessConcept;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -72,6 +71,7 @@ import com.amalto.core.webservice.WSWhereOr;
 import com.amalto.core.webservice.XtentisPort;
 import com.amalto.webapp.core.bean.Configuration;
 import com.amalto.webapp.core.dmagent.SchemaWebAgent;
+import com.amalto.xmlserver.interfaces.WhereCondition;
 import com.sun.xml.xsom.XSAnnotation;
 import com.sun.xml.xsom.XSElementDecl;
 
@@ -289,10 +289,15 @@ public abstract class Util {
 
     @SuppressWarnings("nls")
     public static WSWhereCondition convertLine(String[] values) {
-        if (values.length < 3) {
-            return null;
-        }
         WSWhereCondition wc = new WSWhereCondition();
+        if (values.length < 3) {
+            if (values.length == 2 && values[1].equals(WhereCondition.EMPTY_NULL)) {
+                wc.setOperator(WSWhereOperator.EMPTY_NULL);
+            } else {
+                return null;
+            }
+        }
+
         wc.setLeftPath(values[0]);
         if (values.length >= 3) {
             WSWhereOperator operator = null;
