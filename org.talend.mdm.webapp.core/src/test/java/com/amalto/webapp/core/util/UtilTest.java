@@ -19,6 +19,10 @@ import org.codehaus.jettison.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.amalto.core.webservice.WSStringPredicate;
+import com.amalto.core.webservice.WSWhereCondition;
+import com.amalto.core.webservice.WSWhereOperator;
+
 @SuppressWarnings("nls")
 public class UtilTest extends TestCase {
 
@@ -91,7 +95,15 @@ public class UtilTest extends TestCase {
         firstRow = (JSONObject) rows.get(0);
         assertEquals("[1]", firstRow.get("keys").toString());
         assertEquals("Talend Shirt", firstRow.get("infos").toString());
+    }
 
+    public void testConvertLine() {
+        String[] values = { "ProductFamily/ChangeStatus", "Is Empty Or Null" };
+        WSWhereCondition whereCondition = Util.convertLine(values);
+        assertEquals("ProductFamily/ChangeStatus", whereCondition.getLeftPath());
+        assertEquals(WSWhereOperator.EMPTY_NULL, whereCondition.getOperator());
+        assertNull(whereCondition.getRightValueOrPath());
+        assertEquals(WSStringPredicate.NONE, whereCondition.getStringPredicate());
     }
 
     private JSONArray parsingForeignKeyQueryResults(String[] results, boolean isQueryFkList) throws Exception {

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.base.client.model.ForeignKeyBean;
+import org.talend.mdm.webapp.base.shared.OperatorValueConstants;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsEvents;
 import org.talend.mdm.webapp.browserecords.client.ServiceFactory;
@@ -221,6 +222,9 @@ public class ForeignKeySelector extends ForeignKeyField implements ReturnCriteri
                 Map<String, String> conditionMap = org.talend.mdm.webapp.base.shared.util.CommonUtil
                         .buildConditionByCriteria(cria);
                 String filterValue = conditionMap.get("Value"); //$NON-NLS-1$
+                if (OperatorValueConstants.EMPTY_NULL.equals(conditionMap.get("Operator"))) { //$NON-NLS-1$
+                    return foreignKeyFilter;
+                }
 
                 if (filterValue == null || this.foreignKeyPath == null) {
                     return ""; //$NON-NLS-1$

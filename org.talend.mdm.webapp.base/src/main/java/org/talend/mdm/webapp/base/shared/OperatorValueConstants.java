@@ -30,4 +30,6 @@ public class OperatorValueConstants {
 
     public static final String STRICTCONTAINS = "STRICTCONTAINS"; //$NON-NLS-1$
 
+    public static String EMPTY_NULL = "Is Empty Or Null"; //$NON-NLS-1$
+
 }
