@@ -291,7 +291,7 @@ public abstract class Util {
     public static WSWhereCondition convertLine(String[] values) {
         WSWhereCondition wc = new WSWhereCondition();
         if (values.length < 3) {
-            if (values.length == 2 && values[1].equals(WhereCondition.EMPTY_NULL)) {
+            if (values.length == 2 && WhereCondition.EMPTY_NULL.equals(values[1])) {
                 wc.setOperator(WSWhereOperator.EMPTY_NULL);
             } else {
                 return null;
