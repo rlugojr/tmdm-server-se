@@ -99,14 +99,14 @@ public class ForeignKeyHelperTest extends TestCase {
         WSWhereItem whereItem1 = whereItem.getWhereAnd().getWhereItems()[0];
         WSWhereCondition condition1 = whereItem1.getWhereOr().getWhereItems()[0].getWhereAnd().getWhereItems()[0].getWhereAnd()
                 .getWhereItems()[0].getWhereCondition();
-        assertEquals("ProductFamily/Name", condition1.getLeftPath()); //$NON-NLS-1$
+        assertEquals("ProductFamily/Id", condition1.getLeftPath()); //$NON-NLS-1$
         assertEquals(WSWhereOperator._CONTAINS, condition1.getOperator().getValue());
         assertEquals("Hats", condition1.getRightValueOrPath()); //$NON-NLS-1$
 
         WSWhereItem whereItem2 = whereItem1.getWhereOr().getWhereItems()[1];
         WSWhereCondition condition2 = whereItem2.getWhereAnd().getWhereItems()[0].getWhereAnd().getWhereItems()[0]
                 .getWhereCondition();
-        assertEquals("ProductFamily/Id", condition2.getLeftPath()); //$NON-NLS-1$
+        assertEquals("ProductFamily/Name", condition2.getLeftPath()); //$NON-NLS-1$
         assertEquals(WSWhereOperator._CONTAINS, condition2.getOperator().getValue());
         assertEquals("Hats", condition2.getRightValueOrPath()); //$NON-NLS-1$
 
@@ -125,13 +125,13 @@ public class ForeignKeyHelperTest extends TestCase {
         whereItem1 = whereItem.getWhereAnd().getWhereItems()[0];
         condition1 = whereItem1.getWhereOr().getWhereItems()[0].getWhereAnd().getWhereItems()[0].getWhereAnd().getWhereItems()[0]
                 .getWhereCondition();
-        assertEquals("ProductFamily/Name", condition1.getLeftPath()); //$NON-NLS-1$
+        assertEquals("ProductFamily/Id", condition1.getLeftPath()); //$NON-NLS-1$
         assertEquals(WSWhereOperator._CONTAINS, condition1.getOperator().getValue());
         assertEquals("Hats", condition1.getRightValueOrPath()); //$NON-NLS-1$
 
         whereItem2 = whereItem1.getWhereOr().getWhereItems()[1];
         condition2 = whereItem2.getWhereAnd().getWhereItems()[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("ProductFamily/Id", condition2.getLeftPath()); //$NON-NLS-1$
+        assertEquals("ProductFamily/Name", condition2.getLeftPath()); //$NON-NLS-1$
         assertEquals(WSWhereOperator.CONTAINS, condition2.getOperator());
         assertEquals("Hats", condition2.getRightValueOrPath()); //$NON-NLS-1$
 
@@ -384,13 +384,13 @@ public class ForeignKeyHelperTest extends TestCase {
         WSWhereItem whereItem1 = whereItem.getWhereAnd().getWhereItems()[0];
         WSWhereCondition condition1 = whereItem1.getWhereOr().getWhereItems()[0].getWhereAnd().getWhereItems()[0].getWhereAnd()
                 .getWhereItems()[0].getWhereCondition();
-        assertEquals("ProductFamily/Name", condition1.getLeftPath()); //$NON-NLS-1$
+        assertEquals("ProductFamily/Id", condition1.getLeftPath()); //$NON-NLS-1$
         assertEquals(WSWhereOperator._CONTAINS, condition1.getOperator().getValue());
         assertEquals("Id", condition1.getRightValueOrPath()); //$NON-NLS-1$
 
         WSWhereCondition condition2 = whereItem1.getWhereOr().getWhereItems()[1].getWhereAnd().getWhereItems()[0].getWhereAnd()
                 .getWhereItems()[0].getWhereCondition();
-        assertEquals("ProductFamily/Id", condition2.getLeftPath()); //$NON-NLS-1$
+        assertEquals("ProductFamily/Name", condition2.getLeftPath()); //$NON-NLS-1$
         assertEquals(WSWhereOperator._CONTAINS, condition2.getOperator().getValue());
         assertEquals("Id", condition2.getRightValueOrPath()); //$NON-NLS-1$
     }
@@ -615,6 +615,65 @@ public class ForeignKeyHelperTest extends TestCase {
         assertEquals(3, whereItems.length);
         WSWhereItem[] whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
         WSWhereCondition whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/Id", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
+        assertEquals("testValue", whereCondition1.getRightValueOrPath());
+
+        WSWhereItem[] whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/city", whereCondition2.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
+        assertEquals("testValue", whereCondition2.getRightValueOrPath());
+
+        WSWhereItem[] whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/state", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition3.getOperator());
+        assertEquals("testValue", whereCondition3.getRightValueOrPath());
+
+        keyValue = "123";
+        fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey, keyValue);
+        whereItems = fkQueryCondition.getWhereOr().getWhereItems();
+        assertEquals(4, whereItems.length);
+        whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
+        whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/Id", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
+        assertEquals("123", whereCondition1.getRightValueOrPath());
+
+        whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
+        whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/city", whereCondition2.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
+        assertEquals("123", whereCondition2.getRightValueOrPath());
+
+        whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/state", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition3.getOperator());
+        assertEquals("123", whereCondition3.getRightValueOrPath());
+
+        WSWhereItem[] whereItems4 = whereItems[3].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition4 = whereItems4[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/zipCode", whereCondition4.getLeftPath());
+        assertEquals(WSWhereOperator.EQUALS, whereCondition4.getOperator());
+        assertEquals("123", whereCondition4.getRightValueOrPath());
+    }
+
+    public void testGetFKQueryConditionWithIntegerFK() throws Exception {
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("TMDM-8966_Integer_FK.xsd");
+        repository.load(resourceAsStream);
+        String concept = "TMDM-8966FK";
+        String xpathForeignKey = "TMDM-8966FK/Id";
+        String xpathInfoForeignKey = "TMDM-8966FK/city,TMDM-8966FK/state,TMDM-8966FK/zipCode";
+        String keyValue = "testValue";
+
+        WSWhereItem fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey,
+                keyValue);
+        WSWhereItem[] whereItems = fkQueryCondition.getWhereOr().getWhereItems();
+        assertEquals(2, whereItems.length);
+        WSWhereItem[] whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
         assertEquals("TMDM-8966FK/city", whereCondition1.getLeftPath());
         assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
         assertEquals("testValue", whereCondition1.getRightValueOrPath());
@@ -625,39 +684,33 @@ public class ForeignKeyHelperTest extends TestCase {
         assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
         assertEquals("testValue", whereCondition2.getRightValueOrPath());
 
-        WSWhereItem[] whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
-        WSWhereCondition whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("TMDM-8966FK/Id", whereCondition3.getLeftPath());
-        assertEquals(WSWhereOperator.CONTAINS, whereCondition3.getOperator());
-        assertEquals("testValue", whereCondition3.getRightValueOrPath());
-
-        keyValue = "123";
+        keyValue = "22";
         fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey, keyValue);
         whereItems = fkQueryCondition.getWhereOr().getWhereItems();
         assertEquals(4, whereItems.length);
         whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
         whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("TMDM-8966FK/city", whereCondition1.getLeftPath());
-        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
-        assertEquals("123", whereCondition1.getRightValueOrPath());
+        assertEquals("TMDM-8966FK/Id", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.EQUALS, whereCondition1.getOperator());
+        assertEquals("22", whereCondition1.getRightValueOrPath());
 
         whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
         whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("TMDM-8966FK/state", whereCondition2.getLeftPath());
+        assertEquals("TMDM-8966FK/city", whereCondition2.getLeftPath());
         assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
-        assertEquals("123", whereCondition2.getRightValueOrPath());
+        assertEquals("22", whereCondition2.getRightValueOrPath());
 
-        whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
-        whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("TMDM-8966FK/zipCode", whereCondition3.getLeftPath());
-        assertEquals(WSWhereOperator.EQUALS, whereCondition3.getOperator());
-        assertEquals("123", whereCondition3.getRightValueOrPath());
+        WSWhereItem[] whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("TMDM-8966FK/state", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition3.getOperator());
+        assertEquals("22", whereCondition3.getRightValueOrPath());
 
         WSWhereItem[] whereItems4 = whereItems[3].getWhereAnd().getWhereItems();
         WSWhereCondition whereCondition4 = whereItems4[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
-        assertEquals("TMDM-8966FK/Id", whereCondition4.getLeftPath());
-        assertEquals(WSWhereOperator.CONTAINS, whereCondition4.getOperator());
-        assertEquals("123", whereCondition4.getRightValueOrPath());
+        assertEquals("TMDM-8966FK/zipCode", whereCondition4.getLeftPath());
+        assertEquals(WSWhereOperator.EQUALS, whereCondition4.getOperator());
+        assertEquals("22", whereCondition4.getRightValueOrPath());
     }
 
     @SuppressWarnings("unchecked")

@@ -13,6 +13,7 @@
 package org.talend.mdm.webapp.base.server;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.talend.mdm.commmon.metadata.ContainedTypeFieldMetadata;
 import org.talend.mdm.commmon.metadata.EnumerationFieldMetadata;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
+import org.talend.mdm.commmon.metadata.MetadataUtils;
 import org.talend.mdm.commmon.metadata.MetadataVisitor;
 import org.talend.mdm.commmon.metadata.ReferenceFieldMetadata;
 import org.talend.mdm.commmon.metadata.SimpleTypeFieldMetadata;
@@ -404,6 +406,7 @@ public class ForeignKeyHelper {
         return null;
     }
 
+    @SuppressWarnings("unused")
     protected static WSWhereItem getFKQueryCondition(String concept, String xpathForeignKey, String xpathInfoForeignKey,
             String keyValue) throws Exception {
         String initxpathForeignKey = Util.getForeignPathFromPath(xpathForeignKey);
@@ -418,40 +421,40 @@ public class ForeignKeyHelper {
 
         String fkWhere = initxpathForeignKey + "/../* CONTAINS " + keyValue; //$NON-NLS-1$
         if (xpathInfoForeignKey.trim().length() > 0) {
-            StringBuffer ids = new StringBuffer();
             String realXpathForeignKey = null; // In studio, ForeignKey = ConceptName, but not ConceptName/Id
-            if (xpathForeignKey.indexOf("/") == -1) { //$NON-NLS-1$
-                String[] fks = Util.getBusinessConceptKeys(initxpathForeignKey);
-                if (fks != null && fks.length > 0) {
-                    realXpathForeignKey = fks[0];
-                    for (int i = 0; i < fks.length; i++) {
-                        ids.append(fks[i] + " CONTAINS " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
-                        if (i != fks.length - 1) {
-                            ids.append(" OR "); //$NON-NLS-1$
-                        }
-                    }
-                }
-            }
+            List<String> fkXpathList = new ArrayList<String>();
             StringBuffer sb = new StringBuffer();
+
             MetadataRepository repository = CommonUtil.getCurrentRepository();
             ComplexTypeMetadata foreignType = repository.getComplexType(concept);
             FieldSearchMetadataVisitor visitor = new FieldSearchMetadataVisitor();
             visitor.setValue(keyValue);
-            for (String fkInfo : xpathInfos) {
-                visitor.setFieldPath(fkInfo.split("/")); //$NON-NLS-1$
-                String operater = foreignType.accept(visitor);
-                if (operater != null) {
-                    sb.append((fkInfo.startsWith(".") ? XpathUtil.convertAbsolutePath( //$NON-NLS-1$
-                            (realXpathForeignKey != null && realXpathForeignKey.trim().length() > 0) ? realXpathForeignKey
-                                    : xpathForeignKey, fkInfo) : fkInfo)
-                            + " " + operater + " " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
-                    sb.append(" OR "); //$NON-NLS-1$
+
+            if (xpathForeignKey.indexOf("/") == -1) { //$NON-NLS-1$
+                String[] fks = Util.getBusinessConceptKeys(initxpathForeignKey);
+                if (fks != null && fks.length > 0) {
+                    realXpathForeignKey = fks[0];
+                    fkXpathList.addAll(Arrays.asList(fks));
                 }
-            }
-            if (realXpathForeignKey != null) {
-                sb.append(ids.toString());
             } else {
-                sb.append(xpathForeignKey + " CONTAINS " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
+                fkXpathList.add(xpathForeignKey);
+            }
+
+            fkXpathList.addAll(Arrays.asList(xpathInfos));
+            if (fkXpathList != null && fkXpathList.size() > 0) {
+                for (String xpath : fkXpathList) {
+                    visitor.setFieldPath(xpath.split("/")); //$NON-NLS-1$
+                    String operater = foreignType.accept(visitor);
+                    if (operater != null) {
+                        if (sb != null && sb.length() > 0) {
+                            sb.append(" OR "); //$NON-NLS-1$
+                        }
+                        sb.append((xpath.startsWith(".") ? XpathUtil.convertAbsolutePath( //$NON-NLS-1$
+                                (realXpathForeignKey != null && realXpathForeignKey.trim().length() > 0) ? realXpathForeignKey
+                                        : xpathForeignKey, xpath) : xpath)
+                                + " " + operater + " " + keyValue); //$NON-NLS-1$ //$NON-NLS-2$
+                    }
+                }
             }
             fkWhere = sb.toString();
         }
@@ -723,11 +726,11 @@ public class ForeignKeyHelper {
 
         @Override
         public String visit(SimpleTypeFieldMetadata simpleField) {
-            String typeName = simpleField.getType().getName();
+            String typeName = MetadataUtils.getSuperConcreteType(simpleField.getType()).getName();
             if (!(Types.STRING.equals(typeName) || Types.TOKEN.equals(typeName) || Types.DURATION.equals(typeName))) {
                 value = value.replace("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            if (StorageMetadataUtils.isValueAssignable(value, simpleField.getType().getName())) {
+            if (StorageMetadataUtils.isValueAssignable(value, typeName)) {
                 if (Types.STRING.equals(typeName) || Types.TOKEN.equals(typeName) || Types.DURATION.equals(typeName)) {
                     return WSWhereOperator.CONTAINS.toString();
                 } else if (Types.INTEGER.equals(typeName) || Types.POSITIVE_INTEGER.equals(typeName)
