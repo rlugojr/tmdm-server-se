@@ -407,9 +407,9 @@ amalto.itemsbrowser.SearchEntity.bundle.onReady(function(){
 				return r.test(ua); 
 			};
 			
-			if(check(/chrome/)){
-			    var chromeDatePickerCSS = ".x-date-picker {width: 175px;}";
-			    Ext.util.CSS.createStyleSheet(chromeDatePickerCSS,'chromeDatePickerStyle');
+			if(check(/chrome/) || check(/safari/)){
+			    var datePickerCSS = ".x-date-picker {width: 175px;}";
+			    Ext.util.CSS.createStyleSheet(datePickerCSS,'datePickerStyle');
 			};
 		}
 	}
