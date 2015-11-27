@@ -1,12 +1,11 @@
 /*
  * Copyright (C) 2006-2015 Talend Inc. - www.talend.com
- *
+ * 
  * This source code is available under agreement available at
  * %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
- *
- * You should have received a copy of the agreement
- * along with this program; if not, write to Talend SA
- * 9 rue Pages 92150 Suresnes, France
+ * 
+ * You should have received a copy of the agreement along with this program; if not, write to Talend SA 9 rue Pages
+ * 92150 Suresnes, France
  */
 
 package org.talend.mdm.bulkload.client;
@@ -27,7 +26,7 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 
 /**
  * Bulkload amount items client
- *
+ * 
  */
 public class BulkloadClientUtil {
 
@@ -38,12 +37,12 @@ public class BulkloadClientUtil {
         URI uri = new URI(url, false, "UTF-8"); //$NON-NLS-1$
         config.setHost(uri);
 
-        NameValuePair[] parameters = {new NameValuePair("cluster", cluster), //$NON-NLS-1$
-                new NameValuePair("concept", concept),  //$NON-NLS-1$
-                new NameValuePair("datamodel", datamodel),   //$NON-NLS-1$
+        NameValuePair[] parameters = { new NameValuePair("cluster", cluster), //$NON-NLS-1$
+                new NameValuePair("concept", concept), //$NON-NLS-1$
+                new NameValuePair("datamodel", datamodel), //$NON-NLS-1$
                 new NameValuePair("validate", String.valueOf(validate)), //$NON-NLS-1$
                 new NameValuePair("action", "load"), //$NON-NLS-1$ //$NON-NLS-2$
-                new NameValuePair("smartpk", String.valueOf(smartpk))}; //$NON-NLS-1$
+                new NameValuePair("smartpk", String.valueOf(smartpk)) }; //$NON-NLS-1$
 
         HttpClient client = new HttpClient();
         String user = universe == null || universe.trim().length() == 0 ? username : universe + "/" + username; //$NON-NLS-1$
@@ -73,6 +72,7 @@ public class BulkloadClientUtil {
 
             client.executeMethod(config, putMethod);
             responseBody = putMethod.getResponseBodyAsString();
+            ((InputStreamMerger) itemdata).setAlreadyProcessed(true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -91,7 +91,6 @@ public class BulkloadClientUtil {
             boolean smartPK, String username, String password, String transactionId, String universe, String tokenKey,
             String tokenValue, AtomicInteger startedBulkloadCount) {
         InputStreamMerger merger = new InputStreamMerger();
-
         Runnable loadRunnable = new AsyncLoadRunnable(url, cluster, concept, dataModel, validate, smartPK, merger, username,
                 password, transactionId, universe, tokenKey, tokenValue, startedBulkloadCount);
         Thread loadThread = new Thread(loadRunnable);
@@ -152,16 +151,7 @@ public class BulkloadClientUtil {
         public void run() {
             try {
                 startedBulkloadCount.incrementAndGet();
-                bulkload(url,
-                        cluster,
-                        concept,
-                        dataModel,
-                        validate,
-                        smartPK,
-                        inputStream,
-                        userName,
-                        password,
-                        transactionId,
+                bulkload(url, cluster, concept, dataModel, validate, smartPK, inputStream, userName, password, transactionId,
                         universe, tokenKey, tokenValue);
             } catch (Throwable e) {
                 inputStream.reportFailure(e);

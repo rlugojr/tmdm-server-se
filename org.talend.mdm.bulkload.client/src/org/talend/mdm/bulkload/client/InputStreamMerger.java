@@ -1,12 +1,11 @@
 /*
  * Copyright (C) 2006-2015 Talend Inc. - www.talend.com
- *
+ * 
  * This source code is available under agreement available at
  * %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
- *
- * You should have received a copy of the agreement
- * along with this program; if not, write to Talend SA
- * 9 rue Pages 92150 Suresnes, France
+ * 
+ * You should have received a copy of the agreement along with this program; if not, write to Talend SA 9 rue Pages
+ * 92150 Suresnes, France
  */
 
 package org.talend.mdm.bulkload.client;
@@ -49,6 +48,8 @@ public class InputStreamMerger extends InputStream {
     private volatile boolean stopped = false;
 
     private volatile boolean alreadyPushed = false;
+
+    private volatile boolean alreadyProcessed = false;
 
     public InputStreamMerger() {
         this(DEFAULT_CAPACITY, NoWarmUpStrategy.INSTANCE);
@@ -118,17 +119,17 @@ public class InputStreamMerger extends InputStream {
         }
         debug("[P] Close completed."); //$NON-NLS-1$
     }
-    
+
     /**
      * 
      */
-    public void clean(){
-        while(!producerToConsumer.isEmpty()){
+    public void clean() {
+        while (!producerToConsumer.isEmpty()) {
             producerToConsumer.poll();
         }
         try {
             producerToConsumer.put(InternalMessage.newCloseMessage());
-        } catch(InterruptedException e){
+        } catch (InterruptedException e) {
             throw new RuntimeException("clean was interrupted", e); //$NON-NLS-1$
         }
     }
@@ -219,7 +220,7 @@ public class InputStreamMerger extends InputStream {
             log.log(debugLevel, "[" + Thread.currentThread() + "] " + message); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
-    
+
     /***
      * Internal message exchanged in queues
      */
@@ -317,5 +318,13 @@ public class InputStreamMerger extends InputStream {
             }
             return isReady;
         }
+    }
+
+    public boolean isAlreadyProcessed() {
+        return this.alreadyProcessed;
+    }
+
+    public void setAlreadyProcessed(boolean alreadyProcessed) {
+        this.alreadyProcessed = alreadyProcessed;
     }
 }
