@@ -3,6 +3,7 @@ package org.talend.mdm.webapp.browserecords.client.widget.inputfield;
 import java.util.HashMap;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
+import org.talend.mdm.webapp.base.client.widget.PortletConstants;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
 import org.talend.mdm.webapp.browserecords.client.model.FormatModel;
@@ -20,8 +21,6 @@ import com.google.gwt.user.client.Element;
 public class FormatTextField extends TextField<String> {
 
     BrowseRecordsServiceAsync service = (BrowseRecordsServiceAsync) Registry.get(BrowseRecords.BROWSERECORDS_SERVICE);
-
-    public static final String KEY_MDM_READ_ONLY_FIELD_STYLE = "MDM_READ_ONLY_FIELD_STYLE"; //$NON-NLS-1$
 
     private String formatPattern;
 
@@ -189,8 +188,8 @@ public class FormatTextField extends TextField<String> {
                 DOM.setElementAttribute(textFieldDisable, "contenteditable", "true"); //$NON-NLS-1$//$NON-NLS-2$
                 String elementStyle = "overflow: hidden; whiteSpace: nowrap;"; //$NON-NLS-1$
                 if (getUserProperties() != null && getUserProperties().size() > 0) {
-                    if (getUserProperties().containsKey(KEY_MDM_READ_ONLY_FIELD_STYLE)) {
-                        elementStyle = elementStyle + getUserProperties().get(KEY_MDM_READ_ONLY_FIELD_STYLE);
+                    if (getUserProperties().containsKey(PortletConstants.KEY_MDM_READ_ONLY_FIELD_STYLE)) {
+                        elementStyle = elementStyle + getUserProperties().get(PortletConstants.KEY_MDM_READ_ONLY_FIELD_STYLE);
                     }
                 }
                 DOM.setElementAttribute(textFieldDisable, "style", elementStyle); //$NON-NLS-1$

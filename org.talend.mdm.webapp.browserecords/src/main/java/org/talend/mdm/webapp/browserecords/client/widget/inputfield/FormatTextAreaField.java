@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.mdm.webapp.browserecords.client.widget.inputfield;
 
+import org.talend.mdm.webapp.base.client.widget.PortletConstants;
+
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
@@ -69,8 +71,8 @@ public class FormatTextAreaField extends FormatTextField {
                 DOM.setElementAttribute(textFieldDisable, "contenteditable", "true"); //$NON-NLS-1$//$NON-NLS-2$
                 String elementStyle = "overflow: auto; "; //$NON-NLS-1$
                 if (getUserProperties() != null && getUserProperties().size() > 0) {
-                    if (getUserProperties().containsKey(KEY_MDM_READ_ONLY_FIELD_STYLE)) {
-                        elementStyle = elementStyle + getUserProperties().get(KEY_MDM_READ_ONLY_FIELD_STYLE);
+                    if (getUserProperties().containsKey(PortletConstants.KEY_MDM_READ_ONLY_FIELD_STYLE)) {
+                        elementStyle = elementStyle + getUserProperties().get(PortletConstants.KEY_MDM_READ_ONLY_FIELD_STYLE);
                     }
                 }
                 DOM.setElementAttribute(textFieldDisable, "style", elementStyle); //$NON-NLS-1$
