@@ -567,7 +567,7 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
 
         @Override
         public void getForeignKeyValues(String concept, String[] ids, String language,
-                AsyncCallback<Map<ViewBean, Map<String, List<String>>>> callback) {
+                AsyncCallback<Map<String, List<String>>> callback) {
 
         }
 
