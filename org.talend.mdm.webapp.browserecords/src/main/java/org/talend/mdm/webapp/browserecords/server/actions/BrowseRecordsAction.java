@@ -1325,18 +1325,14 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     }
 
     @Override
-    public Map<ViewBean, Map<String, List<String>>> getForeignKeyValues(String concept, String[] ids, String language)
-            throws ServiceException {
+    public Map<String, List<String>> getForeignKeyValues(String concept, String[] ids, String language) throws ServiceException {
         try {
-            Map<ViewBean, Map<String, List<String>>> map = new HashMap<ViewBean, Map<String, List<String>>>();
-            // 1. getView
-            ViewBean viewBean = getView("Browse_items_" + concept, language);//$NON-NLS-1$
             Map<String, List<String>> fkValues = new HashMap<String, List<String>>();
             // 2. getItem
             WSItem wsItem = CommonUtil.getPort().getItem(
                     new WSGetItem(new WSItemPK(new WSDataClusterPK(this.getCurrentDataCluster()), concept, ids)));
             org.dom4j.Document doc = org.talend.mdm.webapp.base.server.util.XmlUtil.parseText(wsItem.getContent());
-            EntityModel entityModel = viewBean.getBindingEntityModel();
+            EntityModel entityModel = getEntityModel(concept, language);
             Map<String, TypeModel> metaData = entityModel.getMetaDataTypes();
             // 3. getAllFKValues
             for (String key : metaData.keySet()) {
@@ -1352,9 +1348,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                     }
                 }
             }
-            // 4. construct map
-            map.put(viewBean, fkValues);
-            return map;
+            return fkValues;
         } catch (ServiceException e) {
             LOG.error(e.getMessage(), e);
             throw e;
