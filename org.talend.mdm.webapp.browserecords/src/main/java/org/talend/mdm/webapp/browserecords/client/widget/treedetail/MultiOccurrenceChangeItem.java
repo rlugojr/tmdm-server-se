@@ -86,7 +86,7 @@ public class MultiOccurrenceChangeItem extends HorizontalPanel {
             }
         }
 
-        if (itemNode.isKey() || (typeModel.getMinOccurs() == 1 && typeModel.getMaxOccurs() == 1)) {
+        if (itemNode.isKey() || (typeModel.getMinOccurs() == 1)) {
             html = html + "<span style=\"color:red\"> *</span>"; //$NON-NLS-1$
         }
 
