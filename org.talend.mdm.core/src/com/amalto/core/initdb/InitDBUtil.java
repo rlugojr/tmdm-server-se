@@ -62,6 +62,7 @@ public class InitDBUtil {
             if (edbIn != null) {
                 useExtension = true;
                 logger.info("Use Extension..."); //$NON-NLS-1$
+                initDB.remove("amaltoOBJECTSRole"); //$NON-NLS-1$
                 parseInitMap(edbIn, builder, initExtensionDB);
             }
         } catch (Exception e) {
