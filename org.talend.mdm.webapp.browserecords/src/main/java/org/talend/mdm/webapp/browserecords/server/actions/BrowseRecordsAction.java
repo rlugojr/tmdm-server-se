@@ -80,6 +80,7 @@ import org.talend.mdm.webapp.browserecords.server.bizhelpers.ViewHelper;
 import org.talend.mdm.webapp.browserecords.server.provider.DefaultSmartViewProvider;
 import org.talend.mdm.webapp.browserecords.server.provider.SmartViewProvider;
 import org.talend.mdm.webapp.browserecords.server.ruleengine.DisplayRuleEngine;
+import org.talend.mdm.webapp.browserecords.server.ruleengine.RuleValueItem;
 import org.talend.mdm.webapp.browserecords.server.util.BrowseRecordsConfiguration;
 import org.talend.mdm.webapp.browserecords.server.util.DynamicLabelUtil;
 import org.talend.mdm.webapp.browserecords.server.util.SmartViewUtil;
@@ -645,6 +646,19 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         SimpleTypeModel stagingTaskidType = new SimpleTypeModel(StagingConstant.STAGING_TASKID, DataTypeConstants.STRING);
         stagingTaskidType.setXpath(concept + StagingConstant.STAGING_TASKID);
         entityModel.getMetaDataTypes().put(concept + StagingConstant.STAGING_TASKID, stagingTaskidType);
+
+        DisplayRuleEngine ruleEngine = new DisplayRuleEngine(entityModel.getMetaDataTypes(), concept);
+        TypeModel typeModel = entityModel.getMetaDataTypes().get(concept);
+        Document doc = org.talend.mdm.webapp.browserecords.server.util.CommonUtil.getSubXML(typeModel, null, null, language);
+        org.dom4j.Document doc4j = XmlUtil.parseDocument(doc);
+        List<RuleValueItem> list = ruleEngine.execDefaultValueRule(doc4j);
+        for (RuleValueItem item : list) {
+            String xPath = item.getXpath().replaceAll("\\[\\d+\\]", ""); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            TypeModel simpleModel = entityModel.getMetaDataTypes().get(xPath);
+            simpleModel.setDefaultValue(item.getValue());
+            entityModel.getMetaDataTypes().put(xPath, simpleModel);
+        }
+
         // DisplayRulesUtil.setRoot(DataModelHelper.getEleDecl());
         vb.setBindingEntityModel(entityModel);
         // viewables
