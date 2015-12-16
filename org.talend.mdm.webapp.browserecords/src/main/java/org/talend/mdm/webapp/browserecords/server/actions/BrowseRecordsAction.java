@@ -638,6 +638,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             // bind entity model
             entityModel = new EntityModel();
             DataModelHelper.parseSchema(model, concept, entityModel, LocalUser.getLocalUser().getRoles());
+            setDefaultValueByExpression(entityModel, concept, language);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             Locale locale = new Locale(language);
@@ -646,19 +647,6 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         SimpleTypeModel stagingTaskidType = new SimpleTypeModel(StagingConstant.STAGING_TASKID, DataTypeConstants.STRING);
         stagingTaskidType.setXpath(concept + StagingConstant.STAGING_TASKID);
         entityModel.getMetaDataTypes().put(concept + StagingConstant.STAGING_TASKID, stagingTaskidType);
-
-        DisplayRuleEngine ruleEngine = new DisplayRuleEngine(entityModel.getMetaDataTypes(), concept);
-        TypeModel typeModel = entityModel.getMetaDataTypes().get(concept);
-        Document doc = org.talend.mdm.webapp.browserecords.server.util.CommonUtil.getSubXML(typeModel, null, null, language);
-        org.dom4j.Document doc4j = XmlUtil.parseDocument(doc);
-        List<RuleValueItem> list = ruleEngine.execDefaultValueRule(doc4j);
-        for (RuleValueItem item : list) {
-            String xPath = item.getXpath().replaceAll("\\[\\d+\\]", ""); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            TypeModel simpleModel = entityModel.getMetaDataTypes().get(xPath);
-            simpleModel.setDefaultValue(item.getValue());
-            entityModel.getMetaDataTypes().put(xPath, simpleModel);
-        }
-
         // DisplayRulesUtil.setRoot(DataModelHelper.getEleDecl());
         vb.setBindingEntityModel(entityModel);
         // viewables
@@ -677,6 +665,22 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         return vb;
     }
 
+    public EntityModel setDefaultValueByExpression(EntityModel entityModel, String concept, String language)
+            throws ServiceException {
+        DisplayRuleEngine ruleEngine = new DisplayRuleEngine(entityModel.getMetaDataTypes(), concept);
+        TypeModel typeModel = entityModel.getMetaDataTypes().get(concept);
+        Document doc = org.talend.mdm.webapp.browserecords.server.util.CommonUtil.getSubXML(typeModel, null, null, language);
+        org.dom4j.Document doc4j = XmlUtil.parseDocument(doc);
+        List<RuleValueItem> list = ruleEngine.execDefaultValueRule(doc4j);
+        for (RuleValueItem item : list) {
+            String xPath = item.getXpath().replaceAll("\\[\\d+\\]", ""); //$NON-NLS-1$//$NON-NLS-2$
+            TypeModel simpleModel = entityModel.getMetaDataTypes().get(xPath);
+            simpleModel.setDefaultValue(item.getValue());
+            entityModel.getMetaDataTypes().put(xPath, simpleModel);
+        }
+        return entityModel;
+    }
+    
     @Override
     public void logicalDeleteItem(ItemBean item, String path, boolean override) throws ServiceException {
         try {

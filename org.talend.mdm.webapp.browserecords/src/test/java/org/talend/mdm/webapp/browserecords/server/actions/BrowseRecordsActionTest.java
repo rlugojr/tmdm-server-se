@@ -797,6 +797,24 @@ public class BrowseRecordsActionTest extends TestCase {
 
     }
 
+    public void testSetDefaultValueByExpression() throws Exception {
+        EntityModel entityModel = getViewBean("Product", "ProductDemo.xsd").getBindingEntityModel();
+        entityModel = action.setDefaultValueByExpression(entityModel, "Product", "en");
+
+        TypeModel name = entityModel.getTypeModel("Product/Name");
+        assertEquals("\"MDM Product\"", name.getDefaultValueExpression());
+        assertEquals("MDM Product", name.getDefaultValue());
+
+        TypeModel price = entityModel.getTypeModel("Product/Price");
+        assertEquals("fn:round(100.15)", price.getDefaultValueExpression());
+        assertEquals("100", price.getDefaultValue());
+
+        TypeModel color = entityModel.getTypeModel("Product/Features/Colors/Color");
+        assertEquals("\"White\"", color.getDefaultValueExpression());
+        assertEquals("White", color.getDefaultValue());
+
+    }
+
     private String parsingNodeValue(Document docXml, String xpath, String conceptName) throws Exception {
         NodeList nodes = Util.getNodeList(docXml, xpath.replaceFirst(conceptName + "/", "./"));
         if (nodes.getLength() > 0) {

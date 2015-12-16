@@ -55,6 +55,7 @@
 						</xsd:appinfo>
 						<xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Read-only
 						</xsd:appinfo>
+						<xsd:appinfo source="X_Default_Value_Rule">"MDM Product"</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="1" name="Description" type="xsd:string">
@@ -167,6 +168,7 @@
 <xsd:appinfo source="X_Write">Demo_User</xsd:appinfo>
 <xsd:appinfo source="X_Workflow">Demo_User#Product_Product_1.0#Read-only</xsd:appinfo>
 <xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Read-only</xsd:appinfo>
+<xsd:appinfo source="X_Default_Value_Rule">"White"</xsd:appinfo>
 </xsd:annotation>
 										</xsd:element>
 									</xsd:sequence>
@@ -203,6 +205,7 @@
 						</xsd:appinfo>
 						<xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Writable
 						</xsd:appinfo>
+						<xsd:appinfo source="X_Default_Value_Rule">fn:round(100.15)</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="5" minOccurs="0" name="Family" type="xsd:string">
