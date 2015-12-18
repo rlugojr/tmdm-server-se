@@ -22,16 +22,12 @@ public class MockStorageAdmin extends StorageAdminImpl {
 
     @Override
     public Storage get(String storageName, StorageType type) {
-        if (StorageAdmin.SYSTEM_STORAGE.equals(storageName) && StorageType.SYSTEM == type) {
-            return null;
-        } else {
-            for (Storage s : storages) {
-                if (s.getName().equals(storageName) && s.getType() == type) {
-                    return s;
-                }
+        for (Storage s : storages) {
+            if (s.getName().equals(storageName) && s.getType() == type) {
+                return s;
             }
-            return super.get(storageName, type);
         }
+        return super.get(storageName, type);
     }
 
     public void register(Storage storage) {
