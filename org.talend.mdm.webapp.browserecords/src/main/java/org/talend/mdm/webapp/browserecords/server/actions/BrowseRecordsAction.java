@@ -2154,10 +2154,13 @@ public class BrowseRecordsAction implements BrowseRecordsService {
                 // TODO String
                 String searchPrefix;
                 NodeList attrNodeList = com.amalto.core.util.Util.getNodeList(jobDoc, "/results/item/attr"); //$NON-NLS-1$
+                NodeList resultsNodeList = com.amalto.core.util.Util.getNodeList(jobDoc, "/results"); //$NON-NLS-1$
                 if (attrNodeList != null && attrNodeList.getLength() > 0) {
                     searchPrefix = "/results/item/attr/"; //$NON-NLS-1$
-                } else {
+                } else if (resultsNodeList != null && resultsNodeList.getLength() > 0) {
                     searchPrefix = "/results/"; //$NON-NLS-1$
+                } else {
+                    searchPrefix = ""; //$NON-NLS-1$
                 }
 
                 for (String xpath : lookupFieldsForWSItemDoc) {
