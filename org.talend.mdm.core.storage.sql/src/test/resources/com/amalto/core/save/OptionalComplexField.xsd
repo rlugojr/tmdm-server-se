@@ -1,0 +1,50 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:import namespace="http://www.w3.org/2001/XMLSchema"/>
+	<xsd:element name="Test1">
+		<xsd:annotation>
+			<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="id" type="xsd:string">
+					<xsd:annotation>
+						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="desc" type="xsd:string">
+					<xsd:annotation>
+						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="complx" type="complexType">
+					<xsd:annotation>
+						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:unique name="Test1">
+			<xsd:selector xpath="."/>
+			<xsd:field xpath="id"/>
+		</xsd:unique>
+	</xsd:element>
+	<xsd:complexType name="complexType">
+		<xsd:all>
+			<xsd:element maxOccurs="1" minOccurs="1" name="e1" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="e2" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

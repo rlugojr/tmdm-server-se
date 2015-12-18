@@ -43,7 +43,7 @@ public class MockServerLifecycle implements ServerLifecycle {
 
     @Override
     public StorageAdmin createStorageAdmin() {
-        return new StorageAdminImpl();
+        return new MockStorageAdmin();
     }
 
     @Override

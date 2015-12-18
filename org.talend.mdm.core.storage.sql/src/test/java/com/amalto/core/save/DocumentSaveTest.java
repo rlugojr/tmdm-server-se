@@ -10,45 +10,19 @@
 
 package com.amalto.core.save;
 
-import com.amalto.core.objects.UpdateReportPOJO;
-import com.amalto.core.history.DeleteType;
-import com.amalto.core.history.MutableDocument;
-import com.amalto.core.save.context.DocumentSaver;
-import com.amalto.core.save.context.SaverContextFactory;
-import com.amalto.core.save.context.SaverSource;
-import com.amalto.core.save.context.StorageDocument;
-import com.amalto.core.save.generator.AutoIncrementGenerator;
-import com.amalto.core.schema.validation.SkipAttributeDocumentBuilder;
-import com.amalto.core.schema.validation.Validator;
-import com.amalto.core.schema.validation.XmlSchemaValidator;
-import com.amalto.core.util.OutputReport;
-import com.amalto.core.util.Util;
-import com.amalto.core.util.ValidateException;
+import static com.amalto.core.query.user.UserQueryBuilder.eq;
+import static com.amalto.core.query.user.UserQueryBuilder.from;
 
-import junit.framework.TestCase;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
-import org.talend.mdm.commmon.metadata.FieldMetadata;
-import org.talend.mdm.commmon.metadata.MetadataRepository;
-import org.talend.mdm.commmon.util.core.MDMConfiguration;
-
-import com.amalto.core.server.Server;
-import com.amalto.core.server.ServerContext;
-import com.amalto.core.server.MockMetadataRepositoryAdmin;
-import com.amalto.core.server.MockServerLifecycle;
-import com.amalto.core.server.StorageAdmin;
-import com.amalto.core.storage.*;
-import com.amalto.core.storage.hibernate.HibernateStorage;
-import com.amalto.core.storage.record.DataRecord;
-import com.amalto.core.storage.record.DataRecordReader;
-import com.amalto.core.storage.record.XmlStringDataRecordReader;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
@@ -59,9 +33,52 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.*;
+import junit.framework.TestCase;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
+import org.talend.mdm.commmon.metadata.FieldMetadata;
+import org.talend.mdm.commmon.metadata.MetadataRepository;
+import org.talend.mdm.commmon.util.core.MDMConfiguration;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.amalto.core.delegator.BeanDelegatorContainer;
+import com.amalto.core.delegator.ILocalUser;
+import com.amalto.core.history.DeleteType;
+import com.amalto.core.history.MutableDocument;
+import com.amalto.core.objects.UpdateReportPOJO;
+import com.amalto.core.query.user.UserQueryBuilder;
+import com.amalto.core.save.context.DocumentSaver;
+import com.amalto.core.save.context.SaverContextFactory;
+import com.amalto.core.save.context.SaverSource;
+import com.amalto.core.save.context.StorageDocument;
+import com.amalto.core.save.context.StorageSaverSource;
+import com.amalto.core.save.generator.AutoIncrementGenerator;
+import com.amalto.core.schema.validation.SkipAttributeDocumentBuilder;
+import com.amalto.core.schema.validation.Validator;
+import com.amalto.core.schema.validation.XmlSchemaValidator;
+import com.amalto.core.server.MockMetadataRepositoryAdmin;
+import com.amalto.core.server.MockServerLifecycle;
+import com.amalto.core.server.MockStorageAdmin;
+import com.amalto.core.server.Server;
+import com.amalto.core.server.ServerContext;
+import com.amalto.core.server.StorageAdmin;
+import com.amalto.core.storage.SecuredStorage;
+import com.amalto.core.storage.Storage;
+import com.amalto.core.storage.StorageResults;
+import com.amalto.core.storage.StorageType;
+import com.amalto.core.storage.hibernate.HibernateStorage;
+import com.amalto.core.storage.record.DataRecord;
+import com.amalto.core.storage.record.DataRecordReader;
+import com.amalto.core.storage.record.XmlStringDataRecordReader;
+import com.amalto.core.util.OutputReport;
+import com.amalto.core.util.Util;
+import com.amalto.core.util.ValidateException;
+import com.amalto.core.util.XtentisException;
 
 @SuppressWarnings("nls")
 public class DocumentSaveTest extends TestCase {
@@ -3138,9 +3155,7 @@ public class DocumentSaveTest extends TestCase {
         DataRecordReader<String> factory = new XmlStringDataRecordReader();
         DataRecord updatedRecord = factory.read(repository, repository.getComplexType("Product"), IOUtils.toString(DocumentSaveTest.class.getResourceAsStream("test72.xml")));
         
-        StorageDocument updatedDocument = new StorageDocument("DStar",
-                repository,
-                updatedRecord);
+        StorageDocument updatedDocument = new StorageDocument("DStar", repository, updatedRecord);
         
         SaverSession session = SaverSession.newSession(source);
         
@@ -3183,6 +3198,64 @@ public class DocumentSaveTest extends TestCase {
         DocumentSaver saver = context.createSaver();
         saver.save(session, context);
         assertEquals("no change update successfully!", saver.getBeforeSavingMessage());
+    }
+    
+    /**
+     * TMDM-9192: issue with deletion of complex optional field
+     */
+    public void testDeleteOptionalComplexFieldWithManatoryField() throws Exception {
+        String orgString = "<Test1><id>a</id><name>a</name><desc>a</desc><complx><e1>a</e1><e2>a</e2></complx></Test1>";
+        String updString = "<Test1><id>a</id><name>a</name><desc/><complx><e1/><e2/></complx></Test1>";
+        
+        ServerContext.INSTANCE.get(new MockServerLifecycle());
+        MetadataRepository repository = new MetadataRepository();
+        repository.load(DocumentSaveTest.class.getResourceAsStream("OptionalComplexField.xsd"));
+        MockMetadataRepositoryAdmin.INSTANCE.register("DStar", repository);
+        
+        ComplexTypeMetadata test1 = repository.getComplexType("Test1");
+        Storage storage = new SecuredStorage(new HibernateStorage("DStar"), new TestUserDelegator());
+        storage.init(ServerContext.INSTANCE.get().getDefinition("H2-Default", "DStar"));
+        storage.prepare(repository, true);
+        ((MockStorageAdmin) ServerContext.INSTANCE.get().getStorageAdmin()).register(storage);
+        
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        DataRecord orgRecord = factory.read(repository, test1, orgString);
+        try {
+            storage.begin();
+            storage.update(orgRecord);
+            storage.commit();
+        } finally {
+            storage.end();
+        }
+        
+        SaverSource source = new MockStorageSaverSource(repository, "OptionalComplexField.xsd");
+        SaverSession session = SaverSession.newSession(source);
+        InputStream recordXml = new ByteArrayInputStream(updString.getBytes("UTF-8"));
+        DocumentSaverContext context = session.getContextFactory().create("DStar", "DStar", "Source", recordXml, false, true, true, false, false);
+
+        DocumentSaver saver = context.createSaver();
+        session.begin("DStar");
+        saver.save(session, context);
+        BeanDelegatorContainer.createInstance().setDelegatorInstancePool(
+                Collections.<String, Object> singletonMap("LocalUser", new MockILocalUser()));
+        session.end(new DefaultCommitter());
+        
+        UserQueryBuilder qb = from(test1).where(eq(test1.getField("id"), "a"));
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            for (DataRecord result : results) {
+                assertEquals("a", result.get("name"));
+                assertNull(result.get("desc"));
+                try {
+                    result.get("complx[1]");
+                    fail("Excepted exception for not existing 'complx[1]'");
+                } catch (IllegalArgumentException e) {
+                    // This exception is excepted
+                }
+            }
+        } finally {
+            results.close();
+        }
     }
 
     private static class MockCommitter implements SaverSession.Committer {
@@ -3237,7 +3310,79 @@ public class DocumentSaveTest extends TestCase {
             return hasSaved;
         }
     }
-
+    
+    private static class MockStorageSaverSource extends StorageSaverSource {
+        
+        private MetadataRepository updateReportRepository;
+        
+        private final MetadataRepository repository;
+        
+        private final String schemaFileName;
+        
+        public MockStorageSaverSource(MetadataRepository repository, String schemaFileName) {
+            this.repository = repository;
+            this.schemaFileName = schemaFileName;
+        }
+        
+        @Override
+        public String getUserName() { 
+            return "Admin";
+        }
+        
+        @Override
+        public Set<String> getCurrentUserRoles() {
+            return Collections.singleton("System_Admin");
+        }
+        
+        @Override
+        public InputStream getSchema(String dataModelName) {
+            return DocumentSaveTest.class.getResourceAsStream(schemaFileName);
+        }
+        
+        @Override
+        public synchronized MetadataRepository getMetadataRepository(String dataModelName) {
+            if ("UpdateReport".equals(dataModelName)) {
+                if (updateReportRepository == null) {
+                    updateReportRepository = new MetadataRepository();
+                    updateReportRepository.load(DocumentSaveTest.class.getResourceAsStream("updateReport.xsd"));
+                }
+                return updateReportRepository;
+            }
+            return repository;
+        }
+        
+        @Override
+        public void routeItem(String dataCluster, String typeName, String[] id) {
+            // nothing to do
+        }
+        
+    }
+    
+    private static class MockILocalUser extends ILocalUser {
+        
+        @Override
+        public ILocalUser getILocalUser() throws XtentisException {
+            return this;
+        }
+        
+        @Override
+        public HashSet<String> getRoles() {
+            HashSet<String> roleSet = new HashSet<String>();
+            roleSet.add("System_Admin");
+            return roleSet;
+        }
+        
+        @Override
+        public String getUsername() {
+            return "Admin";
+        }
+        
+        @Override
+        public boolean isAdmin(Class<?> objectTypeClass) throws XtentisException {
+            return true;
+        }
+    }
+    
     private static class TestSaverSource implements SaverSource {
 
         private final MetadataRepository repository;
