@@ -170,20 +170,25 @@ public class BrowseRecords implements EntryPoint {
 
                     @Override
                     public void onSuccess(final ItemBean item) {
-                        getItemService().getView(
-                                "Browse_items_" + concept, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() { //$NON-NLS-1$
+                        getItemService().getExsitedViewName(concept, new SessionAwareAsyncCallback<String>() {
 
-                                    @Override
-                                    public void onSuccess(ViewBean viewBean) {
-                                        ItemPanel itemPanel = new ItemPanel(viewBean, item, ItemDetailToolBar.VIEW_OPERATION,
-                                                panel);
-                                        itemPanel.getToolBar().setHierarchyCall(true);
-                                        itemPanel.setItemId(concept + "_" + ids); //$NON-NLS-1$
-                                        renderPubTreeDetailPanel(itemPanel.getItemId(), itemPanel);
-                                    }
+                            @Override
+                            public void onSuccess(String viewName) {
+                                getItemService().getView(viewName, Locale.getLanguage(),
+                                        new SessionAwareAsyncCallback<ViewBean>() {
 
-                                });
+                                            @Override
+                                            public void onSuccess(ViewBean viewBean) {
+                                                ItemPanel itemPanel = new ItemPanel(viewBean, item,
+                                                        ItemDetailToolBar.VIEW_OPERATION, panel);
+                                                itemPanel.getToolBar().setHierarchyCall(true);
+                                                itemPanel.setItemId(concept + "_" + ids); //$NON-NLS-1$
+                                                renderPubTreeDetailPanel(itemPanel.getItemId(), itemPanel);
+                                            }
 
+                                        });
+                            }
+                        });
                     }
                 });
     }
@@ -357,7 +362,7 @@ public class BrowseRecords implements EntryPoint {
     }
 
     public void initUI(JavaScriptObject stagingarea) {
-        _initUI(stagingarea);               
+        _initUI(stagingarea);
     }
 
     private void onModuleRender() {

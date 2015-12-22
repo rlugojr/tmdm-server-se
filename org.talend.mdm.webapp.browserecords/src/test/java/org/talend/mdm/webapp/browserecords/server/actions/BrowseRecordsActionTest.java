@@ -72,10 +72,13 @@ import com.amalto.core.util.Messages;
 import com.amalto.core.util.MessagesFactory;
 import com.amalto.core.util.Util;
 import com.amalto.core.webservice.WSBoolean;
+import com.amalto.core.webservice.WSGetViewPKs;
 import com.amalto.core.webservice.WSInt;
 import com.amalto.core.webservice.WSItem;
 import com.amalto.core.webservice.WSStringArray;
 import com.amalto.core.webservice.WSView;
+import com.amalto.core.webservice.WSViewPK;
+import com.amalto.core.webservice.WSViewPKArray;
 import com.amalto.core.webservice.WSViewSearch;
 import com.amalto.core.webservice.XtentisPort;
 import com.amalto.webapp.core.util.XmlUtil;
@@ -746,10 +749,9 @@ public class BrowseRecordsActionTest extends TestCase {
         result = action.formatValue(formatModel);
         assertEquals(result, "Hello World!");
     }
-    
+
     /**
-     * test the getViewsListOrderedByLabels method
-     * checking if the list is well ordered
+     * test the getViewsListOrderedByLabels method checking if the list is well ordered
      */
     public void testGetViewsListOrderedByLabels() {
         Map<String, String> nameLabelMap = new HashMap<String, String>();
@@ -762,7 +764,7 @@ public class BrowseRecordsActionTest extends TestCase {
         nameLabelMap.put("Browse_items_shipped", "envoyés");
 
         List<ItemBaseModel> listRes = BrowseRecordsAction.getViewsListOrderedByLabels(nameLabelMap);
-        
+
         assertEquals(7, listRes.size());
         assertEquals("envoyés", listRes.get(0).get("name"));
         assertEquals("famille produit", listRes.get(1).get("name"));
@@ -771,8 +773,8 @@ public class BrowseRecordsActionTest extends TestCase {
         assertEquals("produit avec familly", listRes.get(4).get("name"));
         assertEquals("produit avec magasins", listRes.get(5).get("name"));
         assertEquals("produits non disponible", listRes.get(6).get("name"));
-        
-        //test with same value
+
+        // test with same value
         nameLabelMap = new HashMap<String, String>();
         nameLabelMap.put("Browse_items_Product", "produit");
         nameLabelMap.put("Browse_items_Product#AndFamily", "produit avec familly");
@@ -784,7 +786,7 @@ public class BrowseRecordsActionTest extends TestCase {
         nameLabelMap.put("Browse_items_shipped", "envoyés");
 
         listRes = BrowseRecordsAction.getViewsListOrderedByLabels(nameLabelMap);
-        
+
         assertEquals(8, listRes.size());
         assertEquals("envoyés", listRes.get(0).get("name"));
         assertEquals("famille produit", listRes.get(1).get("name"));
@@ -795,6 +797,24 @@ public class BrowseRecordsActionTest extends TestCase {
         assertEquals("produit avec magasins", listRes.get(6).get("name"));
         assertEquals("produits non disponible", listRes.get(7).get("name"));
 
+    }
+
+    public void testGetExsitedViewName() throws Exception {
+        PowerMockito.mockStatic(org.talend.mdm.webapp.base.server.util.CommonUtil.class);
+        XtentisPort port = PowerMockito.mock(XtentisPort.class);
+        List<WSViewPK> viewPKs = new ArrayList<WSViewPK>();
+        viewPKs.add(new WSViewPK("Browse_items_Product#Store"));
+        viewPKs.add(new WSViewPK("Browse_items_Product#LiveAvailability"));
+        viewPKs.add(new WSViewPK("Browse_items_Product#AndFamily"));
+        WSViewPKArray viewPkArray = new WSViewPKArray(viewPKs.toArray(new WSViewPK[viewPKs.size()]));
+        Mockito.when(org.talend.mdm.webapp.base.server.util.CommonUtil.getPort()).thenReturn(port);
+        Mockito.when(port.getViewPKs(Mockito.any(WSGetViewPKs.class))).thenReturn(viewPkArray);
+        assertEquals("Browse_items_Product#AndFamily", action.getExsitedViewName("Product"));
+
+        viewPKs.add(new WSViewPK("Browse_items_Product"));
+        viewPkArray = new WSViewPKArray(viewPKs.toArray(new WSViewPK[viewPKs.size()]));
+        Mockito.when(port.getViewPKs(Mockito.any(WSGetViewPKs.class))).thenReturn(viewPkArray);
+        assertEquals("Browse_items_Product", action.getExsitedViewName("Product"));
     }
 
     private String parsingNodeValue(Document docXml, String xpath, String conceptName) throws Exception {

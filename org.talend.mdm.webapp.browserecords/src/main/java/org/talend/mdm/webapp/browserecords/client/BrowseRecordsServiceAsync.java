@@ -61,6 +61,8 @@ public interface BrowseRecordsServiceAsync {
     void getItem(ItemBean itemBean, String viewPK, EntityModel entityModel, boolean isStaging, String language,
             AsyncCallback<ItemBean> callback);
 
+    void getExsitedViewName(String concept, AsyncCallback<String> callback);
+
     void getView(String viewPk, String language, AsyncCallback<ViewBean> callback);
 
     void deleteItemBeans(List<ItemBean> items, boolean override, String language, AsyncCallback<List<ItemResult>> callback);
@@ -150,8 +152,7 @@ public interface BrowseRecordsServiceAsync {
     void createSubItemNodeModel(ViewBean viewBean, String xml, String typePath, String contextPath, String realType,
             boolean isStaging, String language, AsyncCallback<ItemNodeModel> callback);
 
-    void getForeignKeyValues(String concept, String[] ids, String language,
-            AsyncCallback<Map<ViewBean, Map<String, List<String>>>> callback);
+    void getForeignKeyValues(String concept, String[] ids, String language, AsyncCallback<Map<String, List<String>>> callback);
 
     void isExistId(String concept, String[] ids, String language, AsyncCallback<Boolean> callback);
 

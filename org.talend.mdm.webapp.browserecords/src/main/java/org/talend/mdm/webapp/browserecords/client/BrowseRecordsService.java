@@ -66,6 +66,8 @@ public interface BrowseRecordsService extends RemoteService {
 
     EntityModel getEntityModel(String concept, String language) throws ServiceException;
 
+    String getExsitedViewName(String concept) throws ServiceException;
+
     ViewBean getView(String viewPk, String language) throws ServiceException;
 
     List<ItemResult> deleteItemBeans(List<ItemBean> items, boolean override, String language) throws ServiceException;
@@ -150,8 +152,7 @@ public interface BrowseRecordsService extends RemoteService {
 
     List<ItemBean> getRecords(String concept, List<String> idsList) throws ServiceException;
 
-    Map<ViewBean, Map<String, List<String>>> getForeignKeyValues(String concept, String[] ids, String language)
-            throws ServiceException;
+    Map<String, List<String>> getForeignKeyValues(String concept, String[] ids, String language) throws ServiceException;
 
     boolean isExistId(String concept, String[] ids, String language) throws ServiceException;
 

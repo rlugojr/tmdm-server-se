@@ -376,7 +376,7 @@ public class ItemsToolBarGWTTest extends GWTTestCase {
 
         @Override
         public void getForeignKeyValues(String concept, String[] ids, String language,
-                AsyncCallback<Map<ViewBean, Map<String, List<String>>>> callback) {
+                AsyncCallback<Map<String, List<String>>> callback) {
 
         }
 
@@ -447,6 +447,10 @@ public class ItemsToolBarGWTTest extends GWTTestCase {
         @Override
         public void getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue,
                 String dataClusterPK, String language, AsyncCallback<List<ForeignKeyBean>> callback) {
+        }
+
+        @Override
+        public void getExsitedViewName(String concept, AsyncCallback<String> callback) {
         }
     }
 }
