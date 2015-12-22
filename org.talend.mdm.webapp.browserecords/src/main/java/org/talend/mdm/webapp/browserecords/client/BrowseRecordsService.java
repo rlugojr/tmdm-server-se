@@ -66,6 +66,8 @@ public interface BrowseRecordsService extends RemoteService {
 
     EntityModel getEntityModel(String concept, String language) throws ServiceException;
 
+    String getExsitedViewName(String concept) throws ServiceException;
+
     ViewBean getView(String viewPk, String language) throws ServiceException;
 
     List<ItemResult> deleteItemBeans(List<ItemBean> items, boolean override, String language) throws ServiceException;

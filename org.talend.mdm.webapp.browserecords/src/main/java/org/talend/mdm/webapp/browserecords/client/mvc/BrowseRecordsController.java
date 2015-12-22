@@ -345,21 +345,25 @@ public class BrowseRecordsController extends Controller {
     }
 
     private void onCreateForeignKeyView(final AppEvent event) {
-        String viewFkName = "Browse_items_" + event.getData().toString(); //$NON-NLS-1$
         final ItemsDetailPanel detailPanel = event.getData(BrowseRecordsView.ITEMS_DETAIL_PANEL);
-        service.getView(viewFkName, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() {
+        service.getExsitedViewName(event.getData().toString(), new SessionAwareAsyncCallback<String>() {
 
             @Override
-            public void onSuccess(ViewBean viewBean) {
-                // forward
-                AppEvent ae = new AppEvent(event.getType(), viewBean);
-                ae.setData(BrowseRecordsView.ITEMS_DETAIL_PANEL, detailPanel);
-                ae.setData(BrowseRecordsView.IS_STAGING, event.getData(BrowseRecordsView.IS_STAGING));
-                ae.setData(BrowseRecordsView.FK_SOURCE_WIDGET, event.getData(BrowseRecordsView.FK_SOURCE_WIDGET));
-                forwardToView(view, ae);
+            public void onSuccess(String viewName) {
+                service.getView(viewName, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() {
+
+                    @Override
+                    public void onSuccess(ViewBean viewBean) {
+                        // forward
+                        AppEvent ae = new AppEvent(event.getType(), viewBean);
+                        ae.setData(BrowseRecordsView.ITEMS_DETAIL_PANEL, detailPanel);
+                        ae.setData(BrowseRecordsView.IS_STAGING, event.getData(BrowseRecordsView.IS_STAGING));
+                        ae.setData(BrowseRecordsView.FK_SOURCE_WIDGET, event.getData(BrowseRecordsView.FK_SOURCE_WIDGET));
+                        forwardToView(view, ae);
+                    }
+                });
             }
         });
-
     }
 
     protected void onGetView(final AppEvent event) {

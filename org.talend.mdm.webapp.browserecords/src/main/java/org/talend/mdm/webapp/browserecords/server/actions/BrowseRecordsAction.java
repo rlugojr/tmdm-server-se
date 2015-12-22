@@ -608,6 +608,36 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     }
 
     @Override
+    public String getExsitedViewName(String concept) throws ServiceException {
+        List<String> viewNameList = new ArrayList<String>();
+        String defaultViewName = ViewHelper.DEFAULT_VIEW_PREFIX + "_" + concept; //$NON-NLS-1$
+
+        try {
+            WSViewPKArray viewPKs = CommonUtil.getPort().getViewPKs(new WSGetViewPKs(".*")); //$NON-NLS-1$
+            for (WSViewPK viewPK : viewPKs.getWsViewPK()) {
+                if (viewPK.getPk().startsWith(defaultViewName)) {
+                    viewNameList.add(viewPK.getPk());
+                }
+            }
+            Collections.sort(viewNameList, new Comparator<String>() {
+
+                @Override
+                public int compare(String o1, String o2) {
+                    return o1.compareTo(o2);
+                }
+            });
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new ServiceException(e.getLocalizedMessage());
+        }
+        if (viewNameList.size() > 0) {
+            return viewNameList.get(0);
+        } else {
+            throw new ServiceException(MESSAGES.getMessage("find_view_error", concept)); //$NON-NLS-1$
+        }
+    }
+
+    @Override
     public ViewBean getView(String viewPk, String language) throws ServiceException {
         String model = getCurrentDataModel();
         String concept = ViewHelper.getConceptFromDefaultViewName(viewPk);
@@ -1330,7 +1360,8 @@ public class BrowseRecordsAction implements BrowseRecordsService {
         try {
             Map<ViewBean, Map<String, List<String>>> map = new HashMap<ViewBean, Map<String, List<String>>>();
             // 1. getView
-            ViewBean viewBean = getView("Browse_items_" + concept, language);//$NON-NLS-1$
+            String viewName = getExsitedViewName(concept);
+            ViewBean viewBean = getView(viewName, language);
             Map<String, List<String>> fkValues = new HashMap<String, List<String>>();
             // 2. getItem
             WSItem wsItem = CommonUtil.getPort().getItem(
@@ -1368,8 +1399,10 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     public ItemNodeModel getItemNodeModel(ItemBean item, EntityModel entity, boolean isStaging, String language)
             throws ServiceException {
         try {
-            if (item.get("isRefresh") != null && (!"".equals(item.getIds()) && item.getIds() != null)) { //$NON-NLS-1$ //$NON-NLS-2$ 
-                item = getItem(item, "Browse_items_" + item.getConcept(), entity, isStaging, language); // itemBean need to be get from server when refresh tree. //$NON-NLS-1$
+            if (item.get("isRefresh") != null && (!"".equals(item.getIds()) && item.getIds() != null)) { //$NON-NLS-1$ //$NON-NLS-2$
+                String viewName = getExsitedViewName(item.getConcept());
+                item = getItem(item, viewName, entity, isStaging, language); // itemBean need to be get from server when
+                                                                             // refresh tree.
             }
             String xml = item.getItemXml();
 
@@ -1842,7 +1875,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
     public ForeignKeyModel getForeignKeyModel(String concept, String ids, boolean isStaging, String language)
             throws ServiceException {
         try {
-            String viewPk = "Browse_items_" + concept; //$NON-NLS-1$
+            String viewPk = getExsitedViewName(concept);
             ViewBean viewBean = getView(viewPk, language);
 
             ItemBean itemBean = new ItemBean(concept, ids, null);

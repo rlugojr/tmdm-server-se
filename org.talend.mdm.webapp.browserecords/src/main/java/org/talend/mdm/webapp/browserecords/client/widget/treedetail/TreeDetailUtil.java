@@ -107,7 +107,12 @@ public class TreeDetailUtil {
 
             @Override
             public void onSuccess(final ItemBean item) {
-                brService.getView("Browse_items_" + concept, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() { //$NON-NLS-1$
+
+                brService.getExsitedViewName(concept, new SessionAwareAsyncCallback<String>() {
+
+                    @Override
+                    public void onSuccess(String viewName) {
+                        brService.getView(viewName, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() {
 
                             @Override
                             public void onSuccess(ViewBean viewBean) {
@@ -117,6 +122,8 @@ public class TreeDetailUtil {
                             }
 
                         });
+                    }
+                });
             }
         });
     }
@@ -131,7 +138,11 @@ public class TreeDetailUtil {
 
             @Override
             public void onSuccess(final ItemBean item) {
-                brService.getView("Browse_items_" + concept, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() { //$NON-NLS-1$
+                brService.getExsitedViewName(concept, new SessionAwareAsyncCallback<String>() {
+
+                    @Override
+                    public void onSuccess(String viewName) {
+                        brService.getView(viewName, Locale.getLanguage(), new SessionAwareAsyncCallback<ViewBean>() {
 
                             @Override
                             public void onSuccess(ViewBean viewBean) {
@@ -141,6 +152,8 @@ public class TreeDetailUtil {
                             }
 
                         });
+                    }
+                });
             }
         });
     }

@@ -61,6 +61,8 @@ public interface BrowseRecordsServiceAsync {
     void getItem(ItemBean itemBean, String viewPK, EntityModel entityModel, boolean isStaging, String language,
             AsyncCallback<ItemBean> callback);
 
+    void getExsitedViewName(String concept, AsyncCallback<String> callback);
+
     void getView(String viewPk, String language, AsyncCallback<ViewBean> callback);
 
     void deleteItemBeans(List<ItemBean> items, boolean override, String language, AsyncCallback<List<ItemResult>> callback);
