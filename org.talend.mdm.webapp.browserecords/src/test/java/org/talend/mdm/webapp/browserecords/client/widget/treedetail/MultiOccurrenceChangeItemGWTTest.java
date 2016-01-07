@@ -78,6 +78,31 @@ public class MultiOccurrenceChangeItemGWTTest extends GWTTestCase {
                 multiOccurrenceChangeItem.getWidget(0).toString());
     }
 
+    public void testClearMultiOccurrenceItemValue() {
+        ItemNodeModel itemNodeModel = new ItemNodeModel();
+        itemNodeModel.setTypePath("T/sub"); //$NON-NLS-1$
+        itemNodeModel.setLabel("sub"); //$NON-NLS-1$
+        itemNodeModel.setObjectValue("TestNodeValue"); //$NON-NLS-1$
+        ViewBean viewBean = new ViewBean();
+        EntityModel entityModel = new EntityModel();
+        LinkedHashMap<String, TypeModel> metaDataTypes = new LinkedHashMap<String, TypeModel>();
+        TypeModel typeModel = new SimpleTypeModel("sub", DataTypeConstants.STRING); //$NON-NLS-1$
+        Map<String, String> labelMap = new HashMap<String, String>();
+        typeModel.setLabelMap(labelMap);
+        typeModel.setMinOccurs(-1);
+        typeModel.setMaxOccurs(-1);
+        typeModel.getType();
+        metaDataTypes.put("T/sub", typeModel); //$NON-NLS-1$
+        entityModel.setMetaDataTypes(metaDataTypes);
+        viewBean.setBindingEntityModel(entityModel);
+        Map<String, Field<?>> fieldMap = new HashMap<String, Field<?>>();
+        MultiOccurrenceChangeItem multiOccurrenceChangeItem = new MultiOccurrenceChangeItem(itemNodeModel, viewBean, fieldMap,
+                null, null);
+        multiOccurrenceChangeItem.clearValue();
+        assertEquals(null, itemNodeModel.getObjectValue());
+        assertEquals(true, itemNodeModel.isChangeValue());
+    }
+
     @Override
     public String getModuleName() {
         return "org.talend.mdm.webapp.browserecords.TestBrowseRecords"; //$NON-NLS-1$

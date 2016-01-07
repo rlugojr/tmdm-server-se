@@ -416,12 +416,11 @@ public class MultiOccurrenceManager {
             if (nodeModel.isLeaf()) {
                 MultiOccurrenceChangeItem itemWidget = (MultiOccurrenceChangeItem) selectedItem.getWidget();
                 itemWidget.clearValue();
+                nodeModel.clearNodeValue();
             }
             for (int i = 0; i < selectedItem.getChildCount(); i++) {
                 handleClearNodeValue((DynamicTreeItem) selectedItem.getChild(i));
             }
         }
-
     }
-
 }

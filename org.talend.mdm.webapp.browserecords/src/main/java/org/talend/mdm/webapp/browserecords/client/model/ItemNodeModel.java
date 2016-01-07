@@ -345,6 +345,7 @@ public class ItemNodeModel extends BaseTreeModel implements IsSerializable {
             Serializable value = getObjectValue();
             if (value != null) {
                 setObjectValue(null);
+                setChangeValue(true);
             }
         }
         for (ModelData model : this.getChildren()) {
