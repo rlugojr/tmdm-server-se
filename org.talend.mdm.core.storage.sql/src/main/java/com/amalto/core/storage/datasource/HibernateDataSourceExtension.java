@@ -1,11 +1,17 @@
 package com.amalto.core.storage.datasource;
 
 import com.amalto.core.server.api.DataSourceExtension;
+
+import org.talend.mdm.commmon.util.core.Crypt;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
+
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,12 +94,14 @@ public class HibernateDataSourceExtension implements DataSourceExtension {
             String initPassword = (String) evaluate(dataSource,
                     "rdbms-configuration/init/connection-password", XPathConstants.STRING); //$NON-NLS-1$
             String databaseName = (String) evaluate(dataSource, "rdbms-configuration/init/database-name", XPathConstants.STRING); //$NON-NLS-1$
-            return new RDBMSDataSource(name, dialectName, driverClassName, userName, password, connectionPoolMinSize,
+            return new RDBMSDataSource(name, dialectName, driverClassName, userName, Crypt.decrypt(password), connectionPoolMinSize,
                     connectionPoolMaxSize, indexDirectory, cacheDirectory, caseSensitiveSearch, schemaGeneration,
-                    generateTechnicalFK, advancedProperties, connectionURL, databaseName, containsOptimization, initPassword,
+                    generateTechnicalFK, advancedProperties, connectionURL, databaseName, containsOptimization, Crypt.decrypt(initPassword),
                     initUserName, initConnectionURL, true);
         } catch (XPathExpressionException e) {
             throw new RuntimeException("Unable to parse datasource configuration.", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to encrypt datasource passwords.", e);
         }
     }
 }

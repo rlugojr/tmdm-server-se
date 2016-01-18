@@ -18,7 +18,7 @@
                 <connection-driver-class>com.mysql.jdbc.Driver</connection-driver-class>
                 <connection-url>jdbc:mysql://10.42.150.15:3306/Test3</connection-url>
                 <connection-username>root</connection-username>
-                <connection-password>toor</connection-password>
+                <connection-password>JPPAcbjpCvUHbEEESC2bnQ==,Encrypt</connection-password>
                 <connection-pool-minsize>5</connection-pool-minsize>
                 <connection-pool-maxsize>50</connection-pool-maxsize>
                 <fulltext-index-directory>/var/lucene/indexes/DS2</fulltext-index-directory>
@@ -27,7 +27,7 @@
                 <init>
                     <connection-url>jdbc:mysql://10.42.150.15:3306/</connection-url>
                     <connection-username>root</connection-username>
-                    <connection-password>toor</connection-password>
+                    <connection-password>JPPAcbjpCvUHbEEESC2bnQ==,Encrypt</connection-password>
                     <database-name>mdm_dev2</database-name>
                 </init>
             </rdbms-configuration>
