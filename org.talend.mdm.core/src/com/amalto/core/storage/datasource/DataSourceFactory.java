@@ -54,6 +54,8 @@ public class DataSourceFactory implements ApplicationContextAware {
 
     private static boolean initialized = false;
 
+    private static boolean updated = false;
+
     public static DataSourceFactory getInstance() {
         if (applicationContext != null) {
             return applicationContext.getBean(DataSourceFactory.class);
@@ -229,50 +231,28 @@ public class DataSourceFactory implements ApplicationContextAware {
                         break;
                     }
                 }
-                boolean isUpdated = false;
-                HierarchicalConfiguration sub = config.configurationAt("datasource(" + index + ")");
-                String master = sub.getString("master.rdbms-configuration.connection-password");
-                if (master != null && !master.isEmpty() && !master.endsWith(Crypt.ENCRYPT)) {
-                    sub.setProperty("master.rdbms-configuration.connection-password",
-                            Crypt.encrypt(master));
-                    isUpdated = true;
-                }
-                String masterInit = sub.getString("master.rdbms-configuration.init.connection-password");
-                if (masterInit != null && !masterInit.isEmpty() && !masterInit.endsWith(Crypt.ENCRYPT)) {
-                    sub.setProperty("master.rdbms-configuration.init.connection-password",
-                            Crypt.encrypt(masterInit));
-                    isUpdated = true;
-                }
-                String staging = sub.getString("staging.rdbms-configuration.connection-password");
-                if (staging != null && !staging.isEmpty() && !staging.endsWith(Crypt.ENCRYPT)) {
-                    sub.setProperty("staging.rdbms-configuration.connection-password",
-                            Crypt.encrypt(staging));
-                    isUpdated = true;
-                }
-                String stagingInit = sub.getString("staging.rdbms-configuration.init.connection-password");
-                if (stagingInit != null && !stagingInit.isEmpty() && !stagingInit.endsWith(Crypt.ENCRYPT)) {
-                    sub.setProperty("staging.rdbms-configuration.init.connection-password",
-                            Crypt.encrypt(stagingInit));
-                    isUpdated = true;
-                }
-                String system = sub.getString("system.rdbms-configuration.connection-password");
-                if (system != null && !system.isEmpty() && !system.endsWith(Crypt.ENCRYPT)) {
-                    sub.setProperty("system.rdbms-configuration.connection-password",
-                            Crypt.encrypt(system));
-                    isUpdated = true;
-                }
-                String systemInit = sub.getString("system.rdbms-configuration.init.connection-password");
-                if (systemInit != null && !systemInit.isEmpty() && !systemInit.endsWith(Crypt.ENCRYPT)) {
-                    sub.setProperty("system.rdbms-configuration.init.connection-password",
-                            Crypt.encrypt(systemInit));
-                    isUpdated = true;
-                }
-                if (isUpdated) {
+                updated = false;
+                HierarchicalConfiguration sub = config.configurationAt("datasource(" + index + ")"); //$NON-NLS-1$//$NON-NLS-2$
+                encrypy(sub, "master.rdbms-configuration.connection-password"); //$NON-NLS-1$
+                encrypy(sub, "master.rdbms-configuration.init.connection-password"); //$NON-NLS-1$
+                encrypy(sub, "staging.rdbms-configuration.connection-password"); //$NON-NLS-1$
+                encrypy(sub, "staging.rdbms-configuration.init.connection-password"); //$NON-NLS-1$
+                encrypy(sub, "system.rdbms-configuration.connection-password"); //$NON-NLS-1$
+                encrypy(sub, "system.rdbms-configuration.init.connection-password"); //$NON-NLS-1$
+                if (updated) {
                     config.save(file);
                 }
             } catch (Exception e) {
-                throw new IllegalStateException("Encrypt db password in '" + dataSourcesLocation + "' error.");
+                throw new IllegalStateException("Encrypt db password in '" + dataSourcesLocation + "' error."); //$NON-NLS-1$ //$NON-NLS-2$
             }
+        }
+    }
+
+    private static void encrypy(HierarchicalConfiguration sub, String xpath) throws Exception {
+        String password = sub.getString(xpath);
+        if (password != null && !password.isEmpty() && !password.endsWith(Crypt.ENCRYPT)) {
+            sub.setProperty(xpath, Crypt.encrypt(password));
+            updated = true;
         }
     }
 }
