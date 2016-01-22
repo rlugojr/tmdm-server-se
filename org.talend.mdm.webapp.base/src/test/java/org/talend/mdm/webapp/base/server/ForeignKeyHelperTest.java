@@ -738,6 +738,59 @@ public class ForeignKeyHelperTest extends TestCase {
         assertEquals("22", whereCondition4.getRightValueOrPath());
     }
 
+    public void testGetFKQueryConditionWithInheritanceSimpleTypeFieldMetadata() throws Exception {
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("InheritanceSimpleTypeField.xsd");
+        repository.load(resourceAsStream);
+        String concept = "InheritanceSimpleTypeField";
+        String xpathForeignKey = "InheritanceSimpleTypeField/Id";
+        String xpathInfoForeignKey = "InheritanceSimpleTypeField/Name,InheritanceSimpleTypeField/Age,InheritanceSimpleTypeField/Description";
+        String keyValue = "testValue";
+        WSWhereItem fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey,
+                keyValue);
+        WSWhereItem[] whereItems = fkQueryCondition.getWhereOr().getWhereItems();
+        assertEquals(3, whereItems.length);
+        WSWhereItem[] whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Id", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
+        assertEquals("testValue", whereCondition1.getRightValueOrPath());
+        WSWhereItem[] whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Name", whereCondition2.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
+        assertEquals("testValue", whereCondition2.getRightValueOrPath());
+        WSWhereItem[] whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Description", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition3.getOperator());
+        assertEquals("testValue", whereCondition3.getRightValueOrPath());
+
+        keyValue = "23";
+        fkQueryCondition = ForeignKeyHelper.getFKQueryCondition(concept, xpathForeignKey, xpathInfoForeignKey, keyValue);
+        whereItems = fkQueryCondition.getWhereOr().getWhereItems();
+        assertEquals(4, whereItems.length);
+        whereItems1 = whereItems[0].getWhereAnd().getWhereItems();
+        whereCondition1 = whereItems1[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Id", whereCondition1.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition1.getOperator());
+        assertEquals("23", whereCondition1.getRightValueOrPath());
+        whereItems2 = whereItems[1].getWhereAnd().getWhereItems();
+        whereCondition2 = whereItems2[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Name", whereCondition2.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition2.getOperator());
+        assertEquals("23", whereCondition2.getRightValueOrPath());
+        whereItems3 = whereItems[2].getWhereAnd().getWhereItems();
+        whereCondition3 = whereItems3[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Age", whereCondition3.getLeftPath());
+        assertEquals(WSWhereOperator.EQUALS, whereCondition3.getOperator());
+        assertEquals("23", whereCondition3.getRightValueOrPath());
+        WSWhereItem[] whereItems4 = whereItems[3].getWhereAnd().getWhereItems();
+        WSWhereCondition whereCondition4 = whereItems4[0].getWhereAnd().getWhereItems()[0].getWhereCondition();
+        assertEquals("InheritanceSimpleTypeField/Description", whereCondition4.getLeftPath());
+        assertEquals(WSWhereOperator.CONTAINS, whereCondition4.getOperator());
+        assertEquals("23", whereCondition4.getRightValueOrPath());
+    }
+
     @SuppressWarnings("unchecked")
     public static TestSuite suite() throws Exception {
         return new PowerMockSuite("Unit tests for " + ForeignKeyHelperTest.class.getSimpleName(), ForeignKeyHelperTest.class);

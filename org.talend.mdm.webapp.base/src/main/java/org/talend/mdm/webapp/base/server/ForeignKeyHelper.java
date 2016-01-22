@@ -30,11 +30,11 @@ import org.talend.mdm.commmon.metadata.ContainedTypeFieldMetadata;
 import org.talend.mdm.commmon.metadata.EnumerationFieldMetadata;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
-import org.talend.mdm.commmon.metadata.MetadataUtils;
 import org.talend.mdm.commmon.metadata.MetadataVisitor;
 import org.talend.mdm.commmon.metadata.ReferenceFieldMetadata;
 import org.talend.mdm.commmon.metadata.SimpleTypeFieldMetadata;
 import org.talend.mdm.commmon.metadata.SimpleTypeMetadata;
+import org.talend.mdm.commmon.metadata.TypeMetadata;
 import org.talend.mdm.commmon.metadata.Types;
 import org.talend.mdm.commmon.util.core.EDBType;
 import org.talend.mdm.commmon.util.core.MDMConfiguration;
@@ -728,35 +728,7 @@ public class ForeignKeyHelper {
 
         @Override
         public String visit(SimpleTypeMetadata simpleType) {
-            return null;
-        }
-
-        @Override
-        public String visit(ComplexTypeMetadata complexType) {
-            if (fieldPath.length >= level) {
-                if (complexType.getName().equals(fieldPath[level])) {
-                    return WhereCondition.FULLTEXTSEARCH;
-                } else {
-                    Collection<FieldMetadata> fields = complexType.getFields();
-                    for (FieldMetadata field : fields) {
-                        if (field.getName().equals(fieldPath[level])) {
-                            level++;
-                            return field.accept(this);
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public String visit(ContainedComplexTypeMetadata containedType) {
-            return null;
-        }
-
-        @Override
-        public String visit(SimpleTypeFieldMetadata simpleField) {
-            String typeName = MetadataUtils.getSuperConcreteType(simpleField.getType()).getName();
+            String typeName = simpleType.getName();
             if (!(Types.STRING.equals(typeName) || Types.TOKEN.equals(typeName) || Types.DURATION.equals(typeName))) {
                 value = value.replace("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
             }
@@ -785,8 +757,42 @@ public class ForeignKeyHelper {
                     return null;
                 }
             } else {
-                return null;
+                Collection<TypeMetadata> superTypes = simpleType.getSuperTypes();
+                if (!superTypes.isEmpty()) {
+                    TypeMetadata typeMetadata = superTypes.iterator().next();
+                    return typeMetadata.accept(this);
+                } else {
+                    return null;
+                }
             }
+        }
+
+        @Override
+        public String visit(ComplexTypeMetadata complexType) {
+            if (fieldPath.length >= level) {
+                if (complexType.getName().equals(fieldPath[level])) {
+                    return WhereCondition.FULLTEXTSEARCH;
+                } else {
+                    Collection<FieldMetadata> fields = complexType.getFields();
+                    for (FieldMetadata field : fields) {
+                        if (field.getName().equals(fieldPath[level])) {
+                            level++;
+                            return field.accept(this);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String visit(ContainedComplexTypeMetadata containedType) {
+            return null;
+        }
+
+        @Override
+        public String visit(SimpleTypeFieldMetadata simpleField) {
+            return simpleField.getType().accept(this);
         }
 
         @Override
