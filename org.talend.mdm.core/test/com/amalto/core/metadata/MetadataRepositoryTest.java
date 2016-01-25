@@ -463,7 +463,7 @@ public class MetadataRepositoryTest extends TestCase {
         assertEquals(2, foreignKeyFields);
     }
 
-    public void testCreateFieldMetadata() {
+    public void testMetadataLabelAnnotation() {
         Locale en = new Locale("en");
         Locale fr = new Locale("fr");
         MetadataRepository repository = new MetadataRepository();
