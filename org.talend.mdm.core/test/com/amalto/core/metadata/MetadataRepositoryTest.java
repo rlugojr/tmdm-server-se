@@ -463,7 +463,7 @@ public class MetadataRepositoryTest extends TestCase {
         assertEquals(2, foreignKeyFields);
     }
 
-    public void testMetadataLabelAnnotation() {
+    public void testMetadataAnnotation() {
         Locale en = new Locale("en");
         Locale fr = new Locale("fr");
         MetadataRepository repository = new MetadataRepository();
@@ -473,17 +473,25 @@ public class MetadataRepositoryTest extends TestCase {
         ComplexTypeMetadata sale = repository.getComplexType("PointOfSale");
         assertEquals("Point of sale", sale.getName(en));
         assertEquals("Point de vente", sale.getName(fr));
+        assertEquals("Point of Sale Desc", sale.getDescription(en));
+        assertEquals("Point de vente Desc", sale.getDescription(fr));
 
         SimpleTypeFieldMetadata saleName = (SimpleTypeFieldMetadata) sale.getField("Name");
         assertEquals("POS Name", saleName.getName(en));
         assertEquals("Nom PV", saleName.getName(fr));
+        assertEquals("Name Desc", saleName.getDescription(en));
+        assertEquals("Nom Desc", saleName.getDescription(fr));
 
         ContainedTypeFieldMetadata address = (ContainedTypeFieldMetadata) sale.getField("Address");
         assertEquals("Address", address.getName(en));
         assertEquals("Adresse", address.getName(fr));
+        assertEquals("Address Desc", address.getDescription(en));
+        assertEquals("Adresse Desc", address.getDescription(fr));
 
         ReferenceFieldMetadata brandFk = (ReferenceFieldMetadata) sale.getField("BrandFk");
         assertEquals("Brand", brandFk.getName(en));
         assertEquals("Marque", brandFk.getName(fr));
+        assertEquals("Brand Desc", brandFk.getDescription(en));
+        assertEquals("Marque Desc", brandFk.getDescription(fr));
     }
 }

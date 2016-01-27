@@ -16,6 +16,8 @@
 			<xsd:appinfo source="X_Label_FR">Point de vente</xsd:appinfo>
 			<xsd:appinfo source="X_Label_RU">Торговая точка</xsd:appinfo>		
 			<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+			<xsd:appinfo source="X_Description_EN">Point of Sale Desc</xsd:appinfo>
+			<xsd:appinfo source="X_Description_FR">Point de vente Desc</xsd:appinfo>
 		</xsd:annotation>
         <xsd:complexType>
 			<xsd:all>
@@ -29,8 +31,8 @@
 						<xsd:appinfo source="X_Label_EN">POS Name</xsd:appinfo>
 						<xsd:appinfo source="X_Label_FR">Nom PV</xsd:appinfo>				
 						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-						<xsd:appinfo source="X_Description_EN">Name Description</xsd:appinfo>
-						<xsd:appinfo source="X_Description_FR">Nom Description</xsd:appinfo>
+						<xsd:appinfo source="X_Description_EN">Name Desc</xsd:appinfo>
+						<xsd:appinfo source="X_Description_FR">Nom Desc</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="BrandFk" type="String10Type">
@@ -38,12 +40,12 @@
 						<xsd:appinfo source="X_ForeignKey">Brand/BrandId</xsd:appinfo>
 						<xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>
 						<xsd:appinfo source="X_ForeignKeyInfo">Brand/Name</xsd:appinfo>
-						<xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>
-						
+						<xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>						
 						<xsd:appinfo source="X_Label_EN">Brand</xsd:appinfo>
-						<xsd:appinfo source="X_Label_FR">Marque</xsd:appinfo>
-					
+						<xsd:appinfo source="X_Label_FR">Marque</xsd:appinfo>					
 						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+						<xsd:appinfo source="X_Description_EN">Brand Desc</xsd:appinfo>
+						<xsd:appinfo source="X_Description_FR">Marque Desc</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="SAP1" type="String50Type">
@@ -75,13 +77,13 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="Address" type="AddressType">
 					<xsd:annotation>
-						<xsd:appinfo source="X_AutoExpand">true</xsd:appinfo>
-						
+						<xsd:appinfo source="X_AutoExpand">true</xsd:appinfo>						
 						<xsd:appinfo source="X_Label_EN">Address</xsd:appinfo>
 						<xsd:appinfo source="X_Label_FR">Adresse</xsd:appinfo>
-						<xsd:appinfo source="X_Label_RU">адрес</xsd:appinfo>
-						
+						<xsd:appinfo source="X_Label_RU">адрес</xsd:appinfo>						
 						<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+						<xsd:appinfo source="X_Description_EN">Address Desc</xsd:appinfo>  
+            			<xsd:appinfo source="X_Description_FR">Adresse Desc</xsd:appinfo> 
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="POSContactDetails" type="ContactDetailsType">
@@ -131,9 +133,11 @@
 <xsd:complexType>
 <xsd:all>
 <xsd:element name="BrandId" type="AUTO_INCREMENT">
-<xsd:annotation>
 
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+<xsd:annotation>
+	<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+	<xsd:appinfo source="X_Label_EN">BrandId</xsd:appinfo>  
+    <xsd:appinfo source="X_Label_FR">MarqueId</xsd:appinfo>
 </xsd:annotation>
 </xsd:element>
 <xsd:element maxOccurs="1" minOccurs="1" name="Name" type="MULTI_LINGUAL">
@@ -418,15 +422,15 @@
 </xsd:element>
 <xsd:element maxOccurs="1" minOccurs="1" name="POSFk" type="String10Type">
 <xsd:annotation>
-<xsd:appinfo source="X_ForeignKey">PointOfSale/PointOfSaleId</xsd:appinfo>
-<xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>
-<xsd:appinfo source="X_ForeignKeyInfo">PointOfSale/Name</xsd:appinfo>
-<xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>
-
-<xsd:appinfo source="X_Label_EN">Point of Sale</xsd:appinfo>
-<xsd:appinfo source="X_Label_FR">Point de vente</xsd:appinfo>
-
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+	<xsd:appinfo source="X_ForeignKey">PointOfSale/PointOfSaleId</xsd:appinfo>
+	<xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>
+	<xsd:appinfo source="X_ForeignKeyInfo">PointOfSale/Name</xsd:appinfo>
+	<xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>
+	
+	<xsd:appinfo source="X_Label_EN">Point of Sale</xsd:appinfo>
+	<xsd:appinfo source="X_Label_FR">Point de vente</xsd:appinfo>
+	
+	<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>		
 </xsd:annotation>
 </xsd:element>
 <xsd:element maxOccurs="1" minOccurs="1" name="ProductFk" type="String10Type">
