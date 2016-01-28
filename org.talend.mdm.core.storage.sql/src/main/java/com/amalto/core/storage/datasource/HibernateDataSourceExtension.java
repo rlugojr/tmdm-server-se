@@ -5,13 +5,8 @@ import com.amalto.core.server.api.DataSourceExtension;
 import org.talend.mdm.commmon.util.core.Crypt;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
-
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 

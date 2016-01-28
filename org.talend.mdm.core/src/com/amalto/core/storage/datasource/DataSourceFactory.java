@@ -12,8 +12,6 @@ package com.amalto.core.storage.datasource;
 
 import com.amalto.core.server.api.DataSourceExtension;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -23,7 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.util.SystemPropertyUtils;
-import org.talend.mdm.commmon.util.core.Crypt;
 import org.talend.mdm.commmon.util.core.MDMConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -67,7 +64,7 @@ public class DataSourceFactory implements ApplicationContextAware {
         }
     }
 
-    private static synchronized InputStream readDataSourcesConfiguration(String dataSourceName) {
+    private static synchronized InputStream readDataSourcesConfiguration() {
         Properties configuration = MDMConfiguration.getConfiguration();
         String dataSourcesLocation = (String) configuration.get(DB_DATASOURCES);
         if (dataSourcesLocation == null) { // DB_DATASOURCES property is mandatory to continue.
@@ -80,10 +77,6 @@ public class DataSourceFactory implements ApplicationContextAware {
         if (file.exists()) {
             LOGGER.info("Reading from datasource file at '" + file.getAbsolutePath() + "'."); //$NON-NLS-1$ //$NON-NLS-2$
             try {
-                if (!initialized) {
-                    encyptDataSource(file.getAbsolutePath(), dataSourceName);
-                    initialized = true;
-                }
                 configurationAsStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
                 throw new IllegalStateException("Unexpected state (file exists but can't create a stream from it).", e);
@@ -179,7 +172,7 @@ public class DataSourceFactory implements ApplicationContextAware {
 
     @Cacheable(value = "datasources", key = "#dataSourceName", cacheManager = "mdmCacheManager")
     public boolean hasDataSource(String dataSourceName) {
-        return hasDataSource(readDataSourcesConfiguration(dataSourceName), dataSourceName);
+        return hasDataSource(readDataSourcesConfiguration(), dataSourceName);
     }
 
     @Cacheable(value = "datasources", key = "#dataSourceName", cacheManager = "mdmCacheManager")
@@ -193,7 +186,7 @@ public class DataSourceFactory implements ApplicationContextAware {
 
     @Cacheable(value = "datasources", key = "#container", cacheManager = "mdmCacheManager")
     public DataSourceDefinition getDataSource(String dataSourceName, String container) {
-        return getDataSource(readDataSourcesConfiguration(dataSourceName), dataSourceName, container);
+        return getDataSource(readDataSourcesConfiguration(), dataSourceName, container);
     }
 
     public DataSourceDefinition getDataSource(InputStream configurationStream, String dataSourceName, String container) {
@@ -214,45 +207,5 @@ public class DataSourceFactory implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-    }
-
-    public static void encyptDataSource(String dataSourcesLocation, String dataSourceName) {
-        File file = new File(dataSourcesLocation);
-        if (file.exists()) {
-            try {
-                XMLConfiguration config = new XMLConfiguration();
-                config.setDelimiterParsingDisabled(true);
-                config.load(file);
-                List<Object> dataSources = config.getList("datasource.[@name]"); //$NON-NLS-1$
-                int index = 0;
-                for (int i = 0; i < dataSources.size(); i++) {
-                    if (dataSources.get(i).equals(dataSourceName)) {
-                        index = i;
-                        break;
-                    }
-                }
-                updated = false;
-                HierarchicalConfiguration sub = config.configurationAt("datasource(" + index + ")"); //$NON-NLS-1$//$NON-NLS-2$
-                encrypy(sub, "master.rdbms-configuration.connection-password"); //$NON-NLS-1$
-                encrypy(sub, "master.rdbms-configuration.init.connection-password"); //$NON-NLS-1$
-                encrypy(sub, "staging.rdbms-configuration.connection-password"); //$NON-NLS-1$
-                encrypy(sub, "staging.rdbms-configuration.init.connection-password"); //$NON-NLS-1$
-                encrypy(sub, "system.rdbms-configuration.connection-password"); //$NON-NLS-1$
-                encrypy(sub, "system.rdbms-configuration.init.connection-password"); //$NON-NLS-1$
-                if (updated) {
-                    config.save(file);
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException("Encrypt db password in '" + dataSourcesLocation + "' error."); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
-    }
-
-    private static void encrypy(HierarchicalConfiguration sub, String xpath) throws Exception {
-        String password = sub.getString(xpath);
-        if (password != null && !password.isEmpty() && !password.endsWith(Crypt.ENCRYPT)) {
-            sub.setProperty(xpath, Crypt.encrypt(password));
-            updated = true;
-        }
     }
 }

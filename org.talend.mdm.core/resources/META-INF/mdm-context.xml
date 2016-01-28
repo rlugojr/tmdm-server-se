@@ -13,7 +13,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
 
     <!-- Indicates a Tomcat environment -->
-    <bean id="dataSourceFactory" class="com.amalto.core.storage.datasource.DataSourceFactory" />
+    <bean id="dataSourceFactory" class="com.amalto.core.storage.datasource.DataSourceFactory" depends-on="encryptMDMConf"/>
     <bean class="com.amalto.core.server.lifecycle.tomcat.TomcatServerLifecycle" depends-on="dataSourceFactory" />
 
     <!-- Server initialization -->
