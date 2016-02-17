@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.talend.mdm.webapp.base.client.widget.MultiLanguageField;
-import org.talend.mdm.webapp.base.shared.ComplexTypeModel;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.model.ColumnTreeLayoutModel;
 import org.talend.mdm.webapp.browserecords.client.model.ItemNodeModel;
+import org.talend.mdm.webapp.browserecords.client.widget.ForeignKey.ForeignKeySelector;
 import org.talend.mdm.webapp.browserecords.client.widget.inputfield.FormatTextField;
 import org.talend.mdm.webapp.browserecords.client.widget.treedetail.TreeDetail.DynamicTreeItem;
 import org.talend.mdm.webapp.browserecords.shared.ViewBean;
@@ -109,12 +109,15 @@ public class IncrementalBuildTree implements IncrementalCommand {
 			if(hp.getWidgetCount() > 1) {
 				Widget field = hp.getWidget(1);
 				int size = itemWidth - (offset + 19 * leval);
-				if (field instanceof FormatTextField)
-					((FormatTextField)field).setWidth(size > 200 ? size : 200);
-				else if (field instanceof SimpleComboBox)
+				if (field instanceof FormatTextField) {
+                    ((FormatTextField)field).setWidth(size > 200 ? size : 200);
+                } else if (field instanceof SimpleComboBox) {
                     ((SimpleComboBox) field).setWidth(size > 200 ? size : 200);
-                else if (field instanceof MultiLanguageField)
+                } else if (field instanceof MultiLanguageField) {
                     ((MultiLanguageField) field).setWidth(size > 200 ? size : 200);
+                } else if (field instanceof ForeignKeySelector) {
+                    ((ForeignKeySelector) field).setWidth(size > 200 ? size : 200);
+                }
 			}
 		}
 	}
@@ -138,8 +141,9 @@ public class IncrementalBuildTree implements IncrementalCommand {
 
 	        TypeModel typeModel = metaDataTypes.get(typePath);
 	        String typeModelDefaultValue = typeModel.getDefaultValue();
-	        if (withDefaultValue && typeModelDefaultValue != null && (nodeObjectValue == null || nodeObjectValue.equals(""))) //$NON-NLS-1$
-	            node.setObjectValue(typeModelDefaultValue);
+	        if (withDefaultValue && typeModelDefaultValue != null && (nodeObjectValue == null || nodeObjectValue.equals(""))) {
+                node.setObjectValue(typeModelDefaultValue);
+            }
 
 	        boolean isFKDisplayedIntoTab = TreeDetail.isFKDisplayedIntoTab(node, typeModel, metaDataTypes);
 
@@ -163,7 +167,8 @@ public class IncrementalBuildTree implements IncrementalCommand {
 		}
 	}
 	
-	public boolean execute() {
+	@Override
+    public boolean execute() {
 		try {
 			executeGroup();
 		} catch(Exception e) {
@@ -181,6 +186,7 @@ public class IncrementalBuildTree implements IncrementalCommand {
         		Log.info("render foreign key generate error:", e); //$NON-NLS-1$
         	} finally {
         	    DeferredCommand.addCommand(new Command() {
+                    @Override
                     public void execute() {
                         treeDetail.endRender();
                     }
