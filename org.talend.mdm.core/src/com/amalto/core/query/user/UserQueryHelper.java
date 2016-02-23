@@ -167,8 +167,7 @@ public class UserQueryHelper {
                             LOGGER.warn("Skip '" + leftFieldName + "' because it can't accept value '" + value + "'");
                             continue;
                         }
-                        if (WhereCondition.CONTAINS.equals(operator) || WhereCondition.STRICTCONTAINS.equals(operator)
-                                || WhereCondition.CONTAINS_TEXT_OF.equals(operator)) {
+                        if (WhereCondition.CONTAINS.equals(operator)) {
                             condition = add(condition, contains(field, value));
                         } else if (WhereCondition.EQUALS.equals(operator)) {
                             condition = add(condition, eq(field, value));

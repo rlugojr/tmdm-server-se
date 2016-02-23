@@ -20,7 +20,6 @@ public enum WSWhereOperator {
     CONTAINS_TEXT_OF,
     CONTAINS,
     STARTSWITH,
-    STRICTCONTAINS,
     EQUALS,
     NOT_EQUALS,
     GREATER_THAN,

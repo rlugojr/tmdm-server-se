@@ -12,6 +12,19 @@
 // ============================================================================
 package com.amalto.core.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.regex.Pattern;
+
 import com.amalto.core.objects.DroppedItemPOJO;
 import com.amalto.core.objects.DroppedItemPOJOPK;
 import com.amalto.core.objects.ItemPOJOPK;
@@ -23,24 +36,71 @@ import com.amalto.core.objects.datamodel.DataModelPOJO;
 import com.amalto.core.objects.menu.MenuEntryPOJO;
 import com.amalto.core.objects.menu.MenuPOJO;
 import com.amalto.core.objects.role.RolePOJO;
-import com.amalto.core.objects.routing.*;
+import com.amalto.core.objects.routing.AbstractRoutingOrderV2POJO;
+import com.amalto.core.objects.routing.AbstractRoutingOrderV2POJOPK;
+import com.amalto.core.objects.routing.CompletedRoutingOrderV2POJOPK;
+import com.amalto.core.objects.routing.FailedRoutingOrderV2POJOPK;
+import com.amalto.core.objects.routing.RoutingRuleExpressionPOJO;
+import com.amalto.core.objects.routing.RoutingRulePOJO;
 import com.amalto.core.objects.storedprocedure.StoredProcedurePOJO;
 import com.amalto.core.objects.transformers.TransformerV2POJO;
 import com.amalto.core.objects.transformers.TransformerV2POJOPK;
-import com.amalto.core.objects.transformers.util.*;
+import com.amalto.core.objects.transformers.util.TransformerContext;
+import com.amalto.core.objects.transformers.util.TransformerPluginVariableDescriptor;
+import com.amalto.core.objects.transformers.util.TransformerProcessStep;
+import com.amalto.core.objects.transformers.util.TransformerVariablesMapping;
 import com.amalto.core.objects.transformers.util.TypedContent;
 import com.amalto.core.objects.view.ViewPOJO;
 import com.amalto.core.server.api.Transformer;
-import com.amalto.core.webservice.*;
+import com.amalto.core.webservice.BackgroundJobStatusType;
+import com.amalto.core.webservice.WSBackgroundJob;
+import com.amalto.core.webservice.WSBackgroundJobPK;
+import com.amalto.core.webservice.WSBoolean;
+import com.amalto.core.webservice.WSByteArray;
+import com.amalto.core.webservice.WSDataCluster;
+import com.amalto.core.webservice.WSDataClusterPK;
+import com.amalto.core.webservice.WSDataModel;
+import com.amalto.core.webservice.WSDroppedItem;
+import com.amalto.core.webservice.WSDroppedItemPK;
+import com.amalto.core.webservice.WSExtractedContent;
+import com.amalto.core.webservice.WSGetItemsPivotIndexPivotWithKeysTypedContentEntry;
+import com.amalto.core.webservice.WSItemPK;
+import com.amalto.core.webservice.WSLinkedHashMap;
+import com.amalto.core.webservice.WSMenu;
+import com.amalto.core.webservice.WSMenuEntry;
+import com.amalto.core.webservice.WSMenuMenuEntriesDescriptions;
+import com.amalto.core.webservice.WSOutputDecisionTable;
+import com.amalto.core.webservice.WSPipeline;
+import com.amalto.core.webservice.WSPipelineTypedContentEntry;
+import com.amalto.core.webservice.WSProcessBytesUsingTransformerWsOutputDecisionTableDecisions;
+import com.amalto.core.webservice.WSRole;
+import com.amalto.core.webservice.WSRoleSpecification;
+import com.amalto.core.webservice.WSRoleSpecificationInstance;
+import com.amalto.core.webservice.WSRoutingOrderV2;
+import com.amalto.core.webservice.WSRoutingOrderV2PK;
+import com.amalto.core.webservice.WSRoutingOrderV2Status;
+import com.amalto.core.webservice.WSRoutingRule;
+import com.amalto.core.webservice.WSRoutingRuleExpression;
+import com.amalto.core.webservice.WSRoutingRuleOperator;
+import com.amalto.core.webservice.WSStoredProcedure;
+import com.amalto.core.webservice.WSStringPredicate;
+import com.amalto.core.webservice.WSTransformerContext;
+import com.amalto.core.webservice.WSTransformerContextPipeline;
+import com.amalto.core.webservice.WSTransformerContextPipelinePipelineItem;
+import com.amalto.core.webservice.WSTransformerContextProjectedItemPKs;
+import com.amalto.core.webservice.WSTransformerPluginV2VariableDescriptor;
+import com.amalto.core.webservice.WSTransformerProcessStep;
+import com.amalto.core.webservice.WSTransformerV2;
+import com.amalto.core.webservice.WSTransformerVariablesMapping;
+import com.amalto.core.webservice.WSTypedContent;
+import com.amalto.core.webservice.WSView;
+import com.amalto.core.webservice.WSWhereCondition;
+import com.amalto.core.webservice.WSWhereItem;
+import com.amalto.core.webservice.WSWhereOperator;
 import com.amalto.xmlserver.interfaces.IWhereItem;
 import com.amalto.xmlserver.interfaces.WhereAnd;
 import com.amalto.xmlserver.interfaces.WhereCondition;
 import com.amalto.xmlserver.interfaces.WhereOr;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
 
 public class XConverter {
 
@@ -139,24 +199,27 @@ public class XConverter {
         ArrayList l = new ArrayList();
         String s[] = ws.getSearchableBusinessElements();
         if (s != null) {
-            for (int i = 0; i < s.length; i++)
+            for (int i = 0; i < s.length; i++) {
                 l.add(ws.getSearchableBusinessElements()[i]);
+            }
 
         }
         pojo.setSearchableBusinessElements(new ArrayListHolder(l));
         l = new ArrayList();
         s = ws.getViewableBusinessElements();
         if (s != null) {
-            for (int i = 0; i < s.length; i++)
+            for (int i = 0; i < s.length; i++) {
                 l.add(ws.getViewableBusinessElements()[i]);
+            }
 
         }
         pojo.setViewableBusinessElements(new ArrayListHolder(l));
         l = new ArrayList();
         WSWhereCondition whs[] = ws.getWhereConditions();
         if (whs != null) {
-            for (WSWhereCondition wh : whs)
+            for (WSWhereCondition wh : whs) {
                 l.add(WS2VO(wh));
+            }
 
         }
         pojo.setWhereConditions(new ArrayListHolder(l));
@@ -167,45 +230,45 @@ public class XConverter {
         WSWhereCondition ws = new WSWhereCondition();
         WSWhereOperator op = WSWhereOperator.CONTAINS;
         String operator = vo.getOperator();
-        if (operator.equals(WhereCondition.CONTAINS))
+        if (operator.equals(WhereCondition.CONTAINS)) {
             op = WSWhereOperator.CONTAINS;
-        else if (operator.equals(WhereCondition.STRICTCONTAINS))
-            op = WSWhereOperator.STRICTCONTAINS;
-        else if (operator.equals(WhereCondition.STARTSWITH))
+        } else if (operator.equals(WhereCondition.STARTSWITH)) {
             op = WSWhereOperator.STARTSWITH;
-        else if (operator.equals(WhereCondition.JOINS))
+        } else if (operator.equals(WhereCondition.JOINS)) {
             op = WSWhereOperator.JOIN;
-        else if (operator.equals(WhereCondition.EQUALS))
+        } else if (operator.equals(WhereCondition.EQUALS)) {
             op = WSWhereOperator.EQUALS;
-        else if (operator.equals(WhereCondition.NOT_EQUALS))
+        } else if (operator.equals(WhereCondition.NOT_EQUALS)) {
             op = WSWhereOperator.NOT_EQUALS;
-        else if (operator.equals(WhereCondition.GREATER_THAN))
+        } else if (operator.equals(WhereCondition.GREATER_THAN)) {
             op = WSWhereOperator.GREATER_THAN;
-        else if (operator.equals(WhereCondition.GREATER_THAN_OR_EQUAL))
+        } else if (operator.equals(WhereCondition.GREATER_THAN_OR_EQUAL)) {
             op = WSWhereOperator.GREATER_THAN_OR_EQUAL;
-        else if (operator.equals(WhereCondition.LOWER_THAN))
+        } else if (operator.equals(WhereCondition.LOWER_THAN)) {
             op = WSWhereOperator.LOWER_THAN;
-        else if (operator.equals(WhereCondition.LOWER_THAN_OR_EQUAL))
+        } else if (operator.equals(WhereCondition.LOWER_THAN_OR_EQUAL)) {
             op = WSWhereOperator.LOWER_THAN_OR_EQUAL;
-        else if (operator.equals(WhereCondition.NO_OPERATOR))
+        } else if (operator.equals(WhereCondition.NO_OPERATOR)) {
             op = WSWhereOperator.NO_OPERATOR;
-        else if (operator.equals(WhereCondition.EMPTY_NULL))
+        } else if (operator.equals(WhereCondition.EMPTY_NULL)) {
             op = WSWhereOperator.EMPTY_NULL;
+        }
 
         String predicate = vo.getStringPredicate();
         WSStringPredicate pr = WSStringPredicate.NONE;
-        if ((predicate == null) || predicate.equals(WhereCondition.PRE_NONE))
+        if ((predicate == null) || predicate.equals(WhereCondition.PRE_NONE)) {
             pr = WSStringPredicate.NONE;
-        else if (predicate.equals(WhereCondition.PRE_AND))
+        } else if (predicate.equals(WhereCondition.PRE_AND)) {
             pr = WSStringPredicate.AND;
-        else if (predicate.equals(WhereCondition.PRE_EXACTLY))
+        } else if (predicate.equals(WhereCondition.PRE_EXACTLY)) {
             pr = WSStringPredicate.EXACTLY;
-        else if (predicate.equals(WhereCondition.PRE_STRICTAND))
+        } else if (predicate.equals(WhereCondition.PRE_STRICTAND)) {
             pr = WSStringPredicate.STRICTAND;
-        else if (predicate.equals(WhereCondition.PRE_OR))
+        } else if (predicate.equals(WhereCondition.PRE_OR)) {
             pr = WSStringPredicate.OR;
-        else if (predicate.equals(WhereCondition.PRE_NOT))
+        } else if (predicate.equals(WhereCondition.PRE_NOT)) {
             pr = WSStringPredicate.NOT;
+        }
 
         ws.setLeftPath(vo.getLeftPath());
         ws.setOperator(op);
@@ -221,8 +284,9 @@ public class XConverter {
 
     public static IWhereItem WS2VO(WSWhereItem ws, WhereConditionFilter wcf) {
 
-        if (ws == null)
+        if (ws == null) {
             return null;
+        }
 
         if (ws.getWhereAnd() != null) {
             WhereAnd wand = new WhereAnd();
@@ -258,8 +322,6 @@ public class XConverter {
         String operator = WhereCondition.CONTAINS;
         if (ws.getOperator().equals(WSWhereOperator.CONTAINS)) {
             operator = WhereCondition.CONTAINS;
-        } else if (ws.getOperator().equals(WSWhereOperator.STRICTCONTAINS)) {
-            operator = WhereCondition.STRICTCONTAINS;
         } else if (ws.getOperator().equals(WSWhereOperator.STARTSWITH)) {
             operator = WhereCondition.STARTSWITH;
         } else if (ws.getOperator().equals(WSWhereOperator.JOIN)) {
@@ -414,32 +476,34 @@ public class XConverter {
 
     public static RoutingRuleExpressionPOJO WS2VO(WSRoutingRuleExpression ws) {
 
-        if (ws == null)
+        if (ws == null) {
             return null;
+        }
 
         int operator = 1;
-        if (ws.getWsOperator().equals(WSRoutingRuleOperator.CONTAINS))
+        if (ws.getWsOperator().equals(WSRoutingRuleOperator.CONTAINS)) {
             operator = RoutingRuleExpressionPOJO.CONTAINS;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.EQUALS))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.EQUALS)) {
             operator = RoutingRuleExpressionPOJO.EQUALS;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.GREATER_THAN))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.GREATER_THAN)) {
             operator = RoutingRuleExpressionPOJO.GREATER_THAN;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.GREATER_THAN_OR_EQUAL))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.GREATER_THAN_OR_EQUAL)) {
             operator = RoutingRuleExpressionPOJO.GREATER_THAN_OR_EQUAL;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.IS_NOT_NULL))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.IS_NOT_NULL)) {
             operator = RoutingRuleExpressionPOJO.IS_NOT_NULL;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.IS_NULL))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.IS_NULL)) {
             operator = RoutingRuleExpressionPOJO.IS_NULL;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.LOWER_THAN))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.LOWER_THAN)) {
             operator = RoutingRuleExpressionPOJO.LOWER_THAN;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.LOWER_THAN_OR_EQUAL))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.LOWER_THAN_OR_EQUAL)) {
             operator = RoutingRuleExpressionPOJO.LOWER_THAN_OR_EQUAL;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.MATCHES))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.MATCHES)) {
             operator = RoutingRuleExpressionPOJO.MATCHES;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.NOT_EQUALS))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.NOT_EQUALS)) {
             operator = RoutingRuleExpressionPOJO.NOT_EQUALS;
-        else if (ws.getWsOperator().equals(WSRoutingRuleOperator.STARTSWITH))
+        } else if (ws.getWsOperator().equals(WSRoutingRuleOperator.STARTSWITH)) {
             operator = RoutingRuleExpressionPOJO.STARTSWITH;
+        }
 
         return new RoutingRuleExpressionPOJO(ws.getName(), ws.getXpath(), operator, ws.getValue());
     }
@@ -464,8 +528,9 @@ public class XConverter {
 
     public static HashMap<String, String> WS2POJO(WSOutputDecisionTable table) {
         HashMap<String, String> decisions = new HashMap<String, String>();
-        if ((table == null) || (table.getDecisions() == null) || (table.getDecisions().length == 0))
+        if ((table == null) || (table.getDecisions() == null) || (table.getDecisions().length == 0)) {
             return decisions;
+        }
         WSProcessBytesUsingTransformerWsOutputDecisionTableDecisions[] wsDecisions = table.getDecisions();
         for (WSProcessBytesUsingTransformerWsOutputDecisionTableDecisions wsDecision : wsDecisions) {
             decisions.put(wsDecision.getOutputVariableName(), wsDecision.getDecision());
@@ -520,8 +585,9 @@ public class XConverter {
     }
 
     public static WSTypedContent POJO2WS(TypedContent content) throws Exception {
-        if (content == null)
+        if (content == null) {
             return null;
+        }
         WSTypedContent wsTypedContent = new WSTypedContent();
         if (content.getUrl() == null) {
             wsTypedContent.setWsBytes(new WSByteArray(content.getContentBytes()));
@@ -638,13 +704,15 @@ public class XConverter {
     }
 
     public static HashMap<String, TypedContent> WS2POJO(WSPipeline wsPipeline) {
-        if (wsPipeline == null)
+        if (wsPipeline == null) {
             return null;
+        }
 
         HashMap<String, TypedContent> pipeline = new HashMap<String, TypedContent>();
         WSPipelineTypedContentEntry[] entries = wsPipeline.getTypedContentEntry();
-        if (entries == null)
+        if (entries == null) {
             return pipeline;
+        }
 
         for (WSPipelineTypedContentEntry entry : entries) {
             pipeline.put(entry.getOutput(), new TypedContent(entry.getWsExtractedContent().getWsByteArray().getBytes(),
@@ -656,8 +724,9 @@ public class XConverter {
     public static WSTransformerPluginV2VariableDescriptor POJO2WS(TransformerPluginVariableDescriptor descriptor) {
         WSTransformerPluginV2VariableDescriptor wsDescriptor = new WSTransformerPluginV2VariableDescriptor();
         wsDescriptor.setVariableName(descriptor.getVariableName());
-        if (descriptor.getDescriptions().size() > 0)
+        if (descriptor.getDescriptions().size() > 0) {
             wsDescriptor.setDescription(descriptor.getDescriptions().values().iterator().next());
+        }
         wsDescriptor.setMandatory(descriptor.isMandatory());
         ArrayList<String> contentTypesRegex = new ArrayList<String>();
         if (descriptor.getContentTypesRegex() != null) {
@@ -720,8 +789,9 @@ public class XConverter {
                         RoleInstance instance = new RoleInstance();
                         instance.setWriteable(wsInstance.isWritable());
                         instance.setParameters(new HashSet());
-                        if (wsInstance.getParameter() != null)
+                        if (wsInstance.getParameter() != null) {
                             instance.getParameters().addAll(Arrays.asList(wsInstance.getParameter()));
+                        }
                         specification.getInstances().put(wsInstance.getInstanceName(), instance);
                     }
 
@@ -889,8 +959,9 @@ public class XConverter {
     }
 
     public static WSRoutingOrderV2PK POJO2WS(AbstractRoutingOrderV2POJOPK pojo) throws Exception {
-        if (pojo == null)
+        if (pojo == null) {
             return null;
+        }
         try {
             WSRoutingOrderV2PK ws = new WSRoutingOrderV2PK();
             ws.setName(pojo.getName());
@@ -914,8 +985,9 @@ public class XConverter {
     }
 
     public static AbstractRoutingOrderV2POJOPK WS2POJO(WSRoutingOrderV2PK s) throws Exception {
-        if (s == null)
+        if (s == null) {
             return null;
+        }
         try {
             AbstractRoutingOrderV2POJOPK pojo = null;
             if (s.getStatus().equals(WSRoutingOrderV2Status.COMPLETED)) {
@@ -932,8 +1004,9 @@ public class XConverter {
     }
 
     public static WSRoutingOrderV2 POJO2WS(AbstractRoutingOrderV2POJO pojo) throws Exception {
-        if (pojo == null)
+        if (pojo == null) {
             return null;
+        }
         try {
             WSRoutingOrderV2 ws = new WSRoutingOrderV2();
             ws.setMessage(pojo.getMessage());

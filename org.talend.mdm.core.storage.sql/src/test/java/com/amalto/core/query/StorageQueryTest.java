@@ -59,7 +59,6 @@ import com.amalto.core.query.user.OrderBy.Direction;
 import com.amalto.core.query.user.Predicate;
 import com.amalto.core.query.user.Range;
 import com.amalto.core.query.user.Select;
-import com.amalto.core.query.user.Split;
 import com.amalto.core.query.user.StringConstant;
 import com.amalto.core.query.user.TypedExpression;
 import com.amalto.core.query.user.UnaryLogicOperator;
@@ -1296,7 +1295,7 @@ public class StorageQueryTest extends StorageTestCase {
         // Test correct translation when there's only one actual condition
         qb = UserQueryBuilder.from(product);
         fieldName = "Product/../*";
-        item = new WhereOr(Arrays.<IWhereItem> asList(new WhereCondition(fieldName, WhereCondition.CONTAINS_TEXT_OF, "1",
+        item = new WhereOr(Arrays.<IWhereItem> asList(new WhereCondition(fieldName, WhereCondition.CONTAINS, "1",
                 WhereCondition.NO_OPERATOR)));
         qb = qb.where(UserQueryHelper.buildCondition(qb, item, repository));
         storageResults = storage.fetch(qb.getSelect());
@@ -1310,7 +1309,7 @@ public class StorageQueryTest extends StorageTestCase {
     public void testContainsTextOfConditionWithAllSimpledTypeFields() throws Exception {
         UserQueryBuilder qb = UserQueryBuilder.from(product);
         String fieldName = "Product/../*";
-        IWhereItem item = new WhereAnd(Arrays.<IWhereItem> asList(new WhereCondition(fieldName, WhereCondition.CONTAINS_TEXT_OF,
+        IWhereItem item = new WhereAnd(Arrays.<IWhereItem> asList(new WhereCondition(fieldName, WhereCondition.CONTAINS,
                 "1", WhereCondition.NO_OPERATOR)));
         qb = qb.where(UserQueryHelper.buildCondition(qb, item, repository));
         StorageResults storageResults = storage.fetch(qb.getSelect());
@@ -1322,7 +1321,7 @@ public class StorageQueryTest extends StorageTestCase {
         // Test correct translation when there's only one actual condition
         qb = UserQueryBuilder.from(product);
         fieldName = "Product/../*";
-        item = new WhereOr(Arrays.<IWhereItem> asList(new WhereCondition(fieldName, WhereCondition.CONTAINS_TEXT_OF, "1",
+        item = new WhereOr(Arrays.<IWhereItem> asList(new WhereCondition(fieldName, WhereCondition.CONTAINS, "1",
                 WhereCondition.NO_OPERATOR)));
         qb = qb.where(UserQueryHelper.buildCondition(qb, item, repository));
         storageResults = storage.fetch(qb.getSelect());

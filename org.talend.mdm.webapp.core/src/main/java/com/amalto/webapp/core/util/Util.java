@@ -319,8 +319,6 @@ public abstract class Util {
                 operator = WSWhereOperator.NOT_EQUALS;
             } else if (values[1].equals("Starts With")) {
                 operator = WSWhereOperator.STARTSWITH;
-            } else if (values[1].equals("Strict Contains")) {
-                operator = WSWhereOperator.STRICTCONTAINS;
             }
             wc.setOperator(operator);
             if (values[2] != null && values[2].matches("^\".*\"$")) {

@@ -60,13 +60,9 @@ public class WhereCondition implements IWhereItem, Serializable {
 
     public static final String PRE_NOT = "!";
 
-    public static String STRICTCONTAINS = "STRICTCONTAINS";
-
     public static String STARTSWITH = "STARTSWITH";
 
     public static String JOINS = "JOINS";
-
-    public static String CONTAINS_TEXT_OF = "CONTAINS_TEXT_OF";
 
     public static String EMPTY_NULL = "Is Empty Or Null";
 

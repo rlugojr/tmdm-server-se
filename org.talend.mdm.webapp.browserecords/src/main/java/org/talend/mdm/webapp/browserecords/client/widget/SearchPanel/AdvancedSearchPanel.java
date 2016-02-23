@@ -17,6 +17,7 @@ import java.util.Date;
 import org.talend.mdm.webapp.base.client.exception.ParserException;
 import org.talend.mdm.webapp.base.client.model.MultipleCriteria;
 import org.talend.mdm.webapp.base.client.util.Parser;
+import org.talend.mdm.webapp.base.shared.OperatorValueConstants;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.i18n.MessagesFactory;
 import org.talend.mdm.webapp.browserecords.client.resources.icon.Icons;
@@ -154,7 +155,7 @@ public class AdvancedSearchPanel extends FormPanel {
             expressionTextField.setValue(criteriaStr);
             cb.setValue(null);
         }
-        if (criteriaStr.contains("FULLTEXTSEARCH")) { //$NON-NLS-1$
+        if (criteriaStr.contains(OperatorValueConstants.FULLTEXTSEARCH)) {
             cb.setEnabled(false);
         } else {
             cb.setEnabled(true);

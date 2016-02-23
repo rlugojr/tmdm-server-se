@@ -36,8 +36,9 @@ public class RoleWhereCondition {
 	public static RoleWhereCondition parse(String marshalledWC) throws XtentisException{
 		RoleWhereCondition rwc = null;
 		try {
-            if (marshalledWC == null || marshalledWC.trim().length() == 0)
+            if (marshalledWC == null || marshalledWC.trim().length() == 0) {
                 return null;
+            }
             rwc = MarshallingFactory.getInstance().getUnmarshaller(RoleWhereCondition.class).unmarshal(new StringReader(marshalledWC));
 		} catch (Exception e) {
 			String err = "parse() ERROR UNMARSHALLING WhereCondition \""+marshalledWC+"\": "+e.getClass().getName()+": "+e.getLocalizedMessage();
@@ -49,26 +50,42 @@ public class RoleWhereCondition {
 	
 	public WhereCondition toWhereCondition() {
 		String operator = WhereCondition.CONTAINS;
-		if (this.getOperator().equals("Contains")) operator = WhereCondition.CONTAINS;
-		else if (this.getOperator().equals("=")) operator = WhereCondition.EQUALS;
-		else if (this.getOperator().equals(">")) operator = WhereCondition.GREATER_THAN;
-		else if (this.getOperator().equals(">=")) operator = WhereCondition.GREATER_THAN_OR_EQUAL;
-		else if (this.getOperator().equals("Contains Text Of")) operator = WhereCondition.CONTAINS_TEXT_OF;
-		else if (this.getOperator().equals("<")) operator = WhereCondition.LOWER_THAN;
-		else if (this.getOperator().equals("<=")) operator = WhereCondition.LOWER_THAN_OR_EQUAL;
-		else if (this.getOperator().equals("!=")) operator = WhereCondition.NOT_EQUALS;
-		else if (this.getOperator().equals("Starts With")) operator = WhereCondition.STARTSWITH;
-		else if (this.getOperator().equals("Strict Contains")) operator = WhereCondition.STRICTCONTAINS;
-		else if (this.getOperator().equals("No Operator")) operator = WhereCondition.NO_OPERATOR;
-		else if (this.getOperator().equals("Is Empty Or Null")) operator = WhereCondition.EMPTY_NULL;
+		if (this.getOperator().equals("Contains")) {
+            operator = WhereCondition.CONTAINS;
+        } else if (this.getOperator().equals("=")) {
+            operator = WhereCondition.EQUALS;
+        } else if (this.getOperator().equals(">")) {
+            operator = WhereCondition.GREATER_THAN;
+        } else if (this.getOperator().equals(">=")) {
+            operator = WhereCondition.GREATER_THAN_OR_EQUAL;
+        } else if (this.getOperator().equals("<")) {
+            operator = WhereCondition.LOWER_THAN;
+        } else if (this.getOperator().equals("<=")) {
+            operator = WhereCondition.LOWER_THAN_OR_EQUAL;
+        } else if (this.getOperator().equals("!=")) {
+            operator = WhereCondition.NOT_EQUALS;
+        } else if (this.getOperator().equals("Starts With")) {
+            operator = WhereCondition.STARTSWITH;
+        } else if (this.getOperator().equals("No Operator")) {
+            operator = WhereCondition.NO_OPERATOR;
+        } else if (this.getOperator().equals("Is Empty Or Null")) {
+            operator = WhereCondition.EMPTY_NULL;
+        }
 		
 		String predicate = WhereCondition.PRE_NONE;
-		if (this.getPredicate().equalsIgnoreCase("and")) predicate = WhereCondition.PRE_AND;
-		else if (this.getPredicate().equals("exactly")) predicate = WhereCondition.PRE_EXACTLY;
-		else if (this.getPredicate().equals("")) predicate = WhereCondition.PRE_NONE;
-		else if (this.getPredicate().equalsIgnoreCase("not")) predicate = WhereCondition.PRE_NOT;
-		else if (this.getPredicate().equalsIgnoreCase("or")) predicate = WhereCondition.PRE_OR;
-		else if (this.getPredicate().equals("strict and")) predicate = WhereCondition.PRE_STRICTAND;
+		if (this.getPredicate().equalsIgnoreCase("and")) {
+            predicate = WhereCondition.PRE_AND;
+        } else if (this.getPredicate().equals("exactly")) {
+            predicate = WhereCondition.PRE_EXACTLY;
+        } else if (this.getPredicate().equals("")) {
+            predicate = WhereCondition.PRE_NONE;
+        } else if (this.getPredicate().equalsIgnoreCase("not")) {
+            predicate = WhereCondition.PRE_NOT;
+        } else if (this.getPredicate().equalsIgnoreCase("or")) {
+            predicate = WhereCondition.PRE_OR;
+        } else if (this.getPredicate().equals("strict and")) {
+            predicate = WhereCondition.PRE_STRICTAND;
+        }
 
         return new WhereCondition(
 				this.getLeftPath(),
