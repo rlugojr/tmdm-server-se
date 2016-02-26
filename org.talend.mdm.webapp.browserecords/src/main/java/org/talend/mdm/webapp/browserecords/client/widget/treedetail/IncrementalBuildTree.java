@@ -191,4 +191,7 @@ public class IncrementalBuildTree implements IncrementalCommand {
         }
 	}
 
+	public Map<TypeModel, List<ItemNodeModel>> getForeighKeyMap() {
+        return foreighKeyMap;
+    }
 }

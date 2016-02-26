@@ -166,6 +166,22 @@ public class IncrementalBuildTreeGWTTest extends GWTTestCase {
         detailType.addSubType(detail_titleType);
         detailType.addSubType(contentType);
 
+        SimpleTypeModel fkOpenType = new SimpleTypeModel("open", DataTypeCreator.getDataType("string", "anyType")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        fkOpenType.setTypePath("Test/open"); //$NON-NLS-1$
+        fkOpenType.setForeignkey("open"); //$NON-NLS-1$
+        fkOpenType.setNotSeparateFk(false);
+        initTypeModel(fkOpenType);
+        fkOpenType.addLabel("en", "open field"); //$NON-NLS-1$//$NON-NLS-2$
+        metaDataTypes.put(fkOpenType.getTypePath(), fkOpenType);
+
+        SimpleTypeModel fkCloseType = new SimpleTypeModel("close", DataTypeCreator.getDataType("string", "anyType")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        fkCloseType.setTypePath("Test/close"); //$NON-NLS-1$
+        fkCloseType.setForeignkey("close"); //$NON-NLS-1$
+        fkCloseType.setNotSeparateFk(false);
+        initTypeModel(fkCloseType);
+        addressType.addLabel("en", "close field"); //$NON-NLS-1$//$NON-NLS-2$
+        metaDataTypes.put(fkCloseType.getTypePath(), fkCloseType);
+        
         bindingEntityModel.setMetaDataTypes(metaDataTypes);
         viewBean.setBindingEntityModel(bindingEntityModel);
 
@@ -188,7 +204,7 @@ public class IncrementalBuildTreeGWTTest extends GWTTestCase {
         for (int j = 0; j < 125; j++) {
             ItemNodeModel addressNode = new ItemNodeModel("address"); //$NON-NLS-1$
             addressNode.setTypePath("Test/address"); //$NON-NLS-1$
-            testNode.add(nameNode);
+            testNode.add(addressNode);
         }
 
         ItemNodeModel cpNode = new ItemNodeModel("cp"); //$NON-NLS-1$
@@ -210,6 +226,17 @@ public class IncrementalBuildTreeGWTTest extends GWTTestCase {
             detailNode.add(contentNode);
             cpNode.add(detailNode);
         }
+        
+        ItemNodeModel openNode = new ItemNodeModel("open"); //$NON-NLS-1$
+        openNode.setTypePath("Test/open"); //$NON-NLS-1$
+        openNode.setVisible(true);
+        testNode.add(openNode);
+
+        ItemNodeModel closeNode = new ItemNodeModel("close"); //$NON-NLS-1$
+        closeNode.setTypePath("Test/close"); //$NON-NLS-1$
+        closeNode.setVisible(false);
+        testNode.add(closeNode);
+        
         return testNode;
     }
 

@@ -61,6 +61,7 @@ import org.talend.mdm.webapp.browserecords.server.util.SmartViewUtil;
 import org.talend.mdm.webapp.browserecords.server.util.TestData;
 import org.talend.mdm.webapp.browserecords.shared.SmartViewDescriptions;
 import org.talend.mdm.webapp.browserecords.shared.ViewBean;
+import org.talend.mdm.webapp.browserecords.shared.VisibleRuleResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -792,6 +793,31 @@ public class BrowseRecordsActionTest extends TestCase {
     	assertEquals("produits non disponible", listRes.get(7).get("name"));
     }
 
+    public void testExecuteVisibleRule() throws Exception {
+        ViewBean viewBean = getViewBean("Product", "ProductDemo.xsd");
+        String xml = getXml("ProductDemo.xml");
+        List<VisibleRuleResult> results = action.executeVisibleRule(viewBean, xml);
+        assertEquals(4, results.size());
+        for (VisibleRuleResult result : results) {
+            if (result.getXpath().contains("Name")) {
+                assertEquals(true, result.isVisible());
+                break;
+            }
+            if (result.getXpath().contains("Price")) {
+                assertEquals(false, result.isVisible());
+                break;
+            }
+            if (result.getXpath().contains("Description")) {
+                assertEquals(false, result.isVisible());
+                break;
+            }
+            if (result.getXpath().contains("Availability")) {
+                assertEquals(true, result.isVisible());
+                break;
+            }
+        }
+    }
+    
     private String parsingNodeValue(Document docXml, String xpath, String conceptName) throws Exception {
         NodeList nodes = Util.getNodeList(docXml, xpath.replaceFirst(conceptName + "/", "./"));
         if (nodes.getLength() > 0) {

@@ -55,6 +55,7 @@
 						</xsd:appinfo>
 						<xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Read-only
 						</xsd:appinfo>
+						<xsd:appinfo source="X_Visible_Rule">true()</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="1" name="Description" type="xsd:string">
@@ -68,6 +69,7 @@
 						</xsd:appinfo>
 						<xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Read-only
 						</xsd:appinfo>
+						<xsd:appinfo source="X_Visible_Rule">true</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="Features">
@@ -186,6 +188,7 @@
 						</xsd:appinfo>
 						<xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Read-only
 						</xsd:appinfo>
+						<xsd:appinfo source="X_Visible_Rule">5>3</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="1" name="Price" type="xsd:decimal">
@@ -203,6 +206,7 @@
 						</xsd:appinfo>
 						<xsd:appinfo source="X_Workflow">Demo_Manager#Product_Product_1.0#Writable
 						</xsd:appinfo>
+						<xsd:appinfo source="X_Visible_Rule">fn:false()</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element maxOccurs="5" minOccurs="0" name="Family" type="xsd:string">
