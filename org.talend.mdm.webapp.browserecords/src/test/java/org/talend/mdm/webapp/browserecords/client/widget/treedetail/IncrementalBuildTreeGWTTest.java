@@ -95,6 +95,7 @@ public class IncrementalBuildTreeGWTTest extends GWTTestCase {
         while (incCommand.execute());
         assertNotNull(item);
         assertEquals(128, item.getChildCount());
+        assertEquals(1, incCommand.getForeighKeyMap().size());
     }
 
     private ViewBean getViewBean() {
