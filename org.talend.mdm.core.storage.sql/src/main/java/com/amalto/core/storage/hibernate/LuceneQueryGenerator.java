@@ -10,13 +10,17 @@
 
 package com.amalto.core.storage.hibernate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -385,9 +389,29 @@ class LuceneQueryGenerator extends VisitorAdapter<Query> {
         for (char remove : removes) {
             value = value.replace(remove, ' ');
         }
-        if (!value.endsWith("*")) { //$NON-NLS-1$
-            value += '*';
+        if(value.contains(" ")){ //$NON-NLS-1$
+            return getMultiKeywords(value);
+        } else {
+            if (!value.endsWith("*")) { //$NON-NLS-1$
+                value += '*';
+            }
         }
         return value;
+    }
+    
+    @SuppressWarnings("unused")
+    private static String getMultiKeywords(String value) {
+        List<String> blocks = new ArrayList<String>(Arrays.asList(value.split(" "))); //$NON-NLS-1$
+        StringBuffer sb = new StringBuffer();
+        for (String block : blocks) {
+            if (StringUtils.isNotEmpty(block)) {
+                if(!block.endsWith("*")){ //$NON-NLS-1$
+                    sb.append(block + "* "); //$NON-NLS-1$
+                } else {
+                    sb.append(block + " "); //$NON-NLS-1$
+                }
+            }
+        }
+        return sb.toString();
     }
 }

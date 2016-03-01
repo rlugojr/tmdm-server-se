@@ -1223,6 +1223,20 @@ public class StorageFullTextTest extends StorageTestCase {
         }
     }
     
+    public void testFullTextWithMultiKeywords() throws Exception {
+        UserQueryBuilder qb = UserQueryBuilder.from(supplier).where(contains(supplier.getField("SupplierName"), "Star Id"));
+        StorageResults results = storage.fetch(qb.getSelect());
+        assertEquals(2, results.getCount());
+        for (DataRecord result : results) {
+            if("2".equals(result.get("Id"))){
+                assertEquals("Starbucks Talend", result.get("SupplierName"));
+            }
+            if("4".equals(result.get("Id"))){
+                assertEquals("IdSoftware", result.get("SupplierName"));
+            }
+        }
+    }
+    
     public void testTypeSplitWithPaging() throws Exception {
         // Build expected results
         UserQueryBuilder qb = UserQueryBuilder.from(person).and(product).where(fullText("Julien")).start(1).limit(20);
