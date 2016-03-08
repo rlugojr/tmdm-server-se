@@ -3031,6 +3031,7 @@ public class StorageQueryTest extends StorageTestCase {
         List<TypedExpression> fields = UserQueryHelper.getFields(product, "Id");
         for (TypedExpression field : fields) {
             qb.select(field);
+            qb.orderBy(product.getField("Id"), OrderBy.Direction.ASC);
         }
         fields = UserQueryHelper.getFields(product, "Name");
         for (TypedExpression field : fields) {
