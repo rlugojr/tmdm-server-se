@@ -147,6 +147,8 @@ public class StorageTestCase extends TestCase {
     protected static final ComplexTypeMetadata checkPointDetails_1;
     
     protected static final ComplexTypeMetadata checkPointDetails_2;
+    
+    protected static final ComplexTypeMetadata fullTextSearchEntityA;
 
     public static final String DATABASE = "H2";
     
@@ -202,22 +204,18 @@ public class StorageTestCase extends TestCase {
         tt = repository.getComplexType("TT");
         rr = repository.getComplexType("RR");
         compte = repository.getComplexType("Compte");
-
         contexte = repository.getComplexType("Contexte");
         personne = repository.getComplexType("Personne");
-
         hierarchy = repository.getComplexType("HierarchySearchItem");
         cpo_service = repository.getComplexType("cpo_service");
-
         location = repository.getComplexType("Location");
         organisation = repository.getComplexType("Organisation");
-
         e_entity = repository.getComplexType("E_Entity");
-        t_entity = repository.getComplexType("T_Entity");
-        
+        t_entity = repository.getComplexType("T_Entity");        
         checkPointDetails_1 = repository.getComplexType("CheckPointDetails_1");
-        checkPointDetails_2 = repository.getComplexType("CheckPointDetails_2");
-        
+        checkPointDetails_2 = repository.getComplexType("CheckPointDetails_2");        
+        fullTextSearchEntityA = repository.getComplexType("FullTextSearchEntityA");
+
         systemStorage = new SecuredStorage(new HibernateStorage("MDM", StorageType.SYSTEM), userSecurity);
         systemRepository = buildSystemRepository();
         

@@ -59,7 +59,7 @@ class FullTextQueryHandler extends AbstractQueryHandler {
         // TMDM-4654: Checks if entity has a composite PK.
         Set<ComplexTypeMetadata> compositeKeyTypes = new HashSet<ComplexTypeMetadata>();
         // TMDM-7496: Search should include references to reused types
-        Collection<ComplexTypeMetadata> types = new HashSet<ComplexTypeMetadata>(select.accept(new SearchTransitiveClosure()));
+        Collection<ComplexTypeMetadata> types = new HashSet<ComplexTypeMetadata>(select.accept(new SearchTransitiveClosure(storage)));
         for (ComplexTypeMetadata type : types) {
             if (type.getKeyFields().size() > 1) {
                 compositeKeyTypes.add(type);
@@ -484,8 +484,14 @@ class FullTextQueryHandler extends AbstractQueryHandler {
 
     private static class SearchTransitiveClosure extends VisitorAdapter<Collection<? extends ComplexTypeMetadata>> {
 
+        final Storage storage;
+        
         private final Set<ComplexTypeMetadata> closure = new HashSet<ComplexTypeMetadata>();
 
+        public SearchTransitiveClosure(Storage storage) {
+            this.storage = storage;
+        }
+        
         @Override
         public Collection<? extends ComplexTypeMetadata> visit(Range range) {
             return closure;
@@ -534,6 +540,11 @@ class FullTextQueryHandler extends AbstractQueryHandler {
 
         @Override
         public Collection<? extends ComplexTypeMetadata> visit(FullText fullText) {
+            if (closure != null && closure.size() > 0) {
+                for (ComplexTypeMetadata ctm : closure) {
+                    closure.addAll(ctm.accept(new ComplexTypeMetadataOptimization(this.storage)));
+                }
+            }
             return closure;
         }
 
@@ -609,4 +620,63 @@ class FullTextQueryHandler extends AbstractQueryHandler {
         }
     }
 
+    private static class ComplexTypeMetadataOptimization extends DefaultMetadataVisitor<Set<ComplexTypeMetadata>> {
+
+        private final Storage storage;
+        private final Set<ComplexTypeMetadata> complexTypeMetadataSet = new HashSet<ComplexTypeMetadata>();
+
+        public ComplexTypeMetadataOptimization(Storage storage) {
+            this.storage = storage;
+        }
+
+        @Override
+        public Set<ComplexTypeMetadata> visit(ComplexTypeMetadata complexTypeMetadata) {
+            if (complexTypeMetadata != null && !complexTypeMetadataSet.contains(complexTypeMetadata)) {
+                complexTypeMetadataSet.add(complexTypeMetadata);
+                for (FieldMetadata fm : complexTypeMetadata.getFields()) {
+                    fm.accept(this);
+                }
+            }
+            return complexTypeMetadataSet;
+        }
+
+        @Override
+        public Set<ComplexTypeMetadata> visit(ContainedComplexTypeMetadata containedType) {
+            if (containedType != null && !complexTypeMetadataSet.contains(containedType)) {
+                if (!this.storage.getMetadataRepository().getInstantiableTypes().contains(containedType)) {
+                    complexTypeMetadataSet.add(containedType);
+                    for (FieldMetadata fm : containedType.getFields()) {
+                        fm.accept(this);
+                    }
+                }
+            }
+            return complexTypeMetadataSet;
+        }
+
+        @Override
+        public Set<ComplexTypeMetadata> visit(ReferenceFieldMetadata referenceField) {
+            if (referenceField != null && !complexTypeMetadataSet.contains(referenceField.getReferencedType())) {
+                if (!this.storage.getMetadataRepository().getInstantiableTypes().contains(referenceField.getReferencedType())) {
+                    complexTypeMetadataSet.add(referenceField.getReferencedType());
+                    for (FieldMetadata fm : referenceField.getReferencedType().getFields()) {
+                        fm.accept(this);
+                    }
+                }
+            }
+            return complexTypeMetadataSet;
+        }
+
+        @Override
+        public Set<ComplexTypeMetadata> visit(ContainedTypeFieldMetadata containedField) {
+            if (containedField != null && !complexTypeMetadataSet.contains(containedField.getContainedType())) {
+                if (!this.storage.getMetadataRepository().getInstantiableTypes().contains(containedField.getContainedType())) {
+                    complexTypeMetadataSet.add(containedField.getContainedType());
+                    for (FieldMetadata fm : containedField.getContainedType().getFields()) {
+                        fm.accept(this);
+                    }
+                }
+            }
+            return complexTypeMetadataSet;
+        }
+    }
 }

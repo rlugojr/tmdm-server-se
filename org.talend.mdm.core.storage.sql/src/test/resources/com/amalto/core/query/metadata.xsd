@@ -2197,6 +2197,57 @@
 			<xsd:enumeration value="D" />
 		</xsd:restriction>
 	</xsd:simpleType>
+    <xsd:element name="FullTextSearchEntityA">
+        <xsd:annotation>
+            <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Id" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+                    </xsd:annotation>
+                </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Name" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+                    </xsd:annotation>
+                </xsd:element>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Address" type="AddressA">
+                    <xsd:annotation>
+                        <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:all>
+        </xsd:complexType>
+        <xsd:unique name="FullTextSearchEntityA">
+    <xsd:selector xpath="."/>
+    <xsd:field xpath="Id"/>
+    </xsd:unique>
+    </xsd:element>
+    <xsd:complexType abstract="false" name="AddressA">
+        <xsd:all>
+            <xsd:element maxOccurs="1" minOccurs="0" name="AddressName" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="City" type="CityA">
+                <xsd:annotation>
+                    <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:all>
+    </xsd:complexType>
+    <xsd:complexType abstract="false" name="CityA">
+        <xsd:all>
+            <xsd:element maxOccurs="1" minOccurs="1" name="CityName" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:all>
+    </xsd:complexType>
 	<xsd:element name="Organisation">
 		<xsd:annotation>
 			<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>

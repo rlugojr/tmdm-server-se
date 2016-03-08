@@ -238,7 +238,11 @@ public class StorageFullTextTest extends StorageTestCase {
                         .read(repository,
                                 person,
                                 "<Person><id>4</id><score>200000.00</score><lastname>Leblanc</lastname><middlename>John</middlename><firstname>Julien</firstname><age>30</age><Status>Friend</Status></Person>"));
-        
+        allRecords
+                .add(factory
+                    .read(repository,
+                            fullTextSearchEntityA,
+                            "<FullTextSearchEntityA><Id>id1</Id><Name>name1</Name><Address><AddressName>address1</AddressName><City><CityName>city1</CityName></City></Address></FullTextSearchEntityA>"));
         
         try {
             storage.begin();
@@ -265,8 +269,9 @@ public class StorageFullTextTest extends StorageTestCase {
             qb = from(supplier);
             storage.delete(qb.getSelect());
 
-            qb = from(country);
-            storage.delete(qb.getSelect());
+            //makes unit test unstable
+            //qb = from(country);
+            //storage.delete(qb.getSelect());
             
             qb = from(person);
             storage.delete(qb.getSelect());
@@ -1220,6 +1225,13 @@ public class StorageFullTextTest extends StorageTestCase {
         for (DataRecord result : results) {
             assertEquals("Country", result.getType().getName());
             assertEquals(2, result.get("id"));
+        }
+        
+        qb = UserQueryBuilder.from(fullTextSearchEntityA).where(fullText("city"));
+        results = storage.fetch(qb.getSelect());
+        assertEquals(1, results.getCount());
+        for (DataRecord result : results) {
+            assertEquals("id1", result.get("Id"));
         }
     }
     
