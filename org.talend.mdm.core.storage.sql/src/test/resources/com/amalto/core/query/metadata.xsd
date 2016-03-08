@@ -2467,4 +2467,132 @@
 	      <xsd:element minOccurs="0" name="TerritoryCode" type="xsd:string"></xsd:element>  
 	    </xsd:sequence> 
 	  </xsd:complexType>
+	  
+	  <xsd:element name="MYPARTY" type="MYPARTY"> 
+    <xsd:annotation> 
+      <xsd:appinfo source="X_Label_EN">MyParty</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">CrUD</xsd:appinfo> 
+    </xsd:annotation>  
+    <xsd:unique name="MYPARTY"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="MYPARTY_ID"/> 
+    </xsd:unique> 
+  </xsd:element>  
+
+  <xsd:complexType name="MYPARTY"> 
+    <xsd:all> 
+      <xsd:element maxOccurs="1" minOccurs="1" name="MYPARTY_ID" type="xsd:int"> 
+        <xsd:annotation> 
+          <xsd:appinfo source="X_Label_EN">MyParty ID</xsd:appinfo>  
+          <xsd:appinfo source="X_Write">CrUD</xsd:appinfo> 
+        </xsd:annotation> 
+      </xsd:element>  
+      <xsd:element maxOccurs="1" minOccurs="1" name="MYPARTY_TYPE" type="MYPARTY_TYPE"> 
+        <xsd:annotation> 
+          <xsd:appinfo source="X_Label_EN">Type</xsd:appinfo>  
+          <xsd:appinfo source="X_AutoExpand">true</xsd:appinfo>  
+           
+        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation> 
+      </xsd:element> 
+    </xsd:all> 
+  </xsd:complexType>  
+
+  <xsd:complexType abstract="true" name="MYPARTY_TYPE"> 
+    <xsd:sequence> 
+      <xsd:element maxOccurs="1" minOccurs="1" name="USE_AGENT_RATE_FLAG" type="xsd:boolean"> 
+        <xsd:annotation> 
+          <xsd:appinfo source="X_Label_EN">Use agent rate flag</xsd:appinfo>  
+           
+        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation> 
+      </xsd:element>  
+      <xsd:element maxOccurs="1" minOccurs="1" name="BUSINESS_CHANNEL_FK" type="xsd:string"> 
+        <xsd:annotation> 
+          <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>  
+          <xsd:appinfo source="X_ForeignKeyInfo">MYLOOKUP_BUSINESS_CHANNEL/BUSINESS_CHANNEL_CODE</xsd:appinfo>  
+          <xsd:appinfo source="X_ForeignKeyInfo">MYLOOKUP_BUSINESS_CHANNEL/BUSINESS_CHANNEL_DESCRIPTION</xsd:appinfo>  
+          <xsd:appinfo source="X_ForeignKey">MYLOOKUP_BUSINESS_CHANNEL/BUSINESS_CHANNEL_CODE</xsd:appinfo>  
+          <xsd:appinfo source="X_Label_EN">Business channel</xsd:appinfo>  
+          <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+           
+        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation> 
+      </xsd:element>  
+    </xsd:sequence> 
+  </xsd:complexType>  
+
+  <xsd:complexType abstract="false" name="MYORGANISATION"> 
+    <xsd:complexContent> 
+      <xsd:extension base="MYPARTY_TYPE"> 
+        <xsd:sequence>  
+          <xsd:element maxOccurs="1" minOccurs="0" name="INSTITUTIONAL_SECTOR" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Description_EN">The institutional sector in which the organisation resides</xsd:appinfo>  
+              <xsd:appinfo source="X_Label_EN">Institutional sector</xsd:appinfo>  
+               
+            <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+</xsd:annotation> 
+          </xsd:element>  
+        </xsd:sequence> 
+      </xsd:extension> 
+    </xsd:complexContent> 
+  </xsd:complexType>
+
+    <xsd:complexType abstract="false" name="MYINDIVIDUAL"> 
+    <xsd:complexContent> 
+      <xsd:extension base="MYPARTY_TYPE"> 
+        <xsd:sequence>  
+          <xsd:element maxOccurs="1" minOccurs="0" name="TOWN_OF_BIRTH" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Label_EN">Town of birth</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">CrUD</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>  
+        </xsd:sequence> 
+      </xsd:extension> 
+    </xsd:complexContent> 
+  </xsd:complexType>
+
+  <xsd:element name="MYLOOKUP_BUSINESS_CHANNEL" type="MYLOOKUP_BUSINESS_CHANNEL"> 
+    <xsd:annotation> 
+      <xsd:appinfo source="X_Label_EN">Lookup - Business channel</xsd:appinfo>  
+       
+    <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>  
+    <xsd:unique name="MYLOOKUP_BUSINESS_CHANNEL"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="BUSINESS_CHANNEL_CODE"/> 
+    </xsd:unique> 
+  </xsd:element>
+  
+  <xsd:complexType name="MYLOOKUP_BUSINESS_CHANNEL"> 
+    <xsd:sequence> 
+      <xsd:element maxOccurs="1" minOccurs="1" name="BUSINESS_CHANNEL_CODE"> 
+        <xsd:annotation> 
+          <xsd:appinfo source="X_Label_EN">Business channel code</xsd:appinfo>  
+           
+        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>  
+        <xsd:simpleType> 
+          <xsd:restriction base="xsd:string"> 
+            <xsd:maxLength value="1"/> 
+          </xsd:restriction> 
+        </xsd:simpleType> 
+      </xsd:element>  
+      <xsd:element maxOccurs="1" minOccurs="0" name="BUSINESS_CHANNEL_DESCRIPTION" type="xsd:string"> 
+        <xsd:annotation> 
+          <xsd:appinfo source="X_Label_EN">Business channel description</xsd:appinfo>  
+           
+        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation> 
+      </xsd:element> 
+    </xsd:sequence> 
+  </xsd:complexType>
 </xsd:schema>

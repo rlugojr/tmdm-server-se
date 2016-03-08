@@ -14,7 +14,6 @@ package com.amalto.core.storage.hibernate;
 import com.amalto.core.storage.datasource.RDBMSDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.talend.mdm.commmon.metadata.*;
-import org.apache.log4j.Logger;
 
 import javax.xml.XMLConstants;
 import java.util.Collection;
@@ -22,8 +21,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 class FlatTypeMappingCreator extends DefaultMetadataVisitor<TypeMapping> {
-
-    private static final Logger LOGGER = Logger.getLogger(FlatTypeMappingCreator.class);
 
     private final LinkedList<String> prefix = new LinkedList<String>();
 
@@ -44,14 +41,6 @@ class FlatTypeMappingCreator extends DefaultMetadataVisitor<TypeMapping> {
         this.internalRepository = repository;
         this.context = new StatelessContext(prefix, dialect);
         this.preferClobUse = preferClobUse;
-    }
-
-    private static boolean isDatabaseMandatory(FieldMetadata field, TypeMetadata declaringType) {
-        boolean isDatabaseMandatory = field.isMandatory() && declaringType.isInstantiable();
-        if (field.isMandatory() && !isDatabaseMandatory) {
-            LOGGER.warn("Field '" + field.getName() + "' is mandatory but constraint cannot be enforced in database schema."); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        return isDatabaseMandatory;
     }
 
     @Override

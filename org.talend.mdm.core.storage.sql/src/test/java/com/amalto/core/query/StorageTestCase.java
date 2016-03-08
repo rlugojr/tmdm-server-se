@@ -148,6 +148,10 @@ public class StorageTestCase extends TestCase {
     
     protected static final ComplexTypeMetadata checkPointDetails_2;
 
+    protected static final ComplexTypeMetadata channel;
+
+    protected static final ComplexTypeMetadata party;
+
     public static final String DATABASE = "H2";
     
     public static final String DATASOURCE_DEFAULT = DATABASE + "-Default";
@@ -218,6 +222,9 @@ public class StorageTestCase extends TestCase {
         checkPointDetails_1 = repository.getComplexType("CheckPointDetails_1");
         checkPointDetails_2 = repository.getComplexType("CheckPointDetails_2");
         
+        channel = repository.getComplexType("MYLOOKUP_BUSINESS_CHANNEL");
+        party = repository.getComplexType("MYPARTY");
+
         systemStorage = new SecuredStorage(new HibernateStorage("MDM", StorageType.SYSTEM), userSecurity);
         systemRepository = buildSystemRepository();
         

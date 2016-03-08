@@ -360,6 +360,34 @@ public class StorageRecordCreationTest extends StorageTestCase {
         }
     }
 
+    public void testNotNullConstraintOnScatteredMapping() throws Exception {
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        List<DataRecord> allRecords = new LinkedList<DataRecord>();
+        allRecords.add(factory.read(repository, channel,
+                "<MYLOOKUP_BUSINESS_CHANNEL><BUSINESS_CHANNEL_CODE>1</BUSINESS_CHANNEL_CODE></MYLOOKUP_BUSINESS_CHANNEL>"));
+        allRecords
+                .add(factory
+                        .read(repository, party,
+                                "<MYPARTY><MYPARTY_ID>1</MYPARTY_ID><MYPARTY_TYPE><USE_AGENT_RATE_FLAG>1</USE_AGENT_RATE_FLAG></MYPARTY_TYPE></MYPARTY>"));
+        storage.begin();
+        try {
+            storage.update(allRecords);
+            storage.commit();
+        } catch (Exception e) {
+            storage.rollback();
+            throw e;
+        }
+        UserQueryBuilder qb = from(party);
+        storage.begin();
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(1, results.getCount());
+        } finally {
+            results.close();
+            storage.commit();
+        }
+    }
+
     public void testCollectionOnCompositeIDEntity() throws Exception {
         DataRecordReader<String> factory = new XmlStringDataRecordReader();
         List<DataRecord> allRecords = new LinkedList<DataRecord>();
