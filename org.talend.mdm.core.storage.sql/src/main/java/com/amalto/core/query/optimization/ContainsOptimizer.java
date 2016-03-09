@@ -86,8 +86,8 @@ public class ContainsOptimizer implements Optimizer {
 
         @Override
         public Condition visit(BinaryLogicOperator condition) {
-            condition.getLeft().accept(this);
-            condition.getRight().accept(this);
+            condition.setLeft(condition.getLeft().accept(this));
+            condition.setRight(condition.getRight().accept(this));
             return condition;
         }
 

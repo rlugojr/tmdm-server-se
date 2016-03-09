@@ -4440,5 +4440,21 @@ public class StorageQueryTest extends StorageTestCase {
                 "<result xmlns:metadata=\"http://www.talend.com/mdm/metadata\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n\t<OrganisationId>2</OrganisationId>\n\t<LocationId>t2</LocationId>\n\t<locationTranslation>Trans2</locationTranslation>\n</result>",
                 strings.get(1));
     }
+    
+    public void testAdvancedSearchWithMultiCondition() throws Exception {
+        UserQueryBuilder qb = from(person).where(and(contains(person.getField("lastname"), "Du*"), contains(person.getField("middlename"), "jo*")));
+        StorageResults results = storage.fetch(qb.getSelect());
+        List<String> ids = new ArrayList<String>();
+        ids.add("1");
+        ids.add("2");
+        try{
+            assertEquals(2, results.getSize());
+            for (DataRecord result : results) {
+                this.assertTrue(ids.contains(result.get(person.getField("id"))));
+            }
+        } finally {
+            results.close();
+        }
+    }
 
 }
