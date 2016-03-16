@@ -124,7 +124,7 @@ public class IncompatibleOperators implements Optimizer {
                 right.accept(this);
                 if (currentField != null) { // null may happen for fields that needs no check
                     TypeMetadata fieldType = currentField.getFieldMetadata().getType();
-                    String length = fieldType.getData(MetadataRepository.DATA_MAX_LENGTH);
+                    String length = fieldType.<String> getData(MetadataRepository.DATA_MAX_LENGTH);
                     if (length != null) {
                         if (right instanceof ConstantExpression<?>) {
                             if (Integer.parseInt(length) > dialect.getTextLimit()) {

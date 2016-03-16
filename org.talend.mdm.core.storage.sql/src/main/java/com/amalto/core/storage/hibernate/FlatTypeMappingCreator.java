@@ -152,7 +152,7 @@ class FlatTypeMappingCreator extends DefaultMetadataVisitor<TypeMapping> {
             newFlattenField.setDeclaringType(internalDeclaringType);
             database.addField(newFlattenField);
         }
-        String data = field.getType().getData(MetadataRepository.DATA_MAX_LENGTH);
+        String data = field.getType().<String> getData(MetadataRepository.DATA_MAX_LENGTH);
         if (data != null && preferClobUse) {
             if (Integer.parseInt(data) > context.getTextLimit()) {
                 newFlattenField.getType().setData(TypeMapping.SQL_TYPE, TypeMapping.SQL_TYPE_CLOB);

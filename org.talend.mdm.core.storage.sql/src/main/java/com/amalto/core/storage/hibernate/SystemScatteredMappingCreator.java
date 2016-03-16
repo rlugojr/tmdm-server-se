@@ -75,7 +75,7 @@ class SystemScatteredMappingCreator extends DefaultMetadataVisitor<TypeMapping> 
                     true);
             newFlattenField.setDeclaringType(type);
         }
-        String data = field.getType().getData(MetadataRepository.DATA_MAX_LENGTH);
+        String data = field.getType().<String> getData(MetadataRepository.DATA_MAX_LENGTH);
         Boolean preferLongVarchar = field.getType().getData(LongString.PREFER_LONGVARCHAR);
         if (data != null && preferClobUse && preferLongVarchar == null) {
             newFlattenField.getType().setData(TypeMapping.SQL_TYPE, TypeMapping.SQL_TYPE_CLOB);

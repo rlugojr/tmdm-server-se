@@ -462,13 +462,13 @@ public class HibernateStorage implements Storage {
                         switch (dataSource.getDialectName()) {
                         case SQL_SERVER:
                             // TMDM-8144: Don't index field name on SQL Server when size > 900
-                            String maxLengthStr = indexedField.getType().getData(MetadataRepository.DATA_MAX_LENGTH);
+                            String maxLengthStr = indexedField.getType().<String> getData(MetadataRepository.DATA_MAX_LENGTH);
                             if (maxLengthStr == null) { // go up the type inheritance tree to find max length annotation
                                 TypeMetadata type = indexedField.getType();
                                 while (!XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(type.getNamespace())
                                         && !type.getSuperTypes().isEmpty()) {
                                     type = type.getSuperTypes().iterator().next();
-                                    maxLengthStr = type.getData(MetadataRepository.DATA_MAX_LENGTH);
+                                    maxLengthStr = type.<String> getData(MetadataRepository.DATA_MAX_LENGTH);
                                     if (maxLengthStr != null) {
                                         break;
                                     }

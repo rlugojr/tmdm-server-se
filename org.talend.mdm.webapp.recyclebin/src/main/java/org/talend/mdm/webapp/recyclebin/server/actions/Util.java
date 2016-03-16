@@ -40,7 +40,7 @@ public class Util {
         }
         if (firstPrimaryKeyInfo != null) {
             // get the xpath by firstPrimaryKeyInfo, it is a SoftFieldRef
-            Element pkInfo = firstPrimaryKeyInfo.getData(MetadataRepository.XSD_DOM_ELEMENT);
+            Element pkInfo = firstPrimaryKeyInfo.<Element> getData(MetadataRepository.XSD_DOM_ELEMENT);
             if (pkInfo != null && pkInfo.getTextContent() != null) {
                 values[0] = com.amalto.core.util.Util.getFirstTextNode(doc, "ii/p/" + pkInfo.getTextContent()); //$NON-NLS-1$
                 if (firstPrimaryKeyInfo.getType().getName().equals(DataTypeConstants.MLS.getTypeName())) {

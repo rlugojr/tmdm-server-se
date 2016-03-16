@@ -116,8 +116,8 @@ public abstract class TypeMapping {
             return value;
         }
         if (!targetField.isMany()) {
-            Boolean targetZipped = targetField.getData(MetadataRepository.DATA_ZIPPED);
-            Boolean sourceZipped = sourceField.getData(MetadataRepository.DATA_ZIPPED);
+            Boolean targetZipped = targetField.<Boolean> getData(MetadataRepository.DATA_ZIPPED);
+            Boolean sourceZipped = sourceField.<Boolean> getData(MetadataRepository.DATA_ZIPPED);
             if (sourceZipped == null && Boolean.TRUE.equals(targetZipped)) {
                 try {
                     ByteArrayOutputStream characters = new ByteArrayOutputStream();
@@ -151,8 +151,8 @@ public abstract class TypeMapping {
             return value;
         }
         if (!targetField.isMany()) {
-            Boolean targetZipped = targetField.getData(MetadataRepository.DATA_ZIPPED);
-            Boolean sourceZipped = sourceField.getData(MetadataRepository.DATA_ZIPPED);
+            Boolean targetZipped = targetField.<Boolean> getData(MetadataRepository.DATA_ZIPPED);
+            Boolean sourceZipped = sourceField.<Boolean> getData(MetadataRepository.DATA_ZIPPED);
             if (Boolean.TRUE.equals(sourceZipped) && targetZipped == null) {
                 try {
                     ByteArrayInputStream bis = new ByteArrayInputStream(String.valueOf(value).getBytes("UTF-8")); //$NON-NLS-1$
