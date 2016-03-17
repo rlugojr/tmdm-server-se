@@ -35,7 +35,7 @@ public class SecuredStorageTest extends StorageTestCase {
                         .read(
                                 repository,
                                 person,
-                                "<Person><id>1</id><score>130000</score><lastname>Dupond</lastname><middlename>John</middlename><firstname>Julien</firstname><age>10</age><Status>Employee</Status><Available>true</Available></Person>"));
+                                "<Person><id>1</id><score>190000</score><lastname>Dupond</lastname><middlename>John</middlename><firstname>Julien</firstname><age>10</age><Status>Employee</Status><Available>true</Available></Person>"));
         allRecords
                 .add(factory
                         .read(
@@ -203,8 +203,11 @@ public class SecuredStorageTest extends StorageTestCase {
 
         // With security active
         assertTrue(userSecurity.isActive);
+        // using enumeration field to order will actually use it's id in the table to sort, not its value
+        // while security is on (user have no access to the field) query will reteive record by a 'default' order,
+        // most of time the order is record's insertion order, but it can not be guarenteed
         UserQueryBuilder qb = from(person).selectId(person).select(person.getField("firstname"))
-                .orderBy(person.getField("Status"), OrderBy.Direction.DESC);
+                .orderBy(person.getField("score"), OrderBy.Direction.DESC);
 
         String[] firstNames = new String[3];
         storage.begin();
@@ -221,12 +224,12 @@ public class SecuredStorageTest extends StorageTestCase {
             results.close();
             storage.commit();
         }
-
-        // With security active
+        
+        // With security inactive
         userSecurity.setActive(false);
         assertFalse(userSecurity.isActive);
         qb = from(person).selectId(person).select(person.getField("firstname"))
-                .orderBy(person.getField("Status"), OrderBy.Direction.ASC);
+                .orderBy(person.getField("score"), OrderBy.Direction.ASC);
         storage.begin();
         results = storage.fetch(qb.getSelect());
         try {
