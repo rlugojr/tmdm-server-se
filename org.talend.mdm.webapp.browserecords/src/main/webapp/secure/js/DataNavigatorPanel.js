@@ -1,7 +1,7 @@
 amalto.namespace("amalto.itemsbrowser");
 
 amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
-		cluster, viewPK) {
+		cluster) {
 	var NAVIGATOR_NODE_IN_ENTITY_TYPE = 1;
 	var NAVIGATOR_NODE_OUT_ENTITY_TYPE = 2;
 	var NAVIGATOR_NODE_VALUE_TYPE = 3;
@@ -37,7 +37,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 	var node_text;
 	var drag;
 	var force;
-	init(id, concept, cluster, viewPK);
+	init(id, concept, cluster);
 
 	function paint() {
 		link = link.data(links);
@@ -96,12 +96,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				Ext.Ajax
 						.request({
 							url : restServiceUrl + '/data/' + cluster
-									+ '/outBoundTypes/',
+									+ '/outBoundTypes/'
+									+ d.navigator_node_concept + '/'
+									+ d.navigator_node_ids,
 							method : 'GET',
-							params : {
-								ids : d.navigator_node_ids,
-								type : d.navigator_node_concept
-							},
 							success : function(response, options) {
 								var newNodes = eval('(' + response.responseText
 										+ ')');
@@ -136,12 +134,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				Ext.Ajax
 						.request({
 							url : restServiceUrl + '/data/' + cluster
-									+ '/inBoundTypes/',
+									+ '/inBoundTypes/'
+									+ d.navigator_node_concept + '/'
+									+ d.navigator_node_ids,
 							method : 'GET',
-							params : {
-								ids : d.navigator_node_ids,
-								type : d.navigator_node_concept
-							},
 							success : function(response, options) {
 								var newNodes = eval('(' + response.responseText
 										+ ')');
@@ -179,10 +175,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					Ext.Ajax
 							.request({
 								url : restServiceUrl + '/data/' + cluster
-										+ '/inBoundRecords/',
+										+ '/inBoundRecords/'
+										+ d.navigator_node_concept,
 								method : 'GET',
 								params : {
-									type : d.navigator_node_concept,
 									foreignKeyPath : d.navigator_node_foreignkey_path,
 									foreignKeyValue : d.navigator_node_foreignkey_value
 								},
@@ -221,10 +217,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					Ext.Ajax
 							.request({
 								url : restServiceUrl + '/data/' + cluster
-										+ '/records/',
+										+ '/records/'
+										+ d.navigator_node_concept,
 								method : 'GET',
 								params : {
-									type : d.navigator_node_concept,
 									ids : d.navigator_node_ids
 								},
 								success : function(response, options) {
@@ -336,13 +332,12 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				+ d3.event.scale + ")");
 	}
 
-	function init(id, concept, cluster, viewPK) {
+	function init(id, concept, cluster) {
 		var ids = new Array(id);
 		Ext.Ajax.request({
-			url : restServiceUrl + '/data/' + cluster + '/records/',
+			url : restServiceUrl + '/data/' + cluster + '/records/' + concept,
 			method : 'GET',
 			params : {
-				type : concept,
 				ids : ids
 			},
 			success : function(response, options) {

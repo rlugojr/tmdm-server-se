@@ -166,8 +166,7 @@ public class NavigatorPanel extends ContentPanel {
         return GWT.getHostPageBaseURL() + "services/rest"; //$NON-NLS-1$
     }
 
-    public static void renderPanel(String baseUrl, String ids, String concept, String cluster, String viewPK,
-            ContentPanel contentPanel) {
+    public static void renderPanel(String baseUrl, String ids, String concept, String cluster, ContentPanel contentPanel) {
         if (GWT.isScript()) {
             String itemId = concept + "_" + ids; //$NON-NLS-1$
             renderGwtPanel(itemId, contentPanel);
@@ -175,7 +174,7 @@ public class NavigatorPanel extends ContentPanel {
             renderDebugPanel(contentPanel);
         }
         String restServiceUrl = baseUrl + "services/rest"; //$NON-NLS-1$
-        paintNavigator(restServiceUrl, ids, concept, cluster, viewPK);
+        paintNavigator(restServiceUrl, ids, concept, cluster);
     }
 
     private static void renderDebugPanel(ContentPanel contentPanel) {
@@ -204,9 +203,9 @@ public class NavigatorPanel extends ContentPanel {
         }
     }-*/;
 
-    public native static void paintNavigator(String restServiceUrl, String ids, String concept, String cluster, String viewPK)/*-{
+    public native static void paintNavigator(String restServiceUrl, String ids, String concept, String cluster)/*-{
 		$wnd.amalto.itemsbrowser.NavigatorPanel(restServiceUrl, ids, concept,
-				cluster, viewPK);
+				cluster);
     }-*/;
 
     public native static void renderGwtPanel(String itemId, ContentPanel contentPanel)/*-{
