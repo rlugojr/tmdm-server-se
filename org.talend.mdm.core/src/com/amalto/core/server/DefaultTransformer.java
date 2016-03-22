@@ -297,8 +297,7 @@ public class DefaultTransformer implements TransformerPluginCallBack, com.amalto
                         throw new XtentisException(err);
                     }
                 }
-            }
-            );
+            });
 
         } catch (Exception e) {
             try {
@@ -402,13 +401,15 @@ public class DefaultTransformer implements TransformerPluginCallBack, com.amalto
                 context.put("com.amalto.core.objects.transformers.v2.transformerCtrlV2.ready", Boolean.TRUE); //$NON-NLS-1$
             }
         });
-        while (context.get("com.amalto.core.objects.transformers.v2.transformerCtrlV2.ready").equals(Boolean.FALSE)) { //$NON-NLS-1$
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
+        if (context.get("com.amalto.core.objects.transformers.v2.transformerCtrlV2.ready") != null) { //$NON-NLS-1$
+            while (context.get("com.amalto.core.objects.transformers.v2.transformerCtrlV2.ready").equals(Boolean.FALSE)) { //$NON-NLS-1$
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
             }
+            context.remove("com.amalto.core.objects.transformers.v2.transformerCtrlV2.ready"); //$NON-NLS-1$
         }
-        context.remove("com.amalto.core.objects.transformers.v2.transformerCtrlV2.ready"); //$NON-NLS-1$
         return context;
     }
 
