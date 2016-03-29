@@ -1027,15 +1027,20 @@ public class HibernateStorage implements Storage {
         return typesToDrop;
     }
     
-    private Set<ComplexTypeMetadata> findDependentTypesToDelete(MetadataRepository previousRepository, Set<ComplexTypeMetadata> typesToDrop) {
+    private Set<ComplexTypeMetadata> findDependentTypesToDelete(MetadataRepository previousRepository,
+            Set<ComplexTypeMetadata> typesToDrop, Set<ComplexTypeMetadata> allDependencies) {
         Set<ComplexTypeMetadata> additionalTypes = new HashSet<ComplexTypeMetadata>();
         for (ComplexTypeMetadata typeToDrop : typesToDrop) {
             Set<ReferenceFieldMetadata> inboundReferences = previousRepository.accept(new InboundReferences(typeToDrop));
             if (!inboundReferences.isEmpty()) {
                 for (ReferenceFieldMetadata inboundReference : inboundReferences) {
-                    additionalTypes.add(inboundReference.getContainingType().getEntity());
+                    ComplexTypeMetadata entity = inboundReference.getContainingType().getEntity();
+                    if (!allDependencies.contains(entity)) {
+                        additionalTypes.add(entity);
+                        allDependencies.add(entity);
+                    }
                 }
-                additionalTypes.addAll(findDependentTypesToDelete(previousRepository, additionalTypes));
+                additionalTypes.addAll(findDependentTypesToDelete(previousRepository, additionalTypes, allDependencies));
             }
         }
         if (LOGGER.isDebugEnabled()) {
@@ -1202,7 +1207,7 @@ public class HibernateStorage implements Storage {
                         + "."); //$NON-NLS-1$
             }
             // Find dependent types to delete
-            Set<ComplexTypeMetadata> dependentTypesToDrop = findDependentTypesToDelete(previousRepository, typesToDrop);
+            Set<ComplexTypeMetadata> dependentTypesToDrop = findDependentTypesToDelete(previousRepository, typesToDrop, typesToDrop);
             typesToDrop.addAll(dependentTypesToDrop);
             // Sort in dependency order
             List<ComplexTypeMetadata> sortedTypesToDrop = new ArrayList<ComplexTypeMetadata>(typesToDrop);
