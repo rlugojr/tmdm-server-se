@@ -57,7 +57,7 @@ public class NavigatorPanel extends ContentPanel {
     String operation = ItemDetailToolBar.VIEW_OPERATION;
 
     public NavigatorPanel() {
-        setId("NavigatorPanel"); //$NON-NLS-1$
+        setId(MessagesFactory.getMessages().navigator_panel_label());
         initPanel();
         registerNavigatorService();
     }

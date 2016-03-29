@@ -557,5 +557,7 @@ public interface BrowseRecordsMessages extends Messages {
 
     String validate_record_failed_msg(String msg);
 
+    String navigator_panel_label();
+
     String navigator_detailPanel_label();
 }
