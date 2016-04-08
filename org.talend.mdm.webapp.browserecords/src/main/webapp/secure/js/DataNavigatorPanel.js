@@ -25,7 +25,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 	var xOffsetOut;
 	var yOffsetOut;
 	var pageSize = 5;
-	var filter = '';
+	var filterValue = '';
 
 	var zoom = d3.behavior.zoom().scaleExtent([ -15, 100 ]).on("zoom", zoomed);
 	var svg = d3.select("#navigator").append("svg").attr("width", width).attr(
@@ -130,7 +130,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 			elementId = "cluster_type_out_group_" + getIdentifier(selectNode);
 		}
 		if ((svg.select("#" + elementId)[0])[0] === null) {
-			var typeGroup = container.append("g").attr("id", elementId).style("display", "inline");
+			var typeGroup = container.append("g").attr("id", elementId).style(
+					"display", "inline");
 			var typeNodes = typeCluster.nodes(root);
 			var typeLinks = typeCluster.links(typeNodes);
 			var xOffset = selectNode.x - root.y;
@@ -152,18 +153,20 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 												+ (selectNode.x - node.y);
 									}
 								}
-								return 'translate(' + node.y + ',' + node.x + ')';
+								return 'translate(' + node.y + ',' + node.x
+										+ ')';
 							});
 
 			var typeLink = typeGroup.selectAll(".link").data(typeLinks).enter()
-					.append("path").style("fill", "none").style("stroke", "#ccc")
-					.style("stroke-width", "1.5px").attr("d", diagonal);
+					.append("path").style("fill", "none").style("stroke",
+							"#ccc").style("stroke-width", "1.5px").attr("d",
+							diagonal);
 
 			typeNode.each(function(d, i) {
 				if (d.navigator_node_concept !== 'root') {
 					d3.select(this).append("image").attr("width", image_width)
-							.attr("height", image_height).attr("x", "-15px").attr(
-									"y", "-15px").attr("identifier", function(d) {
+							.attr("height", image_height).attr("x", "-15px")
+							.attr("y", "-15px").attr("identifier", function(d) {
 								return getIdentifier(d);
 							}).attr("xlink:href", function(d) {
 								return getImage(d);
@@ -182,7 +185,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 			});
 		} else {
 			svg.select("#" + elementId).style("display", "inline");
-		} 
+		}
 	}
 
 	function menuClick(arc) {
@@ -249,46 +252,49 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
 				var settingWindow = new Ext.Window({
 					id : 'settingWindow',
-					title : 'setting',
-					width : 300,
-					height : 150,
+					title : 'Inbound setting window',
+					width : 200,
+					height : 100,
 					modal : true,
 					layout : 'form',
-					labelWidth : 60,
-					labelAlign : 'right',
 					bodyStyle : "padding:10px",
 					frame : true,
-					defaults : {
-						xtype : "textfield",
-						width : 150
-					},
-					buttonAlign : 'center',
 					items : [ {
-						xtype : "numberfield",
-						id : 'pageSize',
-						name : "pageSize",
-						fieldLabel : "Page Size",
-						value : pageSize
-					}, {
-						xtype : "textfield",
-						id : 'filter',
-						name : "filter",
-						fieldLabel : "Search"
-					} ],
-					buttons : [ {
-						xtype : "button",
-						text : "ok",
-						handler : function() {
-							pageSize = Ext.getCmp('pageSize').value;
-							filter = Ext.getCmp('filter').value;
-							Ext.getCmp('settingWindow').close();
-						}
-					}, {
-						xtype : "button",
-						text : "cancel",
-						handler : function() {
-							Ext.getCmp('settingWindow').close();
-						}
+						id : 'settingForm',
+						xtype : 'form',
+						labelWidth : 60,
+						labelAlign : 'right',
+						buttonAlign : 'center',
+						items : [  {
+							xtype : 'textfield',
+							id : 'filterValue',
+							name : 'filterValue',
+							fieldLabel : 'Search',
+							width : 'auto',
+							value : filterValue
+						},{
+							xtype : 'numberfield',
+							id : 'pageSize',
+							name : 'pageSize',
+							fieldLabel : 'Page Size',
+							width : 'auto',
+							value : pageSize
+						} ],
+						buttons : [ {
+							xtype : 'button',
+							text : "ok",
+							handler : function() {
+								pageSize = Ext.getCmp('pageSize').value;
+								filterValue = Ext.getCmp('filterValue').getRawValue();
+								Ext.getCmp('settingWindow').close();
+							}
+						}, {
+							xtype : 'button',
+							text : 'cancel',
+							handler : function() {
+								Ext.getCmp('settingWindow').close();
+							}
+						} ]
 					} ]
 				});
 				Ext.getCmp('settingWindow').show();
@@ -302,106 +308,113 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 			if (d.pageNumber === undefined) {
 				d.pageNumber = 1;
 			}
-	        if ((d.pageNumber == 1 || d.pageNumber <= d.pageCount)) {
+			if ((d.pageNumber == 1 || d.pageNumber <= d.pageCount)) {
 				Ext.Ajax
-				.request({
-					url : restServiceUrl + '/data/' + cluster
-							+ '/inBoundRecords/'
-							+ d.navigator_node_concept,
-					method : 'GET',
-					params : {
-						foreignKeyPath : d.navigator_node_foreignkey_path,
-						foreignKeyValue : d.navigator_node_foreignkey_value,
-						start : (d.pageNumber - 1) * pageSize,
-						limit : pageSize
-					},
-					success : function(response, options) {
-						var resultObject = eval('(' + response.responseText + ')');
-						if (d.pageNumber == 1) {
-					        if ((resultObject.totalCount % pageSize) == 0) {
-					        	d.pageCount = Math.floor(resultObject.totalCount / pageSize);
-					        } else {
-					        	d.pageCount = Math.floor(resultObject.totalCount / pageSize) + 1;
-					        }
-						}
-						var newNodes = resultObject.result;
-						for ( var i = 0; i < newNodes.length; i++) {
-							var node = newNodes[i];
-							var newNode = {
-								x : selectNode.x
-										+ getRandomInt(-15, 15),
-								y : selectNode.y
-										+ getRandomInt(-15, 15),
-								navigator_node_ids : node.navigator_node_ids,
-								navigator_node_concept : node.navigator_node_concept,
-								navigator_node_type : node.navigator_node_type,
-								navigator_node_label : node.navigator_node_label,
-								navigator_node_expand : false
-							};
-							nodes.push(newNode);
-							var newLink = {
-								source : selectNode,
-								target : newNode,
-								navigator_node_type : node.navigator_node_type,
-								navigator_line_label : node.navigator_line_label,
-								navigator_node_concept : node.navigator_node_concept
-							};
-							links.push(newLink);
-						}
-						paint();
-						d.pageNumber = d.pageNumber + 1;
-					},
-					failure : function() {
+						.request({
+							url : restServiceUrl + '/data/' + cluster
+									+ '/inBoundRecords/'
+									+ d.navigator_node_concept,
+							method : 'GET',
+							params : {
+								foreignKeyPath : d.navigator_node_foreignkey_path,
+								foreignKeyValue : d.navigator_node_foreignkey_value,
+								filterValue : filterValue,
+								start : (d.pageNumber - 1) * pageSize,
+								limit : pageSize
+							},
+							success : function(response, options) {
+								var resultObject = eval('('
+										+ response.responseText + ')');
+								if (d.pageNumber == 1) {
+									if ((resultObject.totalCount % pageSize) == 0) {
+										d.pageCount = Math
+												.floor(resultObject.totalCount
+														/ pageSize);
+									} else {
+										d.pageCount = Math
+												.floor(resultObject.totalCount
+														/ pageSize) + 1;
+									}
+								}
+								var newNodes = resultObject.result;
+								for ( var i = 0; i < newNodes.length; i++) {
+									var node = newNodes[i];
+									var newNode = {
+										x : selectNode.x
+												+ getRandomInt(-15, 15),
+										y : selectNode.y
+												+ getRandomInt(-15, 15),
+										navigator_node_ids : node.navigator_node_ids,
+										navigator_node_concept : node.navigator_node_concept,
+										navigator_node_type : node.navigator_node_type,
+										navigator_node_label : node.navigator_node_label,
+										navigator_node_expand : false
+									};
+									nodes.push(newNode);
+									var newLink = {
+										source : selectNode,
+										target : newNode,
+										navigator_node_type : node.navigator_node_type,
+										navigator_line_label : node.navigator_line_label,
+										navigator_node_concept : node.navigator_node_concept
+									};
+									links.push(newLink);
+								}
+								paint();
+								d.pageNumber = d.pageNumber + 1;
+							},
+							failure : function() {
 
-					}
-				});
-	        }
+							}
+						});
+			}
 		} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == d.navigator_node_type) {
-			
+
 			var idArray = [];
-			for (i=0;(i < pageSize && i < d.navigator_node_ids.length);i++) {
+			for (i = 0; (i < pageSize && i < d.navigator_node_ids.length); i++) {
 				idArray[i] = d.navigator_node_ids[i];
 			}
 			if (idArray.length > 0) {
 				Ext.Ajax
-				.request({
-					url : restServiceUrl + '/data/' + cluster
-							+ '/records/' + d.navigator_node_concept,
-					method : 'GET',
-					params : {
-						ids : idArray
-					},
-					success : function(response, options) {
-						var newNodes = eval('(' + response.responseText + ')');
-						for ( var i = 0; i < newNodes.length; i++) {
-							var node = newNodes[i];
-							var newNode = {
-								x : selectNode.x
-										+ getRandomInt(-15, 15),
-								y : selectNode.y
-										+ getRandomInt(-15, 15),
-								navigator_node_ids : node.navigator_node_ids,
-								navigator_node_concept : d.navigator_node_concept,
-								navigator_node_type : node.navigator_node_type,
-								navigator_node_label : node.navigator_node_label,
-								navigator_node_expand : false
-							};
-							nodes.push(newNode);
-							var newLink = {
-								source : selectNode,
-								target : newNode,
-								navigator_node_type : node.navigator_node_type,
-								navigator_line_label : node.navigator_line_label,
-								navigator_node_concept : node.navigator_node_concept
-							};
-							links.push(newLink);
-							d.navigator_node_ids.shift();
-						}
-						paint();
-					},
-					failure : function() {
-					}
-				});
+						.request({
+							url : restServiceUrl + '/data/' + cluster
+									+ '/records/' + d.navigator_node_concept,
+							method : 'GET',
+							params : {
+								ids : idArray
+							},
+							success : function(response, options) {
+								var newNodes = eval('(' + response.responseText
+										+ ')');
+								for ( var i = 0; i < newNodes.length; i++) {
+									var node = newNodes[i];
+									var newNode = {
+										x : selectNode.x
+												+ getRandomInt(-15, 15),
+										y : selectNode.y
+												+ getRandomInt(-15, 15),
+										navigator_node_ids : node.navigator_node_ids,
+										navigator_node_concept : d.navigator_node_concept,
+										navigator_node_type : node.navigator_node_type,
+										navigator_node_label : node.navigator_node_label,
+										navigator_node_expand : false
+									};
+									nodes.push(newNode);
+									var newLink = {
+										source : selectNode,
+										target : newNode,
+										navigator_node_type : node.navigator_node_type,
+										navigator_line_label : node.navigator_line_label,
+										navigator_node_concept : node.navigator_node_concept
+									};
+									links.push(newLink);
+									d.navigator_node_ids.shift();
+								}
+								paint();
+							},
+							failure : function() {
+							}
+						});
 			}
 		}
 	}
@@ -413,7 +426,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 	var getRandomInt = function(min, max) {
 		return Math.floor(Math.random() * (max - min + 1) + min);
 	}
-	
+
 	function showMenu(d, i) {
 		if (selectNode !== undefined) {
 			hiddenTypeCluster();
@@ -439,10 +452,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 		});
 
 		arcs.on("click", menuClick);
-//		arcs.on("mouseout", menuMouseout);
+		// arcs.on("mouseout", menuMouseout);
 		selectNode = d;
 	}
-	
+
 	function mouseover(d, i) {
 		link_text.style("fill-opacity", function(link) {
 			if (link.source === d || link.target === d) {
@@ -459,10 +472,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				.attr("height", image_height);
 	}
 
-//	function menuMouseout(arc) {
-//		var elementId = "#menu_" + getIdentifier(selectNode);
-//		svg.select(elementId).remove();
-//	}
+	// function menuMouseout(arc) {
+	// var elementId = "#menu_" + getIdentifier(selectNode);
+	// svg.select(elementId).remove();
+	// }
 
 	function tick() {
 		node
@@ -506,11 +519,12 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 	}
 
 	function init(id, concept, cluster) {
-//		svg = d3.select("#navigator").append("svg").attr("width", width).attr(
-//				"height", height).append("g").call(zoom);
-//		rect = svg.append("rect").attr("width", width).attr("height", height)
-//				.style("fill", "none").style("pointer-events", "all");
-//		container = svg.append("g");
+		// svg = d3.select("#navigator").append("svg").attr("width",
+		// width).attr(
+		// "height", height).append("g").call(zoom);
+		// rect = svg.append("rect").attr("width", width).attr("height", height)
+		// .style("fill", "none").style("pointer-events", "all");
+		// container = svg.append("g");
 		var ids = new Array(id);
 		Ext.Ajax.request({
 			url : restServiceUrl + '/data/' + cluster + '/records/' + concept,
@@ -577,8 +591,10 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 	}
 
 	function hiddenTypeCluster() {
-		svg.select("#cluster_type_in_group_" + getIdentifier(selectNode)).style("display", "none");
-		svg.select("#cluster_type_out_group_" + getIdentifier(selectNode)).style("display", "none");
+		svg.select("#cluster_type_in_group_" + getIdentifier(selectNode))
+				.style("display", "none");
+		svg.select("#cluster_type_out_group_" + getIdentifier(selectNode))
+				.style("display", "none");
 		var elementId = "#menu_" + getIdentifier(selectNode);
 		svg.select(elementId).remove();
 	}
