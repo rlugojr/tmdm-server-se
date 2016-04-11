@@ -174,7 +174,7 @@ public class NavigatorPanel extends ContentPanel {
             renderDebugPanel(contentPanel);
         }
         String restServiceUrl = baseUrl + "services/rest"; //$NON-NLS-1$
-        paintNavigator(restServiceUrl, ids, concept, cluster);
+        paintNavigator(restServiceUrl, ids, concept, cluster, Locale.getLanguage());
     }
 
     private static void renderDebugPanel(ContentPanel contentPanel) {
@@ -203,9 +203,9 @@ public class NavigatorPanel extends ContentPanel {
         }
     }-*/;
 
-    public native static void paintNavigator(String restServiceUrl, String ids, String concept, String cluster)/*-{
+    public native static void paintNavigator(String restServiceUrl, String ids, String concept, String cluster, String language)/*-{
 		$wnd.amalto.itemsbrowser.NavigatorPanel(restServiceUrl, ids, concept,
-				cluster);
+				cluster, language);
     }-*/;
 
     public native static void renderGwtPanel(String itemId, ContentPanel contentPanel)/*-{

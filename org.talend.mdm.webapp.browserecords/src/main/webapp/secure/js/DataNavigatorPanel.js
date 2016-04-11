@@ -250,53 +250,61 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 		if ('set' === arc.data.label) {
 			hiddenTypeCluster();
 			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
-				var settingWindow = new Ext.Window({
-					id : 'settingWindow',
-					title : 'Inbound setting window',
-					width : 200,
-					height : 100,
-					modal : true,
-					layout : 'form',
-					bodyStyle : "padding:10px",
-					frame : true,
-					items : [ {
-						id : 'settingForm',
-						xtype : 'form',
-						labelWidth : 60,
-						labelAlign : 'right',
-						buttonAlign : 'center',
-						items : [  {
-							xtype : 'textfield',
-							id : 'filterValue',
-							name : 'filterValue',
-							fieldLabel : 'Search',
-							width : 'auto',
-							value : filterValue
-						},{
-							xtype : 'numberfield',
-							id : 'pageSize',
-							name : 'pageSize',
-							fieldLabel : 'Page Size',
-							width : 'auto',
-							value : pageSize
-						} ],
-						buttons : [ {
-							xtype : 'button',
-							text : "ok",
-							handler : function() {
-								pageSize = Ext.getCmp('pageSize').value;
-								filterValue = Ext.getCmp('filterValue').getRawValue();
-								Ext.getCmp('settingWindow').close();
-							}
-						}, {
-							xtype : 'button',
-							text : 'cancel',
-							handler : function() {
-								Ext.getCmp('settingWindow').close();
-							}
-						} ]
-					} ]
-				});
+				var settingWindow = new Ext.Window(
+						{
+							id : 'settingWindow',
+							title : 'Inbound setting window',
+							width : 200,
+							height : 100,
+							modal : true,
+							layout : 'form',
+							bodyStyle : "padding:10px",
+							frame : true,
+							items : [ {
+								id : 'settingForm',
+								xtype : 'form',
+								labelWidth : 60,
+								labelAlign : 'right',
+								buttonAlign : 'center',
+								items : [ {
+									xtype : 'textfield',
+									id : 'filterValue',
+									name : 'filterValue',
+									fieldLabel : 'Search',
+									width : 'auto',
+									value : filterValue
+								}, {
+									xtype : 'numberfield',
+									id : 'pageSize',
+									name : 'pageSize',
+									fieldLabel : 'Page Size',
+									width : 'auto',
+									value : pageSize
+								} ],
+								buttons : [
+										{
+											xtype : 'button',
+											text : "ok",
+											handler : function() {
+												pageSize = Ext
+														.getCmp('pageSize').value;
+												filterValue = Ext.getCmp(
+														'filterValue')
+														.getRawValue();
+												Ext.getCmp('settingWindow')
+														.close();
+											}
+										},
+										{
+											xtype : 'button',
+											text : 'cancel',
+											handler : function() {
+												Ext.getCmp('settingWindow')
+														.close();
+											}
+										} ]
+							} ]
+						});
 				Ext.getCmp('settingWindow').show();
 			}
 		}
@@ -439,11 +447,16 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				.data(piedata).enter().append("g").attr("transform",
 						"translate(" + (d.x) + "," + (d.y) + ")");
 
-		arcs.append("path").attr("fill", function(d, i) {
+		var path = arcs.append("path").attr("fill", function(d, i) {
 			return color(i);
 		}).attr("d", function(d) {
 			return arc(d);
 		});
+		
+		path.transition()
+	      .ease("elastic")
+	      .duration(750)
+	      .attrTween("d", arcTween);
 
 		arcs.append("text").attr("transform", function(d) {
 			return "translate(" + arc.centroid(d) + ")";
@@ -454,6 +467,15 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 		arcs.on("click", menuClick);
 		// arcs.on("mouseout", menuMouseout);
 		selectNode = d;
+	}
+
+	function arcTween(b) {
+		var i = d3.interpolate({
+			value : b.previous
+		}, b);
+		return function(t) {
+			return arc(i(t));
+		};
 	}
 
 	function mouseover(d, i) {
@@ -519,12 +541,6 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 	}
 
 	function init(id, concept, cluster) {
-		// svg = d3.select("#navigator").append("svg").attr("width",
-		// width).attr(
-		// "height", height).append("g").call(zoom);
-		// rect = svg.append("rect").attr("width", width).attr("height", height)
-		// .style("fill", "none").style("pointer-events", "all");
-		// container = svg.append("g");
 		var ids = new Array(id);
 		Ext.Ajax.request({
 			url : restServiceUrl + '/data/' + cluster + '/records/' + concept,
