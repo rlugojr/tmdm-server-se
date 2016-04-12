@@ -10,8 +10,11 @@
 
 package com.amalto.core.storage;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
 import org.talend.mdm.commmon.metadata.MetadataRepository;
@@ -22,12 +25,16 @@ import com.amalto.core.storage.datasource.DataSource;
 import com.amalto.core.storage.datasource.DataSourceDefinition;
 import com.amalto.core.storage.record.DataRecord;
 import com.amalto.core.storage.transaction.StorageTransaction;
+import com.amalto.core.util.LocalUser;
+import com.amalto.core.util.XtentisException;
 
 public class SecuredStorage implements Storage {
 
     private final Storage delegate;
 
     private final UserDelegator delegator;
+
+    private static final Logger LOGGER = Logger.getLogger(SecuredStorage.class);
 
     /**
      * Interface to handle user visibility rules.
@@ -62,6 +69,32 @@ public class SecuredStorage implements Storage {
             return false;
         }
     };
+
+    // Returns a UserDelegator instance configured using current user's roles.
+    public static SecuredStorage.UserDelegator getDelegator() {
+        final HashSet<String> roles;
+        try {
+            roles = LocalUser.getLocalUser().getRoles();
+        } catch (XtentisException e) {
+            String message = "Unable to access user current roles."; //$NON-NLS-1$
+            LOGGER.error(message, e);
+            throw new RuntimeException(message, e);
+        }
+        return new SecuredStorage.UserDelegator() {
+
+            @Override
+            public boolean hide(FieldMetadata field) {
+                boolean allowed = Collections.disjoint(field.getHideUsers(), roles);
+                return !allowed;
+            }
+
+            @Override
+            public boolean hide(ComplexTypeMetadata type) {
+                boolean allowed = Collections.disjoint(type.getHideUsers(), roles);
+                return !allowed;
+            }
+        };
+    }
 
     public SecuredStorage(Storage delegate, UserDelegator delegator) {
         this.delegate = delegate;

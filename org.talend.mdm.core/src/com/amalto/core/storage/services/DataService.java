@@ -205,32 +205,6 @@ public class DataService {
         return storageType;
     }
 
-    // Returns a UserDelegator instance configured using current user's roles.
-    protected static SecuredStorage.UserDelegator getDelegator() {
-        final HashSet<String> roles;
-        try {
-            roles = LocalUser.getLocalUser().getRoles();
-        } catch (XtentisException e) {
-            String message = "Unable to access user current roles.";
-            LOGGER.error(message, e); //$NON-NLS-1$
-            throw new RuntimeException(message, e); //$NON-NLS-1$
-        }
-        return new SecuredStorage.UserDelegator() {
-
-            @Override
-            public boolean hide(FieldMetadata field) {
-                boolean allowed = Collections.disjoint(field.getHideUsers(), roles);
-                return !allowed;
-            }
-
-            @Override
-            public boolean hide(ComplexTypeMetadata type) {
-                boolean allowed = Collections.disjoint(type.getHideUsers(), roles);
-                return !allowed;
-            }
-        };
-    }
-
     private static Response handleReadQuery(Request request, final Storage storage, Select expression,
             SecuredStorage.UserDelegator delegator) {
         storage.begin();
@@ -374,7 +348,7 @@ public class DataService {
         MetadataRepository metadataRepository = storage.getMetadataRepository();
         ComplexTypeMetadata type = metadataRepository.getComplexType(typeName);
         UserQueryBuilder qb = from(type).selectId(type);
-        final SecuredStorage.UserDelegator delegator = getDelegator();
+        final SecuredStorage.UserDelegator delegator = SecuredStorage.getDelegator();
         return handleReadQuery(request, storage, qb.getSelect(), delegator);
     }
 
@@ -696,7 +670,7 @@ public class DataService {
         innerStorage = new HistoryStorage(innerStorage, DocumentHistoryFactory.getInstance().create(actionFactory,
                 documentFactory));
         // ... then adds security over it
-        final SecuredStorage.UserDelegator delegator = getDelegator();
+        final SecuredStorage.UserDelegator delegator = SecuredStorage.getDelegator();
         final Storage storage = new SecuredStorage(innerStorage, delegator);
         // Parse query
         QueryParser parser = QueryParser.newParser(storage.getMetadataRepository());
@@ -760,7 +734,7 @@ public class DataService {
             StorageDocumentFactory documentFactory = new StorageDocumentFactory();
             storage = new HistoryStorage(storage, DocumentHistoryFactory.getInstance().create(actionFactory, documentFactory));
         }
-        final SecuredStorage.UserDelegator delegator = getDelegator();
+        final SecuredStorage.UserDelegator delegator = SecuredStorage.getDelegator();
         return handleReadQuery(request, storage, qb.getSelect(), delegator);
     }
     
