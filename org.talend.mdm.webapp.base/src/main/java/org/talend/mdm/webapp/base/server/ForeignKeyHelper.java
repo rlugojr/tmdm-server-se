@@ -375,7 +375,7 @@ public class ForeignKeyHelper {
             if (foreignKeyInfo.size() > 0) {
                 // add the xPath Infos Path
                 for (String xpathInfo : xpathInfos) {
-                    xPaths.add(Util.getFormatedFKInfo(xpathInfo.replaceFirst(initxpathForeignKey, initxpathForeignKey),
+                    xPaths.add(Util.getFormatedFKInfo(xpathInfo.replaceFirst(xpathInfo.split("/")[0], initxpathForeignKey), //$NON-NLS-1$
                             initxpathForeignKey));
                 }
             }

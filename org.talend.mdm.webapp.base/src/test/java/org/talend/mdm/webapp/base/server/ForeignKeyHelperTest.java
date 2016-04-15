@@ -323,6 +323,33 @@ public class ForeignKeyHelperTest extends TestCase {
 
     }
 
+    // TMDM-9417 Polymorphism Entity / Foreign Key / label issue
+    public void testGetForeignKeyHolder_PolymorphismEntity() throws Exception {
+        InputStream resourceAsStream = this.getClass().getResourceAsStream("TMDM-9417_Polymorphism_FK.xsd");
+        repository.load(resourceAsStream);
+
+        TypeModel model = new SimpleTypeModel("supplier", DataTypeConstants.STRING); //$NON-NLS-1$
+        model.setForeignkey("Issue1_Individual/Id"); //$NON-NLS-1$
+        List<String> foreignKeyInfos = new ArrayList<String>();
+        foreignKeyInfos.add("Issue1_Party/label"); //$NON-NLS-1$
+        model.setForeignKeyInfo(foreignKeyInfos);
+        model.setRetrieveFKinfos(true);
+        model.setXpath("Issue1_Product/supplier"); //$NON-NLS-1$
+
+        InputStream stream = getClass().getResourceAsStream("product.xsd");
+        String xsd = inputStream2String(stream);
+
+        ForeignKeyHelper.overrideSchemaManager(new SchemaMockAgent(xsd, new DataModelID("PolymorphismModel")));
+
+        MDMConfiguration.getConfiguration().setProperty("xmldb.type", EDBType.QIZX.getName()); //$NON-NLS-1$
+        model.setFilterValue("");
+        ForeignKeyHelper.ForeignKeyHolder result = ForeignKeyHelper.getForeignKeyHolder(model, "");
+
+        assertEquals("Issue1_Individual", result.conceptName);
+        assertEquals("Issue1_Individual/label", result.xpaths.get(0));
+        assertEquals("Issue1_Individual/../../i", result.xpaths.get(1));
+    }
+
     public void testGetForeignKeyHolder_given_userInputAs_starWildcard_only_shouldReturn_null_for_WhereItem() throws Exception {
 
         TypeModel model = new SimpleTypeModel("family", DataTypeConstants.STRING); //$NON-NLS-1$

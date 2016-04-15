@@ -1,0 +1,128 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:import namespace="http://www.w3.org/2001/XMLSchema"/>
+    <xsd:element name="Issue1_Party" type="PartyType">
+        <xsd:annotation>
+
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+        <xsd:unique name="Issue1_Party">
+<xsd:selector xpath="."/>
+<xsd:field xpath="Id"/>
+</xsd:unique>
+</xsd:element>
+<xsd:complexType name="PartyType">
+<xsd:sequence>
+<xsd:element maxOccurs="1" minOccurs="1" name="Id" type="AUTO_INCREMENT">
+<xsd:annotation>
+
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="label" type="xsd:string">
+<xsd:annotation>
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+        </xsd:sequence>
+</xsd:complexType>
+<xsd:element name="Issue1_Product">
+        <xsd:annotation>
+
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+        <xsd:complexType>
+<xsd:all>
+<xsd:element maxOccurs="1" minOccurs="1" name="Id" type="xsd:string">
+<xsd:annotation>
+
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+<xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string">
+<xsd:annotation>
+
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+<xsd:element maxOccurs="1" minOccurs="0" name="supplier" type="xsd:string">
+<xsd:annotation>
+<xsd:appinfo source="X_ForeignKey">Issue1_Party/Id</xsd:appinfo>
+<xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>
+
+
+<xsd:appinfo source="X_ForeignKeyInfo">Issue1_Party/label</xsd:appinfo>
+<xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+</xsd:all>
+</xsd:complexType>
+<xsd:unique name="Issue1_Product">
+<xsd:selector xpath="."/>
+<xsd:field xpath="Id"/>
+</xsd:unique>
+</xsd:element>
+<xsd:simpleType name="AUTO_INCREMENT">
+<xsd:restriction base="xsd:string"/>
+</xsd:simpleType>
+    <xsd:element name="Issue1_Company" type="CompanyType">
+<xsd:annotation>
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+<xsd:unique name="Issue1_Company">
+<xsd:selector xpath="."/>
+<xsd:field xpath="Id"/>
+</xsd:unique>
+</xsd:element>
+    <xsd:complexType name="CompanyType">
+<xsd:complexContent>
+<xsd:extension base="PartyType">
+<xsd:sequence>
+<xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string">
+<xsd:annotation>
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+</xsd:sequence>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+    <xsd:element name="Issue1_Individual" type="IndividualType">
+<xsd:annotation>
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+<xsd:unique name="Issue1_Individual">
+<xsd:selector xpath="."/>
+<xsd:field xpath="Id"/>
+</xsd:unique>
+</xsd:element>
+    <xsd:complexType name="IndividualType">
+<xsd:complexContent>
+<xsd:extension base="PartyType">
+<xsd:sequence>
+<xsd:element maxOccurs="1" minOccurs="0" name="firstname" type="xsd:string">
+<xsd:annotation>
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+<xsd:element maxOccurs="1" minOccurs="0" name="lastname" type="xsd:string">
+<xsd:annotation>
+
+<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+</xsd:sequence>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+</xsd:schema>
