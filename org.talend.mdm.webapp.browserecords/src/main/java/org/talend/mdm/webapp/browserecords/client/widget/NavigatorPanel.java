@@ -13,9 +13,12 @@
 package org.talend.mdm.webapp.browserecords.client.widget;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
+import org.talend.mdm.webapp.base.client.util.FormatUtil;
+import org.talend.mdm.webapp.base.client.util.MultilanguageMessageParser;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
@@ -162,8 +165,13 @@ public class NavigatorPanel extends ContentPanel {
         });
     }
 
-    public static String getBaseUrl() {
-        return GWT.getHostPageBaseURL() + "services/rest"; //$NON-NLS-1$
+    public static String getMultiLanguageValue(String value, String language) {
+        LinkedHashMap<String, String> languageValueMap = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> temp_languageValueMap = MultilanguageMessageParser.getLanguageValueMap(value);
+        for (String l : temp_languageValueMap.keySet()) {
+            languageValueMap.put(l, FormatUtil.languageValueDecode(temp_languageValueMap.get(l)));
+        }
+        return languageValueMap.isEmpty() ? value : languageValueMap.get(language);
     }
 
     public static void renderPanel(String baseUrl, String ids, String concept, String cluster, ContentPanel contentPanel) {
@@ -197,9 +205,9 @@ public class NavigatorPanel extends ContentPanel {
 					.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::updateDetailPanel(Ljava/lang/String;Ljava/lang/String;)(
 							ids, concept);
 		}
-		
-		$wnd.amalto.navigator.Navigator.getBaseUrl = function() {
-            @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getBaseUrl()();
+		        
+        $wnd.amalto.navigator.Navigator.getMultiLanguageValue = function(value, language) {
+            return @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getMultiLanguageValue(Ljava/lang/String;Ljava/lang/String;)(value, language);
         }
     }-*/;
 

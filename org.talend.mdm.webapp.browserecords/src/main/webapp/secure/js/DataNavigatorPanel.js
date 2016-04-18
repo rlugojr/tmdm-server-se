@@ -4,35 +4,35 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 		cluster,language) {
 	var SET_WINDOW_TITLE = {
     		'en' : 'Page size for loading linked records',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Page size for loading linked records'
     };
 	var SET_WINDOW_PAGE_LABEL = {
     		'en' : 'Page Size',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Page Size'
     };
 	var SET_WINDOW_BUTTON_OK = {
     		'en' : 'Ok',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Ok'
     };
 	var SET_WINDOW_BUTTON_CANCEL = {
     		'en' : 'Cancel',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Cancel'
     };
     var MENU_IN_LABEL = {
     		'en' : 'In',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'In'
     };
     var MENU_OUT_LABEL = {
     		'en' : 'Out',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Out'
     };
     var MENU_DETAIL_LABEL = {
     		'en' : 'Detail',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Detail'
     };
     var MENU_SETTINGS_LABEL = {
     		'en' : 'Settings',
-            'fr' : 'L\'entit\u00e9 n\'existe pas.'
+            'fr' : 'Settings'
     };
 	var NAVIGATOR_NODE_IN_ENTITY_TYPE = 1;
 	var NAVIGATOR_NODE_OUT_ENTITY_TYPE = 2;
@@ -66,6 +66,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 			"height", height).append("g").call(zoom);
 	var rect = svg.append("rect").attr("width", width).attr("height", height)
 			.style("fill", "none").style("pointer-events", "all");
+	rect.on("click",hiddenTypeCluster);
 	container = svg.append("g");
 
 	var color = d3.scale.category10();
@@ -244,6 +245,9 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									+ selectNode.navigator_node_concept + '/'
 									+ selectNode.navigator_node_ids,
 							method : 'GET',
+							params : {
+								language : language
+							},
 							success : function(response, options) {
 								var newNodes = eval('(' + response.responseText
 										+ ')');
@@ -270,6 +274,9 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									+ selectNode.navigator_node_concept + '/'
 									+ selectNode.navigator_node_ids,
 							method : 'GET',
+							params : {
+								language : language
+							},
 							success : function(response, options) {
 								var newNodes = eval('(' + response.responseText
 										+ ')');
@@ -355,7 +362,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 								foreignKeyValue : d.navigator_node_foreignkey_value,
 								filterValue : filterValue,
 								start : selectNode.page[d.navigator_node_concept].start,
-								limit : pageSize
+								limit : pageSize,
+								language : language
 							},
 							success : function(response, options) {
 								var resultObject = eval('('
@@ -374,7 +382,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 										navigator_node_ids : node.navigator_node_ids,
 										navigator_node_concept : node.navigator_node_concept,
 										navigator_node_type : node.navigator_node_type,
-										navigator_node_label : node.navigator_node_label,
+										navigator_node_label : handleMultiLanguageLabel(node.navigator_node_label),
 										navigator_node_expand : false
 									};
 									nodes.push(newNode);
@@ -416,7 +424,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									+ '/records/' + d.navigator_node_concept,
 							method : 'GET',
 							params : {
-								ids : idArray
+								ids : idArray,
+								language : language
 							},
 							success : function(response, options) {
 								var newNodes = eval('(' + response.responseText
@@ -431,7 +440,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 										navigator_node_ids : node.navigator_node_ids,
 										navigator_node_concept : d.navigator_node_concept,
 										navigator_node_type : node.navigator_node_type,
-										navigator_node_label : node.navigator_node_label,
+										navigator_node_label : handleMultiLanguageLabel(node.navigator_node_label),
 										navigator_node_expand : false
 									};
 									nodes.push(newNode);
@@ -464,7 +473,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 
 	function showMenu(d, i) {
 		hiddenTypeCluster();
-		var elementId = "menu_" + getIdentifier(d);
+		var elementId = "menu_group";
 		d3.select(this).transition().duration(750).attr("width", 35).attr(
 				"height", 35);
 		var arcs = container.append("g").attr("id", elementId).selectAll("g")
@@ -566,10 +575,12 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 			url : restServiceUrl + '/data/' + cluster + '/records/' + concept,
 			method : 'GET',
 			params : {
-				ids : ids
+				ids : ids,
+				language : language
 			},
 			success : function(response, options) {
 				nodes = eval('(' + response.responseText + ')');
+				nodes[0].navigator_node_label = handleMultiLanguageLabel(nodes[0].navigator_node_label);
 				links = [];
 				force = d3.layout.force().nodes(nodes).links(links).size(
 						[ width, height ]).linkDistance(150).charge([ -400 ]);
@@ -624,14 +635,24 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 		if (o.navigator_node_ids !== undefined) {
 			identifier = identifier + '_' + o.navigator_node_ids;
 		}
-		return identifier;
+		return identifier.replace(/[ ]/g,"_");
 	}
 
 	function hiddenTypeCluster() {
 		if (selectNode !== undefined) {
 			svg.select("#cluster_type_in_group").remove();
 			svg.select("#cluster_type_out_group").remove();
-			svg.select("#menu_" + getIdentifier(selectNode)).remove();
+			svg.select("#menu_group").remove();
 		}
+	}
+	
+	function handleMultiLanguageLabel(value) {
+		var valueArray = value.split('.');
+		for ( var i = 0; i < valueArray.length; i++) {
+			valueArray[i] = amalto.navigator.Navigator.getMultiLanguageValue (
+					valueArray[i],
+					language);
+		}
+		return valueArray.join('.')
 	}
 }
