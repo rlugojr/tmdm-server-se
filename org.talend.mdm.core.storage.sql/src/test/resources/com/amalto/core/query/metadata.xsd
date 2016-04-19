@@ -2543,9 +2543,9 @@
           <xsd:appinfo source="X_Label_EN">Type</xsd:appinfo>  
           <xsd:appinfo source="X_AutoExpand">true</xsd:appinfo>  
            
-        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-</xsd:annotation> 
+          <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+		  <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation> 
       </xsd:element> 
     </xsd:all> 
   </xsd:complexType>  
@@ -2556,9 +2556,9 @@
         <xsd:annotation> 
           <xsd:appinfo source="X_Label_EN">Use agent rate flag</xsd:appinfo>  
            
-        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-</xsd:annotation> 
+          <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+		  <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation> 
       </xsd:element>  
       <xsd:element maxOccurs="1" minOccurs="1" name="BUSINESS_CHANNEL_FK" type="xsd:string"> 
         <xsd:annotation> 
@@ -2569,9 +2569,9 @@
           <xsd:appinfo source="X_Label_EN">Business channel</xsd:appinfo>  
           <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
            
-        <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-</xsd:annotation> 
+          <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+		  <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+      </xsd:annotation> 
       </xsd:element>  
     </xsd:sequence> 
   </xsd:complexType>  
@@ -2586,7 +2586,7 @@
               <xsd:appinfo source="X_Label_EN">Institutional sector</xsd:appinfo>  
                
             <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-</xsd:annotation> 
+			</xsd:annotation> 
           </xsd:element>  
         </xsd:sequence> 
       </xsd:extension> 
@@ -2612,9 +2612,9 @@
     <xsd:annotation> 
       <xsd:appinfo source="X_Label_EN">Lookup - Business channel</xsd:appinfo>  
        
-    <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-</xsd:annotation>  
+      <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
+	  <xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+	</xsd:annotation>  
     <xsd:unique name="MYLOOKUP_BUSINESS_CHANNEL"> 
       <xsd:selector xpath="."/>  
       <xsd:field xpath="BUSINESS_CHANNEL_CODE"/> 
@@ -2628,8 +2628,8 @@
           <xsd:appinfo source="X_Label_EN">Business channel code</xsd:appinfo>  
            
         <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-</xsd:annotation>  
+		<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation>  
         <xsd:simpleType> 
           <xsd:restriction base="xsd:string"> 
             <xsd:maxLength value="1"/> 
@@ -2641,9 +2641,71 @@
           <xsd:appinfo source="X_Label_EN">Business channel description</xsd:appinfo>  
            
         <xsd:appinfo source="X_Write">CrUD</xsd:appinfo>
-<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
-</xsd:annotation> 
+		<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation> 
       </xsd:element> 
     </xsd:sequence> 
   </xsd:complexType>
+	<xsd:complexType name="SuperType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="fk_ForeignTypeInherited" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo source="X_ForeignKey">ForeignEntity</xsd:appinfo>
+					<xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubType">
+		<xsd:complexContent>
+			<xsd:extension base="SuperType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="1" minOccurs="1" name="id" type="UUID">
+						<xsd:annotation>
+							<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element maxOccurs="1" minOccurs="0" name="fk_ForeignType" type="xsd:string">
+						<xsd:annotation>
+							<xsd:appinfo source="X_ForeignKey">ForeignEntity</xsd:appinfo>
+							<xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>
+							<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ForeignType">
+		<xsd:all>
+			<xsd:element maxOccurs="1" minOccurs="1" name="id" type="UUID">
+				<xsd:annotation>
+					<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:simpleType name="UUID">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:element name="MainEntity" type="SubType">
+        <xsd:annotation>
+			<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation>
+        <xsd:unique name="MainEntity">
+			<xsd:selector xpath="."/>
+			<xsd:field xpath="id"/>
+		</xsd:unique>
+	</xsd:element>
+	<xsd:element name="ForeignEntity" type="ForeignType">
+        <xsd:annotation>
+			<xsd:appinfo source="X_Write">System_Admin</xsd:appinfo>
+		</xsd:annotation>
+        <xsd:unique name="ForeignEntity">
+			<xsd:selector xpath="."/>
+			<xsd:field xpath="id"/>
+		</xsd:unique>
+	</xsd:element>
+	
 </xsd:schema>

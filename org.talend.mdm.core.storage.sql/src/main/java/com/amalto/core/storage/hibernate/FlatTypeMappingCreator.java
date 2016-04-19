@@ -50,30 +50,37 @@ class FlatTypeMappingCreator extends DefaultMetadataVisitor<TypeMapping> {
         ComplexTypeMetadata referencedType = new SoftTypeRef(internalRepository, referenceField.getReferencedType().getNamespace(), typeName, true);
         FieldMetadata referencedField = new SoftIdFieldRef(internalRepository, typeName);
 
-        FieldMetadata newFlattenField;
-        if (referenceField.getContainingType().equals(referenceField.getDeclaringType())) {
-            ComplexTypeMetadata database = typeMapping.getDatabase();
-            newFlattenField = new ReferenceFieldMetadata(database,
-                    referenceField.isKey(),
-                    referenceField.isMany(),
-                    isDatabaseMandatory(referenceField, referenceField.getDeclaringType()),
-                    name,
-                    referencedType,
-                    referencedField,
-                    Collections.<FieldMetadata>emptyList(),
-                    referenceField.getForeignKeyInfoFormat(), 
-                    referenceField.isFKIntegrity(),
-                    referenceField.allowFKIntegrityOverride(),
-                    new SimpleTypeMetadata(XMLConstants.W3C_XML_SCHEMA_NS_URI, Types.STRING),
-                    referenceField.getWriteUsers(),
-                    referenceField.getHideUsers(),
-                    referenceField.getWorkflowAccessRights(),
-                    StringUtils.EMPTY,
-                    StringUtils.EMPTY);
-            database.addField(newFlattenField);
-        } else {
-            newFlattenField = new SoftFieldRef(internalRepository, context.getFieldColumn(referenceField), referenceField.getContainingType().getName());
+        TypeMetadata declaringType = referenceField.getDeclaringType();
+        ComplexTypeMetadata database = typeMapping.getDatabase();
+        ReferenceFieldMetadata newFlattenField = new ReferenceFieldMetadata(database,
+                referenceField.isKey(),
+                referenceField.isMany(),
+                isDatabaseMandatory(referenceField, referenceField.getDeclaringType()),
+                name,
+                referencedType,
+                referencedField,
+                Collections.<FieldMetadata>emptyList(),
+                referenceField.getForeignKeyInfoFormat(), 
+                referenceField.isFKIntegrity(),
+                referenceField.allowFKIntegrityOverride(),
+                new SimpleTypeMetadata(XMLConstants.W3C_XML_SCHEMA_NS_URI, Types.STRING),
+                referenceField.getWriteUsers(),
+                referenceField.getHideUsers(),
+                referenceField.getWorkflowAccessRights(),
+                StringUtils.EMPTY,
+                StringUtils.EMPTY);
+        if (!referenceField.getContainingType().equals(declaringType)) {                    
+            SoftTypeRef internalDeclaringType;
+            if (!declaringType.isInstantiable()) {
+                internalDeclaringType = new SoftTypeRef(internalRepository, declaringType.getNamespace(),
+                        "X_" + declaringType.getName(), declaringType.isInstantiable()); //$NON-NLS-1$
+            } else {
+                internalDeclaringType = new SoftTypeRef(internalRepository, declaringType.getNamespace(),
+                        declaringType.getName(), declaringType.isInstantiable());
+            }          
+            newFlattenField.setDeclaringType(internalDeclaringType);           
         }
+        database.addField(newFlattenField);
         typeMapping.map(referenceField, newFlattenField);
         return typeMapping;
     }

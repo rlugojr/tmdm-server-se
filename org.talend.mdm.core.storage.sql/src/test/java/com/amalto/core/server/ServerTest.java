@@ -334,4 +334,19 @@ public class ServerTest extends TestCase {
         }
     }
 
+    public void testSuperTypeFK() {
+        Server server = ServerContext.INSTANCE.get();
+
+        String metadataRepositoryId = "../query/metadata.xsd";
+        MetadataRepository metadataRepository = server.getMetadataRepositoryAdmin().get(metadataRepositoryId);
+
+        StorageAdmin storageAdmin = server.getStorageAdmin();
+        Storage storage = storageAdmin.create(metadataRepositoryId, "Storage", StorageType.MASTER, "H2-DS1");
+
+        storage.prepare(metadataRepository, Collections.<Expression> emptySet(), true, true);
+        ComplexTypeMetadata person = metadataRepository.getComplexType("MainEntity");
+        assertEquals(3, person.getFields().size());
+        assertNotNull(person.getField("fk_ForeignTypeInherited"));
+    }
+
 }
