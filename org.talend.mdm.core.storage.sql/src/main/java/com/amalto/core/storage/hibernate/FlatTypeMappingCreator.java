@@ -55,7 +55,7 @@ class FlatTypeMappingCreator extends DefaultMetadataVisitor<TypeMapping> {
         ReferenceFieldMetadata newFlattenField = new ReferenceFieldMetadata(database,
                 referenceField.isKey(),
                 referenceField.isMany(),
-                isDatabaseMandatory(referenceField, referenceField.getDeclaringType()),
+                isDatabaseMandatory(referenceField, declaringType),
                 name,
                 referencedType,
                 referencedField,
@@ -69,15 +69,10 @@ class FlatTypeMappingCreator extends DefaultMetadataVisitor<TypeMapping> {
                 referenceField.getWorkflowAccessRights(),
                 StringUtils.EMPTY,
                 StringUtils.EMPTY);
-        if (!referenceField.getContainingType().equals(declaringType)) {                    
-            SoftTypeRef internalDeclaringType;
-            if (!declaringType.isInstantiable()) {
-                internalDeclaringType = new SoftTypeRef(internalRepository, declaringType.getNamespace(),
-                        "X_" + declaringType.getName(), declaringType.isInstantiable()); //$NON-NLS-1$
-            } else {
-                internalDeclaringType = new SoftTypeRef(internalRepository, declaringType.getNamespace(),
-                        declaringType.getName(), declaringType.isInstantiable());
-            }          
+        if (!referenceField.getContainingType().equals(declaringType)) {
+            String declaringTypeName = declaringType.isInstantiable() ? declaringType.getName() : "X_" + declaringType.getName(); //$NON-NLS-1$
+            SoftTypeRef internalDeclaringType = new SoftTypeRef(internalRepository, declaringType.getNamespace(),
+                    declaringTypeName, declaringType.isInstantiable());
             newFlattenField.setDeclaringType(internalDeclaringType);           
         }
         database.addField(newFlattenField);
