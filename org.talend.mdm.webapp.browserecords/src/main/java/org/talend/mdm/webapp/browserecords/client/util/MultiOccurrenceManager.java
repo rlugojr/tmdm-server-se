@@ -106,12 +106,14 @@ public class MultiOccurrenceManager {
         TreeItemEx parent = item.getParentItem();
         int count = parent.getChildCount();
         for (int i = 0; i < count; i++) {
-            DynamicTreeItem childItem = (DynamicTreeItem) parent.getChild(i);
-            ItemNodeModel childModel = childItem.getItemNodeModel();
-            if (childModel.getTypePath().equals(itemModel.getTypePath())) {
-                index++;
-                if (childItem.equals(item)) {
-                    return index;
+            if (parent.getChild(i) instanceof DynamicTreeItem) {
+                DynamicTreeItem childItem = (DynamicTreeItem) parent.getChild(i);
+                ItemNodeModel childModel = childItem.getItemNodeModel();
+                if (childModel.getTypePath().equals(itemModel.getTypePath())) {
+                    index++;
+                    if (childItem.equals(item)) {
+                        return index;
+                    }
                 }
             }
         }
