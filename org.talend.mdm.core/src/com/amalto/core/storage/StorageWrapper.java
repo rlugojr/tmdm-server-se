@@ -231,7 +231,7 @@ public class StorageWrapper implements IXmlServerSLWrapper {
             String xmlString = getXmlString(clusterName, type, results.iterator(), uniqueID, encoding, true);
             storage.commit();
             return xmlString;
-        } catch (IOException e) {
+        } catch (Exception e) {
             storage.rollback();
             throw new XmlServerException(e);
         } finally {
@@ -417,7 +417,7 @@ public class StorageWrapper implements IXmlServerSLWrapper {
             }
             storage.commit();
             return resultsAsString;
-        } catch (IOException e) {
+        } catch (Exception e) {
             storage.rollback();
             throw new RuntimeException("Could not create query results", e); //$NON-NLS-1$
         } finally {
@@ -508,7 +508,7 @@ public class StorageWrapper implements IXmlServerSLWrapper {
                 list.add(stringWriter.toString());
                 stringWriter.reset();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             storage.rollback();
             throw new XmlServerException(e);
         } finally {
@@ -710,7 +710,7 @@ public class StorageWrapper implements IXmlServerSLWrapper {
                 }
                 storage.commit();
                 return resultsAsXmlStrings;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 storage.rollback();
                 throw new XmlServerException(e);
             } finally {
