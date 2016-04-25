@@ -1,0 +1,212 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">  
+  <xsd:import namespace="http://www.w3.org/2001/XMLSchema"/>  
+  <xsd:simpleType name="AUTO_INCREMENT"> 
+    <xsd:restriction base="xsd:string"/> 
+  </xsd:simpleType>  
+  <xsd:element name="TieSocietesSocCom"> 
+    <xsd:annotation> 
+      <xsd:appinfo source="X_Workflow">CreateTierRole##Writable</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+    </xsd:annotation>  
+    <xsd:complexType> 
+      <xsd:all> 
+        <xsd:element maxOccurs="1" minOccurs="1" name="IdSociete_SocieteCom" type="AUTO_INCREMENT"> 
+          <xsd:annotation> 
+            <xsd:appinfo source="X_Workflow">CreateTierRole##Writable</xsd:appinfo>  
+            <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+            <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+          </xsd:annotation> 
+        </xsd:element> 
+      </xsd:all> 
+    </xsd:complexType>  
+    <xsd:unique name="TieSocietesSocCom"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="IdSociete_SocieteCom"/> 
+    </xsd:unique> 
+  </xsd:element>    
+  <xsd:element name="TiePays"> 
+    <xsd:annotation> 
+      <xsd:appinfo source="X_Workflow">WSAdmin#Tiers_TiePays_Activate_1.0#Read-only</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+    </xsd:annotation>  
+    <xsd:complexType> 
+      <xsd:all> 
+        <xsd:element maxOccurs="1" minOccurs="1" name="IdPays" type="xsd:string"> 
+          <xsd:annotation> 
+            <xsd:appinfo source="X_Workflow">WSAdmin#Tiers_TiePays_Activate_1.0#Read-only</xsd:appinfo>  
+            <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+            <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+          </xsd:annotation> 
+        </xsd:element> 
+      </xsd:all> 
+    </xsd:complexType>  
+    <xsd:unique name="TiePays"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="IdPays"/> 
+    </xsd:unique> 
+  </xsd:element>                                        
+  <xsd:simpleType name="STypeTiersTypeTiers"> 
+    <xsd:restriction base="xsd:string"> 
+      <xsd:enumeration value="Clients"/>  
+      <xsd:enumeration value="Transporteurs"/>  
+      <xsd:enumeration value="Fournisseurs"/> 
+    </xsd:restriction> 
+  </xsd:simpleType>              
+  <xsd:element name="TieGroupeTiersCommercial"> 
+    <xsd:annotation> 
+      <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+    </xsd:annotation>  
+    <xsd:complexType> 
+      <xsd:all> 
+        <xsd:element maxOccurs="1" minOccurs="1" name="IdGroupeCommercial" type="AUTO_INCREMENT"> 
+          <xsd:annotation> 
+            <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+            <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+          </xsd:annotation> 
+        </xsd:element> 
+      </xsd:all> 
+    </xsd:complexType>  
+    <xsd:unique name="TieGroupeTiersCommercial"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="IdGroupeCommercial"/> 
+    </xsd:unique> 
+  </xsd:element>      
+  <xsd:element name="TieVIES"> 
+    <xsd:complexType> 
+      <xsd:all> 
+        <xsd:element maxOccurs="1" minOccurs="1" name="IdTieVIES" type="AUTO_INCREMENT"/> 
+      </xsd:all> 
+    </xsd:complexType>  
+    <xsd:unique name="TieVIES"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="IdTieVIES"/> 
+    </xsd:unique> 
+  </xsd:element>  
+  <xsd:complexType name="TypeTousTiers"> 
+    <xsd:sequence> 
+      <xsd:element maxOccurs="1" minOccurs="1" name="Id" type="AUTO_INCREMENT"/>       
+            <xsd:element maxOccurs="1" minOccurs="1" name="test" type="xsd:boolean"/>
+        </xsd:sequence> 
+  </xsd:complexType>  
+  <xsd:element name="TieTiers" type="TypeTiers"> 
+    <xsd:annotation> 
+      <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+      <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+    </xsd:annotation>  
+    <xsd:unique name="TieTiers"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="Id"/> 
+    </xsd:unique> 
+  </xsd:element>  
+  <xsd:complexType name="TypeTiers"> 
+    <xsd:complexContent> 
+      <xsd:extension base="TypeTousTiers"> 
+        <xsd:sequence> 
+          <xsd:element maxOccurs="1" minOccurs="1" name="TypeTiers" type="STypeTiersTypeTiers"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Label_FR">Type de tiers</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>  
+          <xsd:element maxOccurs="1" minOccurs="1" name="FkPays" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Label_FR">Id Référentiel Pays</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey">TiePays/IdPays</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>    
+          <xsd:element maxOccurs="1" minOccurs="0" name="FkVIES" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_ForeignKey">TieVIES/IdTieVIES</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Visible_Rule">fn:string-length(/TieTiers/FkVIES)&gt;0 and /TieTiers/hasSirenTva==fn:true()</xsd:appinfo>  
+              <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Label_FR">VIES</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>    
+          <xsd:element maxOccurs="1" minOccurs="0" name="FkSocieteSocCom" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_ForeignKey">TieSocietesSocCom/IdSociete_SocieteCom</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Visible_Rule">fn:string-length(/TieTiers/FkSocieteSocCom)&gt;0 and /TieTiers/hasSirenTva==fn:true()</xsd:appinfo>  
+              <xsd:appinfo source="X_Label_FR">Société (Société.com) Id</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>    
+          <xsd:element maxOccurs="1" minOccurs="0" name="FkGroupeCommercial" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Label_FR">Id groupe commercial</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey">TieGroupeTiersCommercial/IdGroupeCommercial</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>             
+        </xsd:sequence> 
+      </xsd:extension> 
+    </xsd:complexContent> 
+  </xsd:complexType>  
+  <xsd:element name="TieComptes" type="TypeComptes"> 
+    <xsd:unique name="TieComptes"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="Id"/> 
+    </xsd:unique> 
+  </xsd:element>  
+  <xsd:complexType name="TypeComptes"> 
+    <xsd:complexContent> 
+      <xsd:extension base="TypeTousTiers"> 
+        <xsd:sequence> 
+          <xsd:element maxOccurs="1" minOccurs="0" name="FkEtablissement" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Label_FR">Etablissement Id</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey">TieEtablissements/Id</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersSFACRW</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersSFACR</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>                       
+        </xsd:sequence> 
+      </xsd:extension> 
+    </xsd:complexContent> 
+  </xsd:complexType>  
+  <xsd:element name="TieEtablissements" type="TypeEtablissements"> 
+    <xsd:unique name="TieEtablissements"> 
+      <xsd:selector xpath="."/>  
+      <xsd:field xpath="Id"/> 
+    </xsd:unique> 
+  </xsd:element>  
+  <xsd:complexType name="TypeEtablissements"> 
+    <xsd:complexContent> 
+      <xsd:extension base="TypeTousTiers"> 
+        <xsd:sequence> 
+          <xsd:element maxOccurs="1" minOccurs="0" name="FkTiers" type="xsd:string"> 
+            <xsd:annotation> 
+              <xsd:appinfo source="X_Label_FR">Id Tiers</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey">TieTiers/Id</xsd:appinfo>  
+              <xsd:appinfo source="X_ForeignKey_NotSep">true</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersSFACRW</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersSFACR</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">MDMAdmin</xsd:appinfo>  
+              <xsd:appinfo source="X_Write">TiersAdmin</xsd:appinfo>   
+              <xsd:appinfo source="X_Retrieve_FKinfos">true</xsd:appinfo> 
+            </xsd:annotation> 
+          </xsd:element>            
+        </xsd:sequence> 
+      </xsd:extension> 
+    </xsd:complexContent> 
+  </xsd:complexType>     
+</xsd:schema>

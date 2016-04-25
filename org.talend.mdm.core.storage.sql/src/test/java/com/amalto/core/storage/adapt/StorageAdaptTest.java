@@ -387,6 +387,27 @@ public class StorageAdaptTest extends TestCase {
         storage.close(true);
     }
     
+    // TMDM-9401 redeploy datamodel failed after adding a mandatory field
+    public void testAddMandatoryField() throws Exception {
+        // Test preparation
+        DataSourceDefinition dataSource = ServerContext.INSTANCE.get().getDefinition("H2-DS3", STORAGE_NAME);
+        Storage storage = new HibernateStorage(STORAGE_NAME, StorageType.MASTER);
+        storage.init(dataSource);
+
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        MetadataRepository repository1 = new MetadataRepository();
+        repository1.load(StorageAdaptTest.class.getResourceAsStream("schema7_1.xsd"));
+        storage.prepare(repository1, true);
+
+        MetadataRepository repository2 = new MetadataRepository();
+        repository2.load(StorageAdaptTest.class.getResourceAsStream("schema7_2.xsd"));
+        storage.adapt(repository2, true);
+
+        MetadataRepository repository = storage.getMetadataRepository();
+        assertEquals(repository2, repository);
+        storage.close(true);
+    }
+
     private void assertDatabaseChange(DataSourceDefinition dataSource, String[] tables, String[] columns, boolean[] exists)
             throws SQLException {
         DataSource master = dataSource.getMaster();

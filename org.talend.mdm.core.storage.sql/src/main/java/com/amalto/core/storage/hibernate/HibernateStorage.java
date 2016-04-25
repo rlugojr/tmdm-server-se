@@ -1207,7 +1207,9 @@ public class HibernateStorage implements Storage {
                         + "."); //$NON-NLS-1$
             }
             // Find dependent types to delete
-            Set<ComplexTypeMetadata> dependentTypesToDrop = findDependentTypesToDelete(previousRepository, typesToDrop, typesToDrop);
+            Set<ComplexTypeMetadata> allDependencies = new HashSet<ComplexTypeMetadata>(); 
+            allDependencies.addAll(typesToDrop);
+            Set<ComplexTypeMetadata> dependentTypesToDrop = findDependentTypesToDelete(previousRepository, typesToDrop, allDependencies);
             typesToDrop.addAll(dependentTypesToDrop);
             // Sort in dependency order
             List<ComplexTypeMetadata> sortedTypesToDrop = new ArrayList<ComplexTypeMetadata>(typesToDrop);
