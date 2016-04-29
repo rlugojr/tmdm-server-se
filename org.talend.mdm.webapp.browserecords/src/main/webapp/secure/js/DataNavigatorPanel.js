@@ -81,7 +81,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				var arc = d3.svg.arc().innerRadius(innerRadius).outerRadius(
 						outerRadius);
 
-				var typeCluster = d3.layout.cluster().size([ 200, 200 ]);
+				var typeCluster = d3.layout.cluster();
 
 				var diagonal = d3.svg.diagonal().projection(function(d) {
 					return [ d.y, d.x ];
@@ -105,6 +105,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				init(id, concept, cluster);
 
 				function paint() {
+//					nodes = flatten(nodes);
 					node = node.data(nodes);
 					link = link.data(links);
 					link
@@ -130,6 +131,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 											return "";
 										}
 									});
+					link.exit().remove();
 					node.enter().append("image").attr("class", function(d) {
 						return "image_" + getIdentifier(d);
 					}).attr("width", image_diameter).attr("height",
@@ -144,6 +146,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 						d3.select(this).on("mouseover", mouseover);
 						d3.select(this).on("mouseout", mouseout);
 					});
+					node.exit().remove();
 
 					link_text = link_text.data(links);
 					link_text.enter().append("text").style("font-weight",
@@ -151,17 +154,20 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 							function(d) {
 								return d.navigator_line_label;
 							});
+					link_text.exit().remove();
 					node_text = node_text.data(nodes);
 					node_text.enter().append("text").style("fill", "black")
 							.attr("dx", image_offset).attr("dy", -10).text(
 									function(d) {
 										return d.navigator_node_label;
 									});
+					node_text.exit().remove();
 					force.start();
 				}
 
 				function paintTypeCluster(root) {
 					hiddenTypeCluster();
+					typeCluster.size([ root.children.length < 5 ? 240 : root.children.length * image_diameter * 1.5, 200  ])
 					var elementId;
 					var text_x;
 					var text_anchor;
@@ -321,7 +327,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 											};
 											paintTypeCluster(root);
 										},
-										failure : function() {
+										failure : function(response, options) {
+											Ext.MessageBox.alert('Error', response.responseText);
 										}
 									});
 						}
@@ -352,7 +359,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 											};
 											paintTypeCluster(root);
 										},
-										failure : function() {
+										failure : function(response, options) {
+											Ext.MessageBox.alert('Error', response.responseText);
 										}
 									});
 						}
@@ -422,13 +430,14 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					if (NAVIGATOR_NODE_IN_ENTITY_TYPE == d.navigator_node_type) {
 						if (selectNode.page === undefined) {
 							selectNode.page = new Object();
+							selectNode.nodeChildren = new Array();
+							selectNode.linkChildren = new Array();
 						}
 						if (selectNode.page[d.navigator_node_concept] === undefined) {
 							var pageObject = new Object();
 							pageObject.start = 0
 							selectNode.page[d.navigator_node_concept] = pageObject;
 						}
-
 						if ((selectNode.page[d.navigator_node_concept].start == 0 || selectNode.page[d.navigator_node_concept].start < (selectNode.page[d.navigator_node_concept].total + pageSize))) {
 							Ext.Ajax
 									.request({
@@ -469,6 +478,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													navigator_node_expand : false
 												};
 												nodes.push(newNode);
+												selectNode.nodeChildren.push(newNode);
 												var newLink = {
 													source : selectNode,
 													target : newNode,
@@ -477,19 +487,22 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													navigator_node_concept : node.navigator_node_concept
 												};
 												links.push(newLink);
+												selectNode.linkChildren.push(newLink);
 											}
 											paint();
 											selectNode.page[d.navigator_node_concept].start = selectNode.page[d.navigator_node_concept].start
 													+ pageSize;
 										},
-										failure : function() {
-
+										failure : function(response, options) {
+											Ext.MessageBox.alert('Error', response.responseText);
 										}
 									});
 						}
 					} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == d.navigator_node_type) {
 						if (selectNode.page === undefined) {
 							selectNode.page = new Object();
+							selectNode.nodeChildren = new Array();
+							selectNode.linkChildren = new Array();
 						}
 						if (selectNode.page[d.navigator_node_concept] === undefined) {
 							var pageObject = new Object();
@@ -532,6 +545,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													navigator_node_label : handleMultiLanguageLabel(node.navigator_node_label),
 													navigator_node_expand : false
 												};
+												selectNode.children.push(newNode);
+												selectNode.nodeChildren.push(newNode);
 												nodes.push(newNode);
 												var newLink = {
 													source : selectNode,
@@ -541,12 +556,14 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													navigator_node_concept : node.navigator_node_concept
 												};
 												links.push(newLink);
+												selectNode.linkChildren.push(newLink);
 												selectNode.page[d.navigator_node_concept].ids
 														.shift();
 											}
 											paint();
 										},
-										failure : function() {
+										failure : function(response, options) {
+											Ext.MessageBox.alert('Error', response.responseText);
 										}
 									});
 						}
@@ -554,17 +571,29 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				}
 
 				var dblclick = function(d, i) {
-					d.fixed = false;
-					// if (d.children) {
-					// d._children = d.children;
-					// d.children = null;
-					// } else {
-					// d.children = d._children;
-					// d._children = null;
-					// }
+//					d.fixed = false;
+					 if (d.nodeChildren) {
+						 d._nodeChildren = d.nodeChildren;
+						 for (var i=0;i<d.nodeChildren.length;i++) {
+							 nodes.remove(d.nodeChildren[i]);
+						 }
+						 for (var i=0;i<d.linkChildren.length;i++) {
+							 links.remove(d.linkChildren[i]);
+						 }
+						 d.nodeChildren = null;
+					 } else {
+						 d.nodeChildren = d._nodeChildren;
+					 	for (var i=0;i<d.nodeChildren.length;i++) {
+					 		nodes.push(d.nodeChildren[i]);
+					 	}
+						 for (var i=0;i<d.linkChildren.length;i++) {
+							 links.push(d.linkChildren[i]);
+						 }
+					 	d._nodeChildren = null;
+					}
 					paint();
 				}
-
+				
 				var getRandomInt = function(min, max) {
 					return Math.floor(Math.random() * (max - min + 1) + min);
 				}
@@ -722,6 +751,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									nodes = eval('(' + response.responseText
 											+ ')');
 									nodes[0].navigator_node_label = handleMultiLanguageLabel(nodes[0].navigator_node_label);
+									nodes[0].children = new Array();
 									links = [];
 									force = d3.layout.force().nodes(nodes)
 											.links(links).size(
@@ -750,7 +780,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									force.on("tick", tick);
 									paint();
 								},
-								failure : function() {
+								failure : function(response, options) {
+									Ext.MessageBox.alert('Error', response.responseText);
 								}
 							});
 				}
@@ -831,21 +862,5 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					arrowMarker_out.append("path").attr("d", arrow_path_out)
 							.style("stroke-width", 1).style("fill", "#ccc");
 				}
-
-				// function flatten(root) {
-				// var nodes = [], i = 0;
-				//
-				// function recurse(node) {
-				// if (node.children) node.size =
-				// node.children.reduce(function(p, v) { return p + recurse(v);
-				// }, 0);
-				// if (!node.id) node.id = ++i;
-				// nodes.push(node);
-				// return node.size;
-				// }
-				//
-				// root.size = recurse(root);
-				// return nodes;
-				// }
 			});
 }
