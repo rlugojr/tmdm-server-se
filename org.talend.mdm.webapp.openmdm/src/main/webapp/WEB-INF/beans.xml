@@ -27,7 +27,6 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
             <bean class="com.amalto.core.storage.services.JournalStatistics" />
             <bean class="com.amalto.core.storage.services.DataStatistics" />
             <bean class="com.amalto.core.storage.services.EventStatistics" />
-            <bean class="com.amalto.core.storage.services.DataService" />
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.amalto.core.storage.task.staging.SerializableListWriter" />
