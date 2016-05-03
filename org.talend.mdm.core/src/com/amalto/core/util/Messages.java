@@ -15,6 +15,7 @@ package com.amalto.core.util;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import org.springframework.util.StringUtils;
 
 public class Messages {
 
@@ -33,13 +34,28 @@ public class Messages {
 
     public String getMessage(Locale locale, String key, Object... args) {
         try {
-            String pattern = MessagesFactory.getLocator().getBundle(baseName, locale, loader).getString(key);
-            MessageFormat formatter = new MessageFormat(pattern);
+            StringBuffer pattern = new StringBuffer(MessagesFactory.getLocator().getBundle(baseName, locale, loader).getString(key));
+            ModifyPatternAccordingToArgs(pattern, args);
+            MessageFormat formatter = new MessageFormat(pattern.toString());
             return formatter.format(args);
         } catch (MissingResourceException e) {
             return '!' + key + '!';
         }
     }
 
-
+    public void ModifyPatternAccordingToArgs(StringBuffer pattern, Object... args) {
+        if(args != null && args.length > 0){
+            int index = 0;
+            for(Object a : args){
+                if(a != null && !StringUtils.isEmpty(a)){
+                    pattern.append("{"+index+"}");  //$NON-NLS-1$//$NON-NLS-2$
+                    if(index != args.length -1){
+                        pattern.append(","); //$NON-NLS-1$
+                    }
+                }
+                index++;
+            }
+        }
+    }
+    
 }

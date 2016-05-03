@@ -727,7 +727,7 @@ public class BrowseRecordsActionTest extends TestCase {
                 method.setAccessible(true);
                 Object para[] = { coreException, "TestModel", "1", new Locale("en") };
                 Object result = method.invoke(action, para);
-                String expectedMsg = MESSAGES.getMessage(new Locale("en"), "delete_failure_constraint_violation", "TestModel.1");
+                String expectedMsg = MESSAGES.getMessage(new Locale("en"), "delete_failure_constraint_violation", "TestModel.1", "throw a runtimeException");
                 assertEquals(expectedMsg, result);
                 break;
             }
