@@ -1,10 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.talend.mdm</groupId>
         <artifactId>mdm-base</artifactId>
-        <version>6.2.0-SNAPSHOT</version>
+        <version>6.2.0-NOTUSE</version>
         <relativePath>../../tmdm-common/org.talend.mdm.base/pom.xml</relativePath>
     </parent>
 
@@ -209,19 +209,19 @@
                                 <id>deploy-tomcat</id>
                                 <configuration>
                                 	<target>
-                                		<copy tofile="${lib.dest}" file="${web.lib.src}"/>
-										<delete dir="${mdm.app.dir}/browserecords"/>
+                                		<copy tofile="${lib.dest}" file="${web.lib.src}" />
+										<delete dir="${mdm.app.dir}/browserecords" />
 										<copy todir="${mdm.app.dir}/browserecords">
-                                			<fileset dir="${mdm.build.web.dir}/browserecords"/>
+                                			<fileset dir="${mdm.build.web.dir}/browserecords" />
                                 		</copy>
-										<delete dir="${mdm.app.dir}/browserecordsinstaging"/>
+										<delete dir="${mdm.app.dir}/browserecordsinstaging" />
                                 		<copy todir="${mdm.app.dir}/browserecordsinstaging">
-                                			<fileset dir="${mdm.build.web.dir}/browserecordsinstaging"/>
+                                			<fileset dir="${mdm.build.web.dir}/browserecordsinstaging" />
                                 		</copy>
                                 		<copy todir="${mdm.app.dir}/secure" overwrite="true">
-                                			<fileset dir="${mdm.build.web.dir}/secure"/>
+                                			<fileset dir="${mdm.build.web.dir}/secure" />
                                 		</copy>
-                                		<copy tofile="${mdm.app.dir}/BrowseRecords.css" file="${mdm.build.web.dir}/BrowseRecords.css" overwrite="true"/>
+                                		<copy tofile="${mdm.app.dir}/BrowseRecords.css" file="${mdm.build.web.dir}/BrowseRecords.css" overwrite="true" />
                                 	</target>
                                 </configuration>
                             </execution>

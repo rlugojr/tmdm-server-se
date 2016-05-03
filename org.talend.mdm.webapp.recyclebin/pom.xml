@@ -1,10 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.talend.mdm</groupId>
         <artifactId>mdm-base</artifactId>
-        <version>6.2.0-SNAPSHOT</version>
+        <version>6.2.0-NOTUSE</version>
         <relativePath>../../tmdm-common/org.talend.mdm.base/pom.xml</relativePath>
     </parent>
 
@@ -114,13 +114,13 @@
                                 <id>deploy-tomcat</id>
                                 <configuration>
                                 	<target>
-                                		<copy tofile="${lib.dest}" file="${web.lib.src}"/>
-                                		<delete dir="${mdm.app.dir}/recyclebin"/>
+                                		<copy tofile="${lib.dest}" file="${web.lib.src}" />
+                                		<delete dir="${mdm.app.dir}/recyclebin" />
                                 		<copy todir="${mdm.app.dir}/recyclebin">
-                                			<fileset dir="${mdm.build.web.dir}/recyclebin"/>
+                                			<fileset dir="${mdm.build.web.dir}/recyclebin" />
                                 		</copy>
-                                		<copy tofile="${mdm.app.dir}/RecycleBin.css" file="${mdm.build.web.dir}/RecycleBin.css" overwrite="true"/>
-                                		<copy tofile="${mdm.app.dir}/RecycleBin.js" file="${mdm.build.web.dir}/RecycleBin.js" overwrite="true"/>
+                                		<copy tofile="${mdm.app.dir}/RecycleBin.css" file="${mdm.build.web.dir}/RecycleBin.css" overwrite="true" />
+                                		<copy tofile="${mdm.app.dir}/RecycleBin.js" file="${mdm.build.web.dir}/RecycleBin.js" overwrite="true" />
                                 	</target>
                                 </configuration>
                             </execution>

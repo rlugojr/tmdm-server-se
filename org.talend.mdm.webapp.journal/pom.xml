@@ -1,10 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.talend.mdm</groupId>
         <artifactId>mdm-base</artifactId>
-        <version>6.2.0-SNAPSHOT</version>
+        <version>6.2.0-NOTUSE</version>
         <relativePath>../../tmdm-common/org.talend.mdm.base/pom.xml</relativePath>
     </parent>
 
@@ -139,15 +139,15 @@
                                 <id>deploy-tomcat</id>
                                 <configuration>
                                 	<target>
-                                		<copy tofile="${lib.dest}" file="${web.lib.src}"/>
-                                		<delete dir="${mdm.app.dir}/journal"/>
+                                		<copy tofile="${lib.dest}" file="${web.lib.src}" />
+                                		<delete dir="${mdm.app.dir}/journal" />
                                 		<copy todir="${mdm.app.dir}/journal">
-                                			<fileset dir="${mdm.build.web.dir}/journal"/>
+                                			<fileset dir="${mdm.build.web.dir}/journal" />
                                 		</copy>
                                 		<copy todir="${mdm.app.dir}/secure" overwrite="true">
-                                			<fileset dir="${mdm.build.web.dir}/secure"/>
+                                			<fileset dir="${mdm.build.web.dir}/secure" />
                                 		</copy>
-                                		<copy tofile="${mdm.app.dir}/Journal.css" file="${mdm.build.web.dir}/Journal.css" overwrite="true"/>
+                                		<copy tofile="${mdm.app.dir}/Journal.css" file="${mdm.build.web.dir}/Journal.css" overwrite="true" />
                                 	</target>
                                 </configuration>
                             </execution>
