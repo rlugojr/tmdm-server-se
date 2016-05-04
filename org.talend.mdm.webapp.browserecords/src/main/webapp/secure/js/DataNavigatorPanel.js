@@ -38,7 +38,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				var yOffsetOut;
 				var pageSize = 5;
 				var filterValue = '';
-				var nodeLabelLength=15;
+				var nodeLabelLength=23;
 
 				var zoom = d3.behavior.zoom().scaleExtent([ -15, 100 ]).on(
 						"zoom", zoomed);
