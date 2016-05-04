@@ -1790,7 +1790,7 @@
 					<xsd:appinfo source="X_Write">Demo_Manager</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element maxOccurs="1" minOccurs="0" name="post_address"
+			<xsd:element maxOccurs="5" minOccurs="1" name="post_address"
 				type="AddressDetailType">
 				<xsd:annotation>
 					<xsd:appinfo source="X_Write">Demo_Manager</xsd:appinfo>

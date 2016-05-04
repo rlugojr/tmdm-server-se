@@ -3202,13 +3202,63 @@ public class StorageQueryTest extends StorageTestCase {
     }
     
     public void testEmptyOrNullInMultidepthComplexType() throws Exception {
-        UserQueryBuilder qb = from(organization).selectId(organization)
-                .where(emptyOrNull(organization.getField("post_address/country/code")));
-        StorageResults results = storage.fetch(qb.getSelect());
-        assertEquals(1, results.getCount());
-        for (DataRecord result : results) {
-            assertEquals("1", String.valueOf(result.get("org_id")));
+        Storage staging = new HibernateStorage("MDMStaging", StorageType.STAGING);
+        staging.init(ServerContext.INSTANCE.get().getDefinition("RDBMS-1-NO-FT", "MDM"));
+        staging.prepare(repository, true);
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        List<DataRecord> allRecords = new LinkedList<DataRecord>();
+        
+        try {
+            allRecords
+            .add(factory
+                    .read(repository,
+                            organization,
+                            "<Organization xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><org_id>1</org_id><post_address><street>changan rd</street><city>[BJ]</city><country><name>cn</name><code></code></country></post_address><org_address><street>waitan rd</street><city>[SH]</city><country><name>fr</name><code>33</code></country></org_address></Organization>"));
+            staging.begin();
+            staging.update(allRecords);
+            staging.commit();
+            
+            UserQueryBuilder qb = from(organization).selectId(organization)
+                    .where(emptyOrNull(organization.getField("post_address/country/code")));
+            StorageResults results = staging.fetch(qb.getSelect());
+            assertEquals(1, results.getCount());
+            for (DataRecord result : results) {
+                assertEquals("1", String.valueOf(result.get("org_id")));
+            }
+            
+        } catch (Exception e) {
+            staging.rollback();
+        } finally {
+            staging.begin();
+            staging.delete(from(organization).getSelect());
+            staging.commit();
         }
+        
+        try {
+            allRecords = new LinkedList<DataRecord>();
+            allRecords
+            .add(factory
+                    .read(repository,
+                            organization,
+                            "<Organization xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><org_id>2</org_id><org_address><street>longbai rd</street><city>[SH]</city><country><name>zh</name><code>44</code></country></org_address></Organization>"));
+            staging.begin();
+            staging.update(allRecords);
+            staging.commit();
+            
+            UserQueryBuilder qb = from(organization).selectId(organization)
+                    .where(emptyOrNull(organization.getField("post_address/country/code")));
+            StorageResults results = staging.fetch(qb.getSelect());
+            assertEquals(1, results.getCount());
+            for (DataRecord result : results) {
+                assertEquals("2", String.valueOf(result.get("org_id")));
+            }
+            
+        } catch (Exception e) {
+            staging.rollback();
+        } finally {
+            staging.rollback();
+        }
+        
     }
 
     public void testStringFieldConstraint() throws Exception {

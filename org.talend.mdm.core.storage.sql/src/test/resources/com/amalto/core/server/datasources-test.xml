@@ -167,6 +167,15 @@
                 <schema-generation>create</schema-generation>
             </rdbms-configuration>
         </master>
+        <staging>
+            <type>RDBMS</type>
+            <rdbms-configuration>
+                <dialect>H2</dialect>
+                <connection-driver-class>org.h2.Driver</connection-driver-class>
+                <connection-url>jdbc:h2:./data/h2_default_staging</connection-url>
+                <schema-generation>create</schema-generation>
+            </rdbms-configuration>
+        </staging>
         <system>
             <type>RDBMS</type>
             <rdbms-configuration>
