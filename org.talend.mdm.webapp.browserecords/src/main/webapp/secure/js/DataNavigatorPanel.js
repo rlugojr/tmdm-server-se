@@ -38,6 +38,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				var yOffsetOut;
 				var pageSize = 5;
 				var filterValue = '';
+				var nodeLabelLength=15;
 
 				var zoom = d3.behavior.zoom().scaleExtent([ -15, 100 ]).on(
 						"zoom", zoomed);
@@ -156,7 +157,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					node_text.enter().append("text").style("fill", "black")
 							.attr("dx", image_offset).attr("dy", -10).text(
 									function(d) {
-										return d.navigator_node_label;
+										return d.navigator_node_short_label;
 									});
 					node_text.exit().remove();
 					force.start();
@@ -468,6 +469,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 											var newNodes = resultObject.result;
 											for ( var i = 0; i < newNodes.length; i++) {
 												var node = newNodes[i];
+												var nodeLabel = handleMultiLanguageLabel(node.navigator_node_label);
 												var newNode = {
 													x : selectNode.x
 															+ getRandomInt(-15,
@@ -479,7 +481,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													navigator_node_concept : node.navigator_node_concept,
 													navigator_node_type : node.navigator_node_type,
 													navigator_node_relation : NAVIGATOR_NODE_IN_ENTITY_TYPE,
-													navigator_node_label : handleMultiLanguageLabel(node.navigator_node_label),
+													navigator_node_label : nodeLabel,
+													navigator_node_short_label : generateNodeLabel(nodeLabel),
 													navigator_node_expand : false
 												};
 												nodes.push(newNode);
@@ -537,6 +540,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													+ ')');
 											for ( var i = 0; i < newNodes.length; i++) {
 												var node = newNodes[i];
+												var nodeLabel = handleMultiLanguageLabel(node.navigator_node_label);
 												var newNode = {
 													x : selectNode.x
 															+ getRandomInt(-15,
@@ -548,7 +552,8 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 													navigator_node_concept : d.navigator_node_concept,
 													navigator_node_type : node.navigator_node_type,
 													navigator_node_relation : NAVIGATOR_NODE_OUT_ENTITY_TYPE,
-													navigator_node_label : handleMultiLanguageLabel(node.navigator_node_label),
+													navigator_node_label : nodeLabel,
+													navigator_node_short_label : generateNodeLabel(nodeLabel),
 													navigator_node_expand : false
 												};
 												selectNode.nodeChildren.push(newNode);
@@ -687,6 +692,13 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 							return 0.0;
 						}
 					});
+					node_text.text(function(node){
+						if (node == d) {
+							return node.navigator_node_label;
+						} else {
+							return node.navigator_node_short_label
+						}
+					});
 				}
 
 				function type_mouseover(d, i) {
@@ -701,6 +713,9 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 
 				function mouseout(d, i) {
 					link_text.style("fill-opacity", "0.0");
+					node_text.text(function(node){
+						return node.navigator_node_short_label;
+					});
 					d3.select(this).transition().duration(750).attr("width",
 							image_diameter).attr("height", image_diameter);
 				}
@@ -794,6 +809,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									nodes = eval('(' + response.responseText
 											+ ')');
 									nodes[0].navigator_node_label = handleMultiLanguageLabel(nodes[0].navigator_node_label);
+									nodes[0].navigator_node_short_label = generateNodeLabel(nodes[0].navigator_node_label);
 									nodes[0].children = new Array();
 									links = [];
 									force = d3.layout.force().nodes(nodes)
@@ -873,18 +889,35 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				}
 
 				function handleMultiLanguageLabel(value) {
-					var j = 0;
-					var resultArray = new Array();
-					var valueArray = value.split('.');
-					for ( var i = 0; i < valueArray.length; i++) {
-						var result = amalto.navigator.Navigator
-								.getMultiLanguageValue(valueArray[i], language);
-						if (!(result == undefined || result == null || result == '')) {
-							resultArray[j] = result;
-							j++;
+					if (value != null) {
+						var j = 0;
+						var resultArray = new Array();
+						var valueArray = value.split('.');
+						for ( var i = 0; i < valueArray.length; i++) {
+							var result = amalto.navigator.Navigator
+									.getMultiLanguageValue(valueArray[i], language);
+							if (!(result == undefined || result == null || result == '')) {
+								resultArray[j] = result;
+								j++;
+							}
 						}
+						return resultArray.join('.');
+					} else {
+						return '';
 					}
-					return resultArray.join('.');
+
+				}
+				
+				function generateNodeLabel(value) {
+					if (value != null) {
+						if (value.length > nodeLabelLength) {
+							return value.substr(0,nodeLabelLength - 4) + '...'
+						} else {
+							return value;
+						}
+					} else {
+						return '';
+					}
 				}
 
 				function generateArrowMarker() {

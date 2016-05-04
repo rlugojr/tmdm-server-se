@@ -633,7 +633,7 @@ public class ItemDetailToolBar extends ToolBar {
                     subActionsMenu.add(journalMenuItem);
                 }
 
-                if (navigatorMenuItem == null && BrowseRecords.getSession().getAppHeader().isEnterprise()) {
+                if (navigatorMenuItem == null && BrowseRecords.getSession().getAppHeader().isEnterprise() && !isStaging) {
                     navigatorMenuItem = new MenuItem(MessagesFactory.getMessages().navigator_btn());
                     navigatorMenuItem.setId("navigatorMenuItem"); //$NON-NLS-1$
                     navigatorMenuItem.setIcon(AbstractImagePrototype.create(Icons.INSTANCE.navigator()));
