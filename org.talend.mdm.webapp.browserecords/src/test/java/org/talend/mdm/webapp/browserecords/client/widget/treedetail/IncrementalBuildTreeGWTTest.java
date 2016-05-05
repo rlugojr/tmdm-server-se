@@ -131,6 +131,8 @@ public class IncrementalBuildTreeGWTTest extends GWTTestCase {
         cpType.setTypePath("Test/cp"); //$NON-NLS-1$
         initTypeModel(cpType);
         cpType.addLabel("en", "this is complex type"); //$NON-NLS-1$ //$NON-NLS-2$
+        cpType.setNotSeparateFk(true) ;
+        cpType.setForeignkey("Test/cp/title") ;
         metaDataTypes.put(cpType.getTypePath(), cpType);
 
         testType.addSubType(subelementType);

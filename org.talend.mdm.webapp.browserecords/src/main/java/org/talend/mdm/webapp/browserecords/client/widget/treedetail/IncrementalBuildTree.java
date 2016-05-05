@@ -147,20 +147,18 @@ public class IncrementalBuildTree implements IncrementalCommand {
 
 	        boolean isFKDisplayedIntoTab = TreeDetail.isFKDisplayedIntoTab(node, typeModel, metaDataTypes);
 
-	        if (isFKDisplayedIntoTab) {
-	            if (node.isVisible()) {
-	                if (!foreighKeyMap.containsKey(typeModel)) {
-	                    foreighKeyMap.put(typeModel, new ArrayList<ItemNodeModel>());
-	                }
-	                foreighKeyMap.get(typeModel).add(node);
-	            }
-	        } else {
+            if (isFKDisplayedIntoTab && node.isVisible()) {
+                if (!foreighKeyMap.containsKey(typeModel)) {
+                    foreighKeyMap.put(typeModel, new ArrayList<ItemNodeModel>());
+                }
+                foreighKeyMap.get(typeModel).add(node);
+            } else {
                 TreeItemEx childItem = treeDetail.buildGWTTree(node, null, withDefaultValue, operation);
-	            if (childItem != null && !childItem.getElement().getPropertyBoolean("EmptyFkContainer")) { //$NON-NLS-1$
-	        		initItemWidth(childItem, level);
-	                item.addItem(childItem);
-	            }
-	        }
+                if (childItem != null && !childItem.getElement().getPropertyBoolean("EmptyFkContainer")) { //$NON-NLS-1$
+                    initItemWidth(childItem, level);
+                    item.addItem(childItem);
+                }
+            }
 
 	        if (index % GROUP_SIZE == 0){
 	        	return;
