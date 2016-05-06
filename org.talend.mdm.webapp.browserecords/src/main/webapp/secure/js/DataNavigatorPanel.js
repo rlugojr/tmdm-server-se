@@ -38,9 +38,9 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				var yOffsetOut;
 				var pageSize = 5;
 				var filterValue = '';
-				var nodeLabelLength=23;
+				var nodeLabelLength=20;
 
-				var zoom = d3.behavior.zoom().scaleExtent([ -15, 100 ]).on(
+				var zoom = d3.behavior.zoom().scaleExtent([ 1, 100 ]).on(
 						"zoom", zoomed);
 				var svg = d3.select("#navigator").append("svg").attr("width",
 						width).attr("height", height).append("g").call(zoom).on("dblclick.zoom", null);
@@ -95,6 +95,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				var node;
 				var link_text;
 				var node_text;
+				var node_concept_text;
 				var typeLinks;
 				var typeNodes;
 				var typeLink;
@@ -159,6 +160,14 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 									function(d) {
 										return d.navigator_node_short_label;
 									});
+					node_concept_text = node_concept_text.data(nodes);
+					node_concept_text.enter().append("text").style("font-weight",
+					"bold").style("fill-opacity", "0.0").attr("dx", function(d){
+						return -(d.navigator_node_concept.length * 3.5);
+					}).attr("dy", image_offset).text(
+							function(d) {
+								return d.navigator_node_concept;
+							});
 					node_text.exit().remove();
 					force.start();
 				}
@@ -378,12 +387,14 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 										id : 'settingWindow',
 										title : message
 												.getMsg("setting_window_title"),
-										width : 253,
+										width : 300,
 										height : 131,
 										modal : true,
 										layout : 'form',
 										bodyStyle : "padding:10px",
-										frame : true,
+										draggable:false,
+										resizable : false,
+										layout : 'fit',
 										items : [ {
 											id : 'settingForm',
 											xtype : 'form',
@@ -699,6 +710,13 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 							return node.navigator_node_short_label
 						}
 					});
+					node_concept_text.style("fill-opacity", function(node) {
+						if (node == d) {
+							return 1.0;
+						} else {
+							return 0.0;
+						}
+					});
 				}
 
 				function type_mouseover(d, i) {
@@ -713,6 +731,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 
 				function mouseout(d, i) {
 					link_text.style("fill-opacity", "0.0");
+					node_concept_text.style("fill-opacity", "0.0");
 					node_text.text(function(node){
 						return node.navigator_node_short_label;
 					});
@@ -723,11 +742,6 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				function type_mouseout(d, i) {
 					typeLink.style("fill-opacity", "0.0");
 				}
-
-				// function menuMouseout(arc) {
-				// var elementId = "#menu_" + getIdentifier(selectNode);
-				// svg.select(elementId).remove();
-				// }
 
 				function tick() {
 					node
@@ -786,6 +800,11 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					}).attr("y", function(d) {
 						return d.y + image_diameter / 2;
 					});
+					node_concept_text.attr("x", function(d) {
+						return d.x;
+					}).attr("y", function(d) {
+						return d.y + image_diameter / 2;
+					});
 				}
 
 				function zoomed() {
@@ -835,6 +854,9 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 											.selectAll(".linetext");
 									node_text = container.append("g").attr(
 											"id", "navigator_text_node_group")
+											.selectAll(".nodetext");
+									node_concept_text = container.append("g").attr(
+											"id", "navigator_concept_text_node_group")
 											.selectAll(".nodetext");
 									force.on("tick", tick);
 									paint();
@@ -911,7 +933,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 				function generateNodeLabel(value) {
 					if (value != null) {
 						if (value.length > nodeLabelLength) {
-							return value.substr(0,nodeLabelLength - 4) + '...'
+							return value.substr(0,nodeLabelLength) + '...'
 						} else {
 							return value;
 						}
