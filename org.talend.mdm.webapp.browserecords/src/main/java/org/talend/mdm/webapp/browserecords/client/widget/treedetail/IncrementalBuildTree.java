@@ -147,7 +147,7 @@ public class IncrementalBuildTree implements IncrementalCommand {
 
 	        boolean isFKDisplayedIntoTab = TreeDetail.isFKDisplayedIntoTab(node, typeModel, metaDataTypes);
 
-            if (isFKDisplayedIntoTab && node.isVisible()) {
+            if (node.isVisible() && isFKDisplayedIntoTab) {
                 if (!foreighKeyMap.containsKey(typeModel)) {
                     foreighKeyMap.put(typeModel, new ArrayList<ItemNodeModel>());
                 }
