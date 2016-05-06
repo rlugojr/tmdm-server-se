@@ -14,7 +14,6 @@ package org.talend.mdm.webapp.browserecords.client.widget.treedetail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,13 +96,6 @@ public class IncrementalBuildTreeGWTTest extends GWTTestCase {
         assertNotNull(item);
         assertEquals(128, item.getChildCount());
         assertEquals(1, incCommand.getForeighKeyMap().size());
-        String name = "";
-        Iterator<TypeModel> it = incCommand.getForeighKeyMap().keySet().iterator();
-        while (it.hasNext()) {
-            TypeModel typeModel = it.next();
-            name = typeModel.getName();
-        }
-        assertEquals("open", name);
     }
 
     private ViewBean getViewBean() {
