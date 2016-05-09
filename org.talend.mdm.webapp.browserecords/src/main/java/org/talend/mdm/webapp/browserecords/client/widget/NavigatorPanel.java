@@ -75,7 +75,6 @@ public class NavigatorPanel extends ContentPanel {
         eastData.setMaxSize(7000);
         eastData.setSplit(true);
         eastData.setFloatable(false);
-        eastData.setCollapsible(true);
         initDetailPanel();
         add(detailPanel, eastData);
         BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER);
