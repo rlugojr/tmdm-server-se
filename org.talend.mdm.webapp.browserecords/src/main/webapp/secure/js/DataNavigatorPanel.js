@@ -219,7 +219,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 						return -(d.navigator_node_concept.length * 3.5);
 					}).attr("dy", image_diameter)
 					.text(function(d) {
-						return d.navigator_node_concept;
+						return d.navigator_node_concept_label;
 					});
 					force.start();
 				}
@@ -385,9 +385,6 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 											var newNodes = eval('('
 													+ response.responseText
 													+ ')');
-											var newNodes = eval('('
-													+ response.responseText
-													+ ')');
 											var root = {
 												"navigator_node_concept" : "root",
 												"navigator_node_type" : NAVIGATOR_NODE_IN_ENTITY_TYPE,
@@ -542,6 +539,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 																	15),
 													navigator_node_ids : node.navigator_node_ids,
 													navigator_node_concept : node.navigator_node_concept,
+													navigator_node_concept_label : node.navigator_node_concept_label,
 													navigator_node_type : node.navigator_node_type,
 													navigator_node_relation : NAVIGATOR_NODE_IN_ENTITY_TYPE,
 													navigator_node_label : nodeLabel,
@@ -616,6 +614,7 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 																	15),
 													navigator_node_ids : node.navigator_node_ids,
 													navigator_node_concept : d.navigator_node_concept,
+													navigator_node_concept_label : node.navigator_node_concept_label,
 													navigator_node_type : node.navigator_node_type,
 													navigator_node_relation : NAVIGATOR_NODE_OUT_ENTITY_TYPE,
 													navigator_node_label : nodeLabel,
