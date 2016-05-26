@@ -32,6 +32,9 @@ import org.talend.mdm.webapp.browserecords.shared.ViewBean;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Window;
@@ -70,15 +73,13 @@ public class NavigatorPanel extends ContentPanel {
         setLayout(new BorderLayout());
         setStyleAttribute("height", "100%"); //$NON-NLS-1$ //$NON-NLS-2$  
         BorderLayoutData eastData = new BorderLayoutData(LayoutRegion.EAST, 400);
-        eastData.setMargins(new Margins(0, 5, 0, 0));
-        eastData.setMinSize(0);
-        eastData.setMaxSize(7000);
         eastData.setSplit(true);
         eastData.setFloatable(false);
         initDetailPanel();
         add(detailPanel, eastData);
         BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER);
-        centerData.setMargins(new Margins(0));
+        centerData.setMargins(new Margins(0, 5, 0, 0));
+        centerData.setMaxSize(7000);
         initNavigatorPanel();
         add(navigatorPanel, centerData);
     }
@@ -89,8 +90,13 @@ public class NavigatorPanel extends ContentPanel {
         navigatorPanel.setHeaderVisible(false);
         SimplePanel navigator = new SimplePanel();
         navigator.getElement().setId("navigator"); //$NON-NLS-1$
-        navigator.getElement().getStyle().setProperty("height", 800, Unit.PX); //$NON-NLS-1$
-        navigator.getElement().getStyle().setProperty("width", 800, Unit.PX); //$NON-NLS-1$
+        navigatorPanel.addListener(Events.Resize, new Listener<BaseEvent>() {
+
+            @Override
+            public void handleEvent(BaseEvent be) {
+                resizeNavigator();
+            }
+        });
         navigatorPanel.add(navigator);
     }
 
@@ -195,63 +201,67 @@ public class NavigatorPanel extends ContentPanel {
     }
 
     private native void registerNavigatorService()/*-{
-		var instance = this;
-		$wnd.amalto = $wnd.amalto || {};
+        var instance = this;
+        $wnd.amalto = $wnd.amalto || {};
         $wnd.amalto.navigator = $wnd.amalto.navigator || {};
         $wnd.amalto.navigator.Navigator = $wnd.amalto.navigator.Navigator || {};
-		$wnd.amalto.navigator.Navigator.openRecord = function(ids, concept) {
-			instance
-					.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::updateDetailPanel(Ljava/lang/String;Ljava/lang/String;)(
-							ids, concept);
-		}
-		        
+        $wnd.amalto.navigator.Navigator.openRecord = function(ids, concept) {
+            instance
+                    .@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::updateDetailPanel(Ljava/lang/String;Ljava/lang/String;)(
+                            ids, concept);
+        }
+                
         $wnd.amalto.navigator.Navigator.getMultiLanguageValue = function(value, language) {
             return @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getMultiLanguageValue(Ljava/lang/String;Ljava/lang/String;)(value, language);
         }
     }-*/;
 
     public native static void paintNavigator(String restServiceUrl, String ids, String concept, String cluster, String language)/*-{
-		$wnd.amalto.itemsbrowser.NavigatorPanel(restServiceUrl, ids, concept,
-				cluster, language);
+        $wnd.amalto.itemsbrowser.NavigatorPanel.initUI(restServiceUrl, ids, concept,
+                cluster, language);
+    }-*/;
+    
+    public native static void resizeNavigator()/*-{
+        $wnd.amalto.itemsbrowser.NavigatorPanel.resize();
     }-*/;
 
     public native static void renderGwtPanel(String itemId, ContentPanel contentPanel)/*-{
-		var tabPanel = $wnd.amalto.core.getTabPanel();
-		var panel = @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::transferPanel(Lcom/extjs/gxt/ui/client/widget/ContentPanel;)(contentPanel);
-		tabPanel.add(panel);
-		tabPanel.setSelection(itemId);
+        var tabPanel = $wnd.amalto.core.getTabPanel();
+        var panel = @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::transferPanel(Lcom/extjs/gxt/ui/client/widget/ContentPanel;)(contentPanel);
+        tabPanel.add(panel);
+        tabPanel.setSelection(itemId);
     }-*/;
 
     private native static JavaScriptObject transferPanel(ContentPanel contentPanel)/*-{
-		var panel = {
-			// imitate extjs's render method, really call gxt code.
-			render : function(el) {
-				var rootPanel = @com.google.gwt.user.client.ui.RootPanel::get(Ljava/lang/String;)(el.id);
-				rootPanel.@com.google.gwt.user.client.ui.RootPanel::add(Lcom/google/gwt/user/client/ui/Widget;)(contentPanel);
-			},
-			// imitate extjs's setSize method, really call gxt code.
-			setSize : function(width, height) {
-				contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::setSize(II)(width, height);
-			},
-			// imitate extjs's getItemId, really return itemId of ContentPanel of GXT.
-			getItemId : function() {
-				return contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::getItemId()();
-			},
-			// imitate El object of extjs
-			getEl : function() {
-				var el = contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::getElement()();
-				return {
-					dom : el
-				};
-			},
-			// imitate extjs's doLayout method, really call gxt code.
-			doLayout : function() {
-				return contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::doLayout()();
-			},
-			title : function() {
-				return contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::getHeading()();
-			}
-		};
-		return panel;
+        var panel = {
+            // imitate extjs's render method, really call gxt code.
+            render : function(el) {
+                var rootPanel = @com.google.gwt.user.client.ui.RootPanel::get(Ljava/lang/String;)(el.id);
+                rootPanel.@com.google.gwt.user.client.ui.RootPanel::add(Lcom/google/gwt/user/client/ui/Widget;)(contentPanel);
+            },
+            // imitate extjs's setSize method, really call gxt code.
+            setSize : function(width, height) {
+                contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::setSize(II)(width, height);
+            },
+            // imitate extjs's getItemId, really return itemId of ContentPanel of GXT.
+            getItemId : function() {
+                return contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::getItemId()();
+            },
+            // imitate El object of extjs
+            getEl : function() {
+                var el = contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::getElement()();
+                return {
+                    dom : el
+                };
+            },
+            // imitate extjs's doLayout method, really call gxt code.
+            doLayout : function() {
+                return contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::doLayout()();
+            },
+            title : function() {
+                return contentPanel.@com.extjs.gxt.ui.client.widget.ContentPanel::getHeading()();
+            }
+        };
+        return panel;
     }-*/;
 }

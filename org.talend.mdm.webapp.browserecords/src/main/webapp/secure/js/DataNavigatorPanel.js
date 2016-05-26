@@ -1,58 +1,1004 @@
 amalto.namespace("amalto.itemsbrowser");
-amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
-		cluster, language) {
-	amalto.itemsbrowser.NavigatorPanel.bundle = new Ext.i18n.Bundle({
-		bundle : 'Message',
-		path : 'secure/resources',
-		lang : language
-	});
-	amalto.itemsbrowser.NavigatorPanel.bundle
-			.onReady(function() {
-				var message = amalto.itemsbrowser.NavigatorPanel.bundle;
-				var NAVIGATOR_NODE_IN_ENTITY_TYPE = 1;
-				var NAVIGATOR_NODE_OUT_ENTITY_TYPE = 2;
-				var NAVIGATOR_NODE_VALUE_TYPE = 3;
-				var NAVIGATOR_NOD_COLOR_SELECTED = "rgb(255, 2, 42)";
-				var NAVIGATOR_NOD_COLOR_INBOUND = "rgb(24, 2, 255)";
-				var NAVIGATOR_NOD_COLOR_OUTBOUND = "rgb(2, 255, 145)";
-				var NAVIGATOR_NOD_COLOR_DATA = "rgb(231, 253, 6)";
-				var NAVIGATOR_NODE_IMAGE_INBOUND = "secure/img/navigator_relation_in.png";
-				var NAVIGATOR_NODE_IMAGE_OUTBOUND = "secure/img/navigator_relation_out.png";
-				var NAVIGATOR_NODE_IMAGE_DATA = "secure/img/navigator_data.png";
-				var NAVIGATOR_NODE_IMAGE_SELECTED_DATA = "secure/img/navigator_selected_data.png";
-				var NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA = "secure/img/navigator_collapsed_data.png";
+amalto.itemsbrowser.NavigatorPanel = function() {
+	var NAVIGATOR_NODE_IN_ENTITY_TYPE = 1;
+	var NAVIGATOR_NODE_OUT_ENTITY_TYPE = 2;
+	var NAVIGATOR_NODE_VALUE_TYPE = 3;
+	var NAVIGATOR_NOD_COLOR_SELECTED = "rgb(255, 2, 42)";
+	var NAVIGATOR_NOD_COLOR_INBOUND = "rgb(24, 2, 255)";
+	var NAVIGATOR_NOD_COLOR_OUTBOUND = "rgb(2, 255, 145)";
+	var NAVIGATOR_NOD_COLOR_DATA = "rgb(231, 253, 6)";
+	var NAVIGATOR_NODE_IMAGE_INBOUND = "secure/img/navigator_relation_in.png";
+	var NAVIGATOR_NODE_IMAGE_OUTBOUND = "secure/img/navigator_relation_out.png";
+	var NAVIGATOR_NODE_IMAGE_DATA = "secure/img/navigator_data.png";
+	var NAVIGATOR_NODE_IMAGE_SELECTED_DATA = "secure/img/navigator_selected_data.png";
+	var NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA = "secure/img/navigator_collapsed_data.png";
+	var pageSize = 5;
+	var filterValue = '';
+	var nodeLabelLength=20;
+	var image_diameter = 16;
+	var image_offset = image_diameter / 2;
+	var image_padding = image_diameter / 4;
+	
+	var svg;
+	var rect;
+	var message;
+	
+	// input parameter
+	var restServiceUrl;
+	var id;
+	var concept
+	var cluster;
+	var language;
+	
+	// Menu
+	var dataset;
+	var pie;
+	var piedata;
+	var outerRadius = 48;
+	var innerRadius = 25;
+	var arc;
+	var color = d3.scale.category10();
+	
+	// Type Cluster
+	var typeCluster;
+	var diagonal;
+	var typeLinks;
+	var typeNodes;
+	var typeLink;
+	var typeNode;
+	var type_text_dx = 40;
+	var type_text_dy = -10;
+	
+	// Data Force
+	var width = 800;
+	var height = 800;
+	var force;
+	var nodeList = [];
+	var linkList = [];
+	var container;
+	var links;
+	var nodes;
+	var link;
+	var node;
+	var link_text;
+	var node_text;
+	var node_concept_text;
+	var drag;
+	var selectNode;
+	var showNode;
+	
+	function paint() {
+		node = node.data(nodes);
+		link = link.data(links);
+		
+		link.style("stroke-width", function(link){
+			if (link.navigator_line_display) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+		
+		link.enter()
+		.append("line")
+		.style("stroke-width", 1)
+		.style("stroke", "#ccc");
+//		.attr("marker-start",function(link, i) {
+//			if (link.target.navigator_node_relation == NAVIGATOR_NODE_IN_ENTITY_TYPE) {
+//				return "url(#arrow_in)";
+//			} else {
+//				return "";
+//			}
+//		}).attr("marker-end",function(link, i) {
+//			if (link.target.navigator_node_relation == NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
+//				return "url(#arrow_out)";
+//			} else {
+//				return "";
+//			}
+//		});
+		
+		node.attr("width", function(d) {
+			if (d.navigator_node_display) {
+				return image_diameter;
+			} else {
+				return 0;
+			};
+		}).attr("height", function(d) {
+			if (d.navigator_node_display) {
+				return image_diameter;
+			} else {
+				return 0;
+			};
+		});
+		
+		node.enter()
+		.append("image")
+		.attr("class", function(d) {
+			return "image_" + getIdentifier(d);
+		}).attr("width", image_diameter)
+		.attr("height",image_diameter)
+		.attr("identifier", function(d) {
+			return getIdentifier(d);
+		}).attr("xlink:href", function(d) {
+			return getImage(d);
+		}).each(function(d, i) {
+			d3.select(this).call(drag);
+			d3.select(this).on("click", showMenu);
+			d3.select(this).on("dblclick", dblclick);
+			d3.select(this).on("mouseover", mouseover);
+			d3.select(this).on("mouseout", mouseout);
+		});
+		
+		link_text = link_text.data(links);					
+		link_text.text(function(link) {
+			if (link.navigator_line_display) {
+				return link.navigator_line_label;
+			} else {
+				return "";
+			}
+		});
+		
+		link_text.enter()
+		.append("text")
+		.style("font-weight","bold")
+		.style("fill-opacity", "0.0")
+		.text(function(link) {
+			return link.navigator_line_label;
+		});
+		
+		node_text = node_text.data(nodes);					
+		node_text.text(function(d) {
+			if (d.navigator_node_display) {
+				return d.navigator_node_short_label;
+			} else {
+				return "";
+			}
+		});
+		
+		node_text.enter()
+		.append("text")
+		.style("fill", "black")
+		.attr("dx", image_offset)
+		.attr("dy", -5)
+		.text(function(d) {
+			return d.navigator_node_short_label;
+		});
+		
+		
+		node_concept_text = node_concept_text.data(nodes);
+		node_concept_text.text(function(d) {
+			if (d.navigator_node_display) {
+				return d.navigator_node_concept;
+			} else {
+				return "";
+			}
+		});
+		node_concept_text.enter()
+		.append("text")
+		.style("font-weight","bold")
+		.style("fill-opacity", "0.0")
+		.attr("dx", function(d){
+			return -(d.navigator_node_concept.length * 3.5);
+		}).attr("dy", image_diameter)
+		.text(function(d) {
+			return d.navigator_node_concept_label;
+		});
+		force.start();
+	}
 
-				var selectNode;
-				var showNode;
-				var image_diameter = 16;
-				var image_offset = image_diameter / 2;
-				var image_padding = image_diameter / 4;
-				var type_text_dx = 40;
-				var type_text_dy = -10;
+	function paintTypeCluster(root) {
+		hiddenTypeCluster();
+		typeCluster.size([ root.children.length < 5 ? 240 : root.children.length * image_diameter * 1.5, 150  ])
+		var elementId;
+		var text_x;
+		var text_anchor;
+		var marker_direction;
+		var marker_position;
+		if (root.navigator_node_type === NAVIGATOR_NODE_IN_ENTITY_TYPE) {
+			text_x = -image_offset - image_padding;
+			text_anchor = "end";
+			elementId = "cluster_type_in_group";
+			marker_direction = "url(#arrow_in)";
+			marker_position = "marker-start";
+		} else if (root.navigator_node_type === NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
+			text_x = image_offset + image_padding;
+			text_anchor = "start";
+			elementId = "cluster_type_out_group";
+			marker_direction = "url(#arrow_out)";
+			marker_position = "marker-end";
+		}
+		if (svg.select("#" + elementId)[0][0] === null) {
+			var typeGroup = container.append("g").attr("id",
+					elementId)
+			var typeNodes = typeCluster.nodes(root);
+			var typeLinks = typeCluster.links(typeNodes);
+			var xOffset = selectNode.x - root.y;
+			var yOffset = selectNode.y - root.x;
 
-				var width = 800;
-				var height = 800;
-				var xOffsetIn;
-				var yOffsetIn;
-				var xOffsetOut;
-				var yOffsetOut;
-				var pageSize = 5;
-				var filterValue = '';
-				var nodeLabelLength=20;
+			typeNode = typeGroup.selectAll("image").data(typeNodes);
+			typeNode.enter()
+			.append("g")
+			.style('font', '12px sans-serif')
+			.attr('transform',function(node) {
+				node.x = node.x + yOffset;
+				node.y = node.y + xOffset;
+				if (root.navigator_node_type === NAVIGATOR_NODE_IN_ENTITY_TYPE) {
+					if (node.name !== 'root') {
+						node.y = selectNode.x + (selectNode.x - node.y);
+					}
+				}
+				return 'translate(' + node.y + ',' + node.x + ')';
+			});
 
-//				var zoom = d3.behavior.zoom().scaleExtent([ 1, 100 ]).on(
-//						"zoom", zoomed);
-				var svg = d3.select("#navigator").append("svg").attr("width",
-						Ext.get("navigator").dom.style.width).attr("height", Ext.get("navigator").dom.style.height);
-				var rect = svg.append("rect")
-						.attr("width",Ext.get("navigator").dom.style.width)
-						.attr("height",Ext.get("navigator").dom.style.height)
-						.style("fill", "none").style("pointer-events", "all");
-				rect.on("click", hiddenTypeCluster);
-				container = svg.append("g");
+			typeNode.each(function(d, i) {
+				if (d.navigator_node_concept !== 'root') {
+					d3.select(this).append("image")
+					.attr("width",image_diameter)
+					.attr("height",image_diameter)
+					.attr("x", "-8px")
+					.attr("y", "-8px")
+					.attr("identifier",function(d) {
+						return getIdentifier(d);
+					}).attr("xlink:href",function(d) {
+						return getImage(d);
+					}).on("click", click)
+					.on("mouseover", type_mouseover)
+					.on("mouseout", type_mouseout);				
+				}
+			});
 
-				var color = d3.scale.category10();
-				var dataset = [ {
+			for ( var i = 0; i < typeLinks.length; i++) {
+				var d = typeLinks[i];
+				if (node.name !== 'root') {
+					if (root.navigator_node_type === NAVIGATOR_NODE_IN_ENTITY_TYPE) {
+						d.source.y = d.source.y - image_offset
+								- image_padding;
+						d.target.y = d.target.y + image_offset
+								+ image_padding;
+					} else if (root.navigator_node_type === NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
+						d.source.y = d.source.y + image_padding;
+						d.target.y = d.target.y - image_offset
+								- image_padding;
+					}
+				}
+			}
+			typeLink = typeGroup.selectAll(".link").data(typeLinks);
+			typeLink.enter().append("path")
+			.style("fill", "none")
+			.style("stroke-width", 1)
+			.style("stroke","#ccc")
+			.attr(marker_position,marker_direction)
+			.attr("d", diagonal);
+
+			typeNode.append("text")
+			.attr("dx", function(node) {
+				return text_x;
+			}).attr("dy", 4)
+			.style("text-anchor", function(d) {
+				return text_anchor;
+			}).text(function(d) {
+				if (d.navigator_node_concept !== 'root') {
+					return d.navigator_node_label;
+				}
+			});
+
+			typeLink.enter().append("text")
+			.style("font-weight","bold")
+			.style("fill-opacity", "0.0")
+			.text(function(d) {
+				return d.target.navigator_line_label;
+			}).attr("x", function(d) {
+				return (d.source.y + d.target.y) / 2;
+			}).attr("y", function(d) {
+				return (d.source.x + d.target.x) / 2;
+			});
+		} else {
+			svg.select("#" + elementId).remove();
+		}
+	}
+
+	function menuClick(arc) {
+		if ('detail' === arc.data.name) {
+			hiddenTypeCluster();
+			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
+				amalto.navigator.Navigator.openRecord(
+						selectNode.navigator_node_ids,
+						selectNode.navigator_node_concept);
+				if (showNode !== undefined) {
+					svg.selectAll(".image_" + getIdentifier(showNode))
+					.attr("xlink:href",function(node) {
+						if (node.expanded != undefined && !node.expanded) {
+							return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
+						} else {
+							return NAVIGATOR_NODE_IMAGE_DATA;
+						}
+					});
+				}
+				svg.selectAll(".image_" + getIdentifier(selectNode))
+				.attr("xlink:href",function(node) {
+					if (node.expanded != undefined && !node.expanded) {
+						return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
+					} else {
+						return NAVIGATOR_NODE_IMAGE_SELECTED_DATA;
+					}
+				});
+				showNode = selectNode;
+			}
+		} else if ('in' === arc.data.name) {
+			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
+				Ext.Ajax.request({
+					url : restServiceUrl
+						+ '/data/'
+						+ cluster
+						+ '/inBoundTypes/'
+						+ selectNode.navigator_node_concept
+						+ '/'
+						+ selectNode.navigator_node_ids,
+					method : 'GET',
+					params : {
+						language : language
+					},
+					success : function(response, options) {
+						var newNodes = eval('('
+						+ response.responseText
+						+ ')');
+						var root = {
+							"navigator_node_concept" : "root",
+							"navigator_node_type" : NAVIGATOR_NODE_IN_ENTITY_TYPE,
+							"children" : newNodes
+						};
+						paintTypeCluster(root);
+					},
+					failure : function(response, options) {
+						Ext.MessageBox.alert('Error', response.responseText);
+					}
+				});
+			}
+		} else if ('out' === arc.data.name) {
+			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
+				Ext.Ajax
+						.request({
+							url : restServiceUrl
+									+ '/data/'
+									+ cluster
+									+ '/outBoundTypes/'
+									+ selectNode.navigator_node_concept
+									+ '/'
+									+ selectNode.navigator_node_ids,
+							method : 'GET',
+							params : {
+								language : language
+							},
+							success : function(response, options) {
+								var newNodes = eval('('
+										+ response.responseText
+										+ ')');
+								var root = {
+									"navigator_node_concept" : "root",
+									"navigator_node_type" : NAVIGATOR_NODE_OUT_ENTITY_TYPE,
+									"children" : newNodes
+								};
+								paintTypeCluster(root);
+							},
+							failure : function(response, options) {
+								Ext.MessageBox.alert('Error', response.responseText);
+							}
+						});
+			}
+		} else if ('settings' === arc.data.name) {
+			hiddenTypeCluster();
+			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
+				var settingWindow = new Ext.Window(
+						{
+							id : 'settingWindow',
+							title : message
+									.getMsg("setting_window_title"),
+							width : 300,
+							height : 131,
+							modal : true,
+							layout : 'form',
+							bodyStyle : "padding:10px",
+							draggable:false,
+							resizable : false,
+							layout : 'fit',
+							items : [ {
+								id : 'settingForm',
+								xtype : 'form',
+								labelWidth : 60,
+								labelAlign : 'right',
+								buttonAlign : 'center',
+								items : [ {
+									xtype : 'numberfield',
+									id : 'pageSize',
+									fieldLabel : message
+											.getMsg("setting_window_page_label"),
+									width : 'auto',
+									value : pageSize
+								} ],
+								buttons : [
+										{
+											xtype : 'button',
+											text : message
+													.getMsg("setting_window_button_ok"),
+											handler : function() {
+												pageSize = Number(Ext
+														.getCmp('pageSize').value);
+												Ext
+														.getCmp(
+																'settingWindow')
+														.close();
+											}
+										},
+										{
+											xtype : 'button',
+											text : message
+													.getMsg("setting_window_button_cancel"),
+											handler : function() {
+												Ext
+														.getCmp(
+																'settingWindow')
+														.close();
+											}
+										} ]
+							} ]
+						});
+				Ext.getCmp('settingWindow').show();
+			}
+		}
+	}
+
+	function click(d, i) {
+		hiddenTypeCluster();
+		if (NAVIGATOR_NODE_IN_ENTITY_TYPE == d.navigator_node_type) {
+			if (selectNode.page === undefined) {
+				selectNode.page = new Object();
+				selectNode.nodeChildren = new Array();
+				selectNode.linkChildren = new Array();
+			}
+			if (selectNode.page[d.navigator_node_concept] === undefined) {
+				var pageObject = new Object();
+				pageObject.start = 0
+				selectNode.page[d.navigator_node_concept] = pageObject;
+			}
+			if ((selectNode.page[d.navigator_node_concept].start == 0 || selectNode.page[d.navigator_node_concept].start < (selectNode.page[d.navigator_node_concept].total + pageSize))) {
+				Ext.Ajax
+						.request({
+							url : restServiceUrl + '/data/'
+									+ cluster + '/inBoundRecords/'
+									+ d.navigator_node_concept,
+							method : 'GET',
+							params : {
+								foreignKeyPath : d.navigator_node_foreignkey_path,
+								foreignKeyValue : d.navigator_node_foreignkey_value,
+								filterValue : filterValue,
+								start : selectNode.page[d.navigator_node_concept].start,
+								limit : pageSize,
+								language : language
+							},
+							success : function(response, options) {
+								selectNode.expanded = true;
+								var resultObject = eval('('
+										+ response.responseText
+										+ ')');
+								if (selectNode.page[d.navigator_node_concept].start == 0) {
+									selectNode.page[d.navigator_node_concept].total = resultObject.totalCount;
+								}
+								var newNodes = resultObject.result;
+								for ( var i = 0; i < newNodes.length; i++) {
+									var node = newNodes[i];
+									var nodeLabel = handleMultiLanguageLabel(node.navigator_node_label);
+									var newNode = {
+										x : selectNode.x
+												+ getRandomInt(-15,
+														15),
+										y : selectNode.y
+												+ getRandomInt(-15,
+														15),
+										navigator_node_ids : node.navigator_node_ids,
+										navigator_node_concept : node.navigator_node_concept,
+										navigator_node_concept_label : node.navigator_node_concept_label,
+										navigator_node_type : node.navigator_node_type,
+										navigator_node_relation : NAVIGATOR_NODE_IN_ENTITY_TYPE,
+										navigator_node_label : nodeLabel,
+										navigator_node_short_label : generateNodeLabel(nodeLabel),
+										navigator_node_expand : false,
+										navigator_node_display : true
+									};
+									nodes.push(newNode);
+									selectNode.nodeChildren.push(newNode);
+									var newLink = {
+										source : selectNode,
+										target : newNode,
+										navigator_node_type : node.navigator_node_type,
+										navigator_line_label : d.navigator_line_label,
+										navigator_node_concept : node.navigator_node_concept,
+										navigator_line_display : true
+										
+									};
+									links.push(newLink);
+									selectNode.linkChildren.push(newLink);
+								}
+								paint();
+								selectNode.page[d.navigator_node_concept].start = selectNode.page[d.navigator_node_concept].start
+										+ pageSize;
+							},
+							failure : function(response, options) {
+								Ext.MessageBox.alert('Error', response.responseText);
+							}
+						});
+			}
+		} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == d.navigator_node_type) {
+			if (selectNode.page === undefined) {
+				selectNode.page = new Object();
+				selectNode.nodeChildren = new Array();
+				selectNode.linkChildren = new Array();
+			}
+			if (selectNode.page[d.navigator_node_concept] === undefined) {
+				var pageObject = new Object();
+				pageObject.pageNumber = 1
+				pageObject.ids = d.navigator_node_ids;
+				selectNode.page[d.navigator_node_concept] = pageObject;
+			}
+			var idArray = [];
+			for (i = 0; (i < pageSize && i < selectNode.page[d.navigator_node_concept].ids.length); i++) {
+				idArray[i] = selectNode.page[d.navigator_node_concept].ids[i];
+			}
+			if (idArray.length > 0) {
+				Ext.Ajax
+						.request({
+							url : restServiceUrl + '/data/'
+									+ cluster + '/records/'
+									+ d.navigator_node_concept,
+							method : 'GET',
+							params : {
+								ids : idArray,
+								language : language
+							},
+							success : function(response, options) {
+								selectNode.expanded = true;
+								var newNodes = eval('('
+										+ response.responseText
+										+ ')');
+								for ( var i = 0; i < newNodes.length; i++) {
+									var node = newNodes[i];
+									var nodeLabel = handleMultiLanguageLabel(node.navigator_node_label);
+									var newNode = {
+										x : selectNode.x
+												+ getRandomInt(-15,
+														15),
+										y : selectNode.y
+												+ getRandomInt(-15,
+														15),
+										navigator_node_ids : node.navigator_node_ids,
+										navigator_node_concept : d.navigator_node_concept,
+										navigator_node_concept_label : node.navigator_node_concept_label,
+										navigator_node_type : node.navigator_node_type,
+										navigator_node_relation : NAVIGATOR_NODE_OUT_ENTITY_TYPE,
+										navigator_node_label : nodeLabel,
+										navigator_node_short_label : generateNodeLabel(nodeLabel),
+										navigator_node_expand : false,
+										navigator_node_display : true
+									};
+									selectNode.nodeChildren.push(newNode);
+									nodes.push(newNode);
+									var newLink = {
+										source : selectNode,
+										target : newNode,
+										navigator_node_type : node.navigator_node_type,
+										navigator_line_label : d.navigator_line_label,
+										navigator_node_concept : node.navigator_node_concept,
+										navigator_line_display : true
+									};
+									selectNode.linkChildren.push(newLink);
+									links.push(newLink);
+									selectNode.page[d.navigator_node_concept].ids
+											.shift();
+								}
+								paint();
+							},
+							failure : function(response, options) {
+								Ext.MessageBox.alert('Error', response.responseText);
+							}
+						});
+			}
+		}
+	}
+
+	var dblclick = function(d, i) {
+//		d.fixed = false;
+		 if (d.nodeChildren) {
+			 d.expanded = false
+			 collapseNode(d);
+				svg
+				.selectAll(
+						".image_"
+								+ getIdentifier(d))
+				.attr("xlink:href",function(node) {
+					return getImage(node);
+				});
+		 } else {
+			 d.expanded = true
+			 svg
+				.selectAll(
+						".image_"
+								+ getIdentifier(d))
+				.attr("xlink:href",function(node) {
+					return getImage(node);
+				});
+			 expandNode(d);
+		}
+		paint();
+	}
+	
+	var expandNode = function(d) {
+		 if (d._nodeChildren != undefined && d._linkChildren != undefined && d.expanded == true) {
+			d.nodeChildren = d._nodeChildren;
+			d.linkChildren = d._linkChildren;
+			 for (var i=0;i<d.nodeChildren.length;i++) {
+				 svg.selectAll(".image_"+ getIdentifier(d.nodeChildren[i]))
+				.attr("xlink:href",function(node) {
+					return getImage(node);
+				});
+				nodes[d.nodeChildren[i].index].navigator_node_display = true;
+			 	expandNode(d.nodeChildren[i]);
+			 }
+			for (var j=0;j<d.linkChildren.length;j++) {
+				links[d.linkChildren[j].target.index - 1].navigator_line_display = true;
+			}
+		    d._nodeChildren = null;
+		 }
+	}
+	
+	var collapseNode = function(d) {
+		 if (d.nodeChildren != undefined) {
+			 d._nodeChildren = d.nodeChildren;
+			 d._linkChildren = d.linkChildren;
+			 for (var i=0;i<d.nodeChildren.length;i++) {
+				 nodes[d.nodeChildren[i].index].navigator_node_display = false;
+				 collapseNode(d.nodeChildren[i]);
+			 }
+			 for (var j=0;j<d.linkChildren.length;j++) {
+				 links[d.linkChildren[j].target.index - 1].navigator_line_display = false;
+			 }
+			 d.nodeChildren = null;
+			 d.linkChildren = null;
+		 }
+	}
+
+	var getRandomInt = function(min, max) {
+		return Math.floor(Math.random() * (max - min + 1) + min);
+	}
+
+	function showMenu(d, i) {
+		if (d3.event.defaultPrevented) return;
+		hiddenTypeCluster();
+		var elementId = "menu_group";
+		var arcs = container.append("g").attr("id", elementId)
+				.selectAll("g").data(piedata).enter().append("g")
+				.attr("transform",
+						"translate(" + (d.x) + "," + (d.y) + ")");
+
+		var backgroundPath = arcs.append("path").attr("fill",
+				"#ddd").attr("d", arc);
+
+		var path = arcs.append("path").attr("fill", function(d, i) {
+			return color(i);
+		}).transition().ease("elastic").duration(750).attrTween(
+				"d", arcTween);
+		arcs.append("text").attr("transform", function(d) {
+			return "translate(" + arc.centroid(d) + ")";
+		}).attr("text-anchor", "middle").text(function(d) {
+			return d.data.label;
+		});
+		arcs.on("click", menuClick);
+		// arcs.on("mouseout", menuMouseout);
+		selectNode = d;
+	}
+
+	function arcTween(d) {
+		var i = d3.interpolate({
+			value : 0
+		}, d);
+		return function(t) {
+			return arc(i(t));
+		};
+	}
+
+	function mouseover(d, i) {
+		d3.select(this).transition().duration(750)
+		.attr("width", 20).attr("height", 20);
+		link_text.style("fill-opacity", function(link) {
+			if (link.navigator_line_display) {
+				if (link.source === d || link.target === d) {
+					return 1.0;
+				} else {
+					return 0.0;
+				}
+			}
+		});
+		node_text.text(function(node){
+			if (node.navigator_node_display) {
+				if (node == d) {
+					return node.navigator_node_label;
+				} else {
+					return node.navigator_node_short_label
+				}
+			}
+		});
+		node_concept_text.style("fill-opacity", function(node) {
+			if (node.navigator_node_display) {
+				if (node == d) {
+					return 1.0;
+				} else {
+					return 0.0;
+				}
+			}
+		});
+	}
+
+	function type_mouseover(d, i) {
+		typeLink.style("fill-opacity", function(link) {
+			if (link.source === d || link.target === d) {
+				return 1.0;
+			} else {
+				return 0.0;
+			}
+		});
+	}
+
+	function mouseout(d, i) {
+		d3.select(this).transition().duration(250).attr("width",
+				image_diameter).attr("height", image_diameter);
+		link_text.style("fill-opacity", "0.0");
+		node_concept_text.style("fill-opacity", "0.0");
+		node_text.text(function(node){
+			if (node.navigator_node_display) {
+				return node.navigator_node_short_label;
+			}
+		});
+	}
+
+	function type_mouseout(d, i) {
+		typeLink.style("fill-opacity", "0.0");
+	}
+
+	function tick() {
+		node
+				.forEach(function(d, i) {
+					d.x = d.x - image_diameter / 2 < 0 ? image_diameter / 2
+							: d.x;
+					d.x = d.x + image_diameter / 2 > width ? width
+							- image_diameter / 2 : d.x;
+					d.y = d.y - image_diameter / 2 < 0 ? image_diameter / 2
+							: d.y;
+					d.y = d.y + image_diameter / 2 + image_offset > height ? height
+							- image_diameter / 2 - image_offset
+							: d.y;
+				});
+		link.attr(
+				"x1",
+				function(d) {
+					var mid_x = (d.source.x + d.target.x) / 2;
+					return d.source.x < mid_x ? d.source.x
+							+ image_offset : d.source.x
+							- image_offset;
+				}).attr(
+				"y1",
+				function(d) {
+					var mid_y = (d.source.y + d.target.y) / 2;
+					return d.source.y < mid_y ? d.source.y
+							+ image_offset : d.source.y
+							- image_offset;
+				}).attr(
+				"x2",
+				function(d) {
+					var mid_x = (d.source.x + d.target.x) / 2;
+					return d.target.x < mid_x ? d.target.x
+							+ image_offset : d.target.x
+							- image_offset;
+				}).attr(
+				"y2",
+				function(d) {
+					var mid_y = (d.source.y + d.target.y) / 2;
+					return d.target.y < mid_y ? d.target.y
+							+ image_offset : d.target.y
+							- image_offset;
+				})
+		node.attr("x", function(d) {
+			return d.x - image_offset;
+		}).attr("y", function(d) {
+			return d.y - image_offset;
+		});
+		link_text.attr("x", function(d) {
+			return (d.source.x + d.target.x) / 2;
+		}).attr("y", function(d) {
+			return (d.source.y + d.target.y) / 2;
+		});
+		node_text.attr("x", function(d) {
+			return d.x;
+		}).attr("y", function(d) {
+			return d.y + image_diameter / 2;
+		});
+		node_concept_text.attr("x", function(d) {
+			return d.x;
+		}).attr("y", function(d) {
+			return d.y + image_diameter / 2;
+		});
+	}
+
+//	function zoomed() {
+//		svg.attr("transform", "translate(" + d3.event.translate
+//				+ ")scale(" + d3.event.scale + ")");
+//	}
+
+	function init() {
+		generateArrowMarker();
+		var ids = new Array(id);
+		Ext.Ajax
+				.request({
+					url : restServiceUrl + '/data/' + cluster
+							+ '/records/' + concept,
+					method : 'GET',
+					params : {
+						ids : ids,
+						language : language
+					},
+					success : function(response, options) {
+						nodes = eval('(' + response.responseText
+								+ ')');
+						nodes[0].navigator_node_label = handleMultiLanguageLabel(nodes[0].navigator_node_label);
+						nodes[0].navigator_node_short_label = generateNodeLabel(nodes[0].navigator_node_label);
+						nodes[0].children = new Array();
+						nodes[0].navigator_node_expand = true;
+						nodes[0].navigator_node_display = true;
+						links = [];
+						force = d3.layout.force().nodes(nodes)
+								.links(links).size(
+										[ width, height ])
+								.linkDistance(120).charge([ -400 ]);
+						drag = force.drag().on("dragstart",
+								function(d, i) {
+									d.fixed = true;
+									hiddenTypeCluster();
+								});
+
+						links = force.links();
+						nodes = force.nodes();
+						link = container.append("g").attr("id",
+								"navigator_data_link_group")
+								.selectAll(".link");
+						node = container.append("g").attr("id",
+								"navigator_data_node_group")
+								.selectAll("image");
+						link_text = container.append("g").attr(
+								"id", "navigator_text_link_group")
+								.selectAll(".linetext");
+						node_text = container.append("g").attr(
+								"id", "navigator_text_node_group")
+								.selectAll(".nodetext");
+						node_concept_text = container.append("g").attr(
+								"id", "navigator_concept_text_node_group")
+								.selectAll(".nodetext");
+						force.on("tick", tick);
+						paint();
+					},
+					failure : function(response, options) {
+						Ext.MessageBox.alert('Error', response.responseText);
+					}
+				});
+	}
+
+	function getColor(o) {
+		if (NAVIGATOR_NODE_IN_ENTITY_TYPE == o.navigator_node_type) {
+			return NAVIGATOR_NOD_COLOR_INBOUND;
+		} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == o.navigator_node_type) {
+			return NAVIGATOR_NOD_COLOR_OUTBOUND;
+		} else {
+			return NAVIGATOR_NOD_COLOR_DATA;
+		}
+	}
+
+	function getImage(o) {
+		if (NAVIGATOR_NODE_IN_ENTITY_TYPE == o.navigator_node_type) {
+			return NAVIGATOR_NODE_IMAGE_INBOUND;
+		} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == o.navigator_node_type) {
+			return NAVIGATOR_NODE_IMAGE_OUTBOUND;
+		} else if (o.expanded != undefined && o.expanded == false) {
+			return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
+		} else if (showNode != undefined && getIdentifier(o) == getIdentifier(showNode)) {
+			return NAVIGATOR_NODE_IMAGE_SELECTED_DATA;
+		} else {
+			return NAVIGATOR_NODE_IMAGE_DATA;
+		}
+	}
+
+	function getIdentifier(o) {
+		var identifier;
+		if (o.navigator_node_concept !== undefined) {
+			identifier = 'navigator_' + o.navigator_node_concept;
+		}
+		if (o.navigator_node_ids !== undefined) {
+			identifier = identifier + '_' + o.navigator_node_ids;
+		}
+		return identifier.replace(/[ ]/g, "_");
+	}
+
+	function hiddenTypeCluster() {
+		if (selectNode !== undefined) {
+			svg.select("#cluster_type_in_group").remove();
+			svg.select("#cluster_type_out_group").remove();
+			svg.select("#menu_group").remove();
+		}
+	}
+
+	function handleMultiLanguageLabel(values) {
+		var label = '';
+		for (var i=0;i<values.length;i++) {
+			if (label != '') {
+				label = label + '.';
+			}
+			var value = values[i];
+			if (value != null) {
+				value = amalto.navigator.Navigator
+				.getMultiLanguageValue(value, language);
+			}
+			if (!(value == undefined || value == null || value == '')) {
+				label = label + value;
+			}
+		}
+		return label;
+	}
+	
+	function generateNodeLabel(value) {
+		if (value != null) {
+			if (value.length > nodeLabelLength) {
+				return value.substr(0,nodeLabelLength) + '...'
+			} else {
+				return value;
+			}
+		} else {
+			return '';
+		}
+	}
+
+	function generateArrowMarker() {
+		var arrowMarker_in = container.append("marker").attr("id",
+				"arrow_in").attr("markerUnits", "strokeWidth")
+				.attr("markerWidth", "10").attr("markerHeight",
+						"10").attr("viewBox", "0 0 12 12").attr(
+						"refX", "6").attr("refY", "6").attr(
+						"orient", "auto");
+
+		var arrow_path_in = "M2,6 L10,2 L6,6 L10,10 L2,6";
+		arrowMarker_in.append("path").attr("d", arrow_path_in)
+				.style("stroke-width", 1).style("fill", "#ccc");
+		var arrowMarker_out = container.append("marker").attr("id",
+				"arrow_out").attr("markerUnits", "strokeWidth")
+				.attr("markerWidth", "10").attr("markerHeight",
+						"10").attr("viewBox", "0 0 12 12").attr(
+						"refX", "6").attr("refY", "6").attr(
+						"orient", "auto");
+
+		var arrow_path_out = "M2,2 L10,6 L2,10 L6,6 L2,2";
+		arrowMarker_out.append("path").attr("d", arrow_path_out)
+				.style("stroke-width", 1).style("fill", "#ccc");
+	}
+	
+	return {
+		initUI : function(restServiceUrlParameter, idParameter, conceptParameter,clusterParameter, languageParameter) {
+			restServiceUrl = restServiceUrlParameter;
+			id = idParameter;
+			concept = conceptParameter;
+			cluster = clusterParameter;
+			language = languageParameter;
+			amalto.itemsbrowser.NavigatorPanel.bundle = new Ext.i18n.Bundle({
+				bundle : 'Message',
+				path : 'secure/resources',
+				lang : language
+			});
+			amalto.itemsbrowser.NavigatorPanel.bundle.onReady(function() {
+				message = amalto.itemsbrowser.NavigatorPanel.bundle;
+				dataset = [ {
 					label : message.getMsg("menu_out_label"),
 					name : 'out',
 					value : 25
@@ -69,990 +1015,49 @@ amalto.itemsbrowser.NavigatorPanel = function(restServiceUrl, id, concept,
 					name : 'detail',
 					value : 25
 				} ];
-
-				var pie = d3.layout.pie().value(function(d) {
+//						var zoom = d3.behavior.zoom().scaleExtent([ 1, 100 ]).on(
+//								"zoom", zoomed);
+				svg = d3.select("#navigator").append("svg")
+					  .attr("width",Ext.get("navigator").dom.style.width)
+					  .attr("height", Ext.get("navigator").dom.style.height);
+				rect = svg.append("rect")
+					  .attr("width",Ext.get("navigator").dom.style.width)
+					  .attr("height",Ext.get("navigator").dom.style.height)
+					  .style("fill", "none")
+					  .style("stroke", "#b5b8c8")
+					  .style("pointer-events", "all");
+				rect.on("click", hiddenTypeCluster);
+				container = svg.append("g");
+	
+				pie = d3.layout.pie().value(function(d) {
 					return d.value;
 				});
 				pie.startAngle(0.8);
 				pie.endAngle(7.1);
-				var piedata = pie(dataset);
+				piedata = pie(dataset);
 
-				var outerRadius = 48;
-				var innerRadius = 25;
-				var arc = d3.svg.arc().innerRadius(innerRadius).outerRadius(
-						outerRadius);
+				arc = d3.svg.arc()
+					  .innerRadius(innerRadius)
+					  .outerRadius(outerRadius);
 
-				var typeCluster = d3.layout.cluster();
-				var diagonal = d3.svg.diagonal().projection(function(d) {
+				typeCluster = d3.layout.cluster();
+				diagonal = d3.svg.diagonal().projection(function(d) {
 					return [ d.y, d.x ];
 				});
-
-				var nodeList = [];
-				var linkList = [];
-				var container;
-				var links;
-				var nodes;
-				var link;
-				var node;
-				var link_text;
-				var node_text;
-				var node_concept_text;
-				var typeLinks;
-				var typeNodes;
-				var typeLink;
-				var typeNode;
-				var drag;
-				var force;
-				init(id, concept, cluster);
-
-				function paint() {
-					node = node.data(nodes);
-					link = link.data(links);
-					
-					link.style("stroke-width", function(link){
-						if (link.navigator_line_display) {
-							return 1;
-						} else {
-							return 0;
-						}
-					});
-					
-					link.enter()
-					.append("line")
-					.style("stroke-width", 1)
-					.style("stroke", "#ccc");
-//					.attr("marker-start",function(link, i) {
-//						if (link.target.navigator_node_relation == NAVIGATOR_NODE_IN_ENTITY_TYPE) {
-//							return "url(#arrow_in)";
-//						} else {
-//							return "";
-//						}
-//					}).attr("marker-end",function(link, i) {
-//						if (link.target.navigator_node_relation == NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
-//							return "url(#arrow_out)";
-//						} else {
-//							return "";
-//						}
-//					});
-					
-					node.attr("width", function(d) {
-						if (d.navigator_node_display) {
-							return image_diameter;
-						} else {
-							return 0;
-						};
-					}).attr("height", function(d) {
-						if (d.navigator_node_display) {
-							return image_diameter;
-						} else {
-							return 0;
-						};
-					});
-					
-					node.enter()
-					.append("image")
-					.attr("class", function(d) {
-						return "image_" + getIdentifier(d);
-					}).attr("width", image_diameter)
-					.attr("height",image_diameter)
-					.attr("identifier", function(d) {
-						return getIdentifier(d);
-					}).attr("xlink:href", function(d) {
-						return getImage(d);
-					}).each(function(d, i) {
-						d3.select(this).call(drag);
-						d3.select(this).on("click", showMenu);
-						d3.select(this).on("dblclick", dblclick);
-						d3.select(this).on("mouseover", mouseover);
-						d3.select(this).on("mouseout", mouseout);
-					});
-					
-					link_text = link_text.data(links);					
-					link_text.text(function(link) {
-						if (link.navigator_line_display) {
-							return link.navigator_line_label;
-						} else {
-							return "";
-						}
-					});
-					
-					link_text.enter()
-					.append("text")
-					.style("font-weight","bold")
-					.style("fill-opacity", "0.0")
-					.text(function(link) {
-						return link.navigator_line_label;
-					});
-					
-					node_text = node_text.data(nodes);					
-					node_text.text(function(d) {
-						if (d.navigator_node_display) {
-							return d.navigator_node_short_label;
-						} else {
-							return "";
-						}
-					});
-					
-					node_text.enter()
-					.append("text")
-					.style("fill", "black")
-					.attr("dx", image_offset)
-					.attr("dy", -5)
-					.text(function(d) {
-						return d.navigator_node_short_label;
-					});
-					
-					
-					node_concept_text = node_concept_text.data(nodes);
-					node_concept_text.text(function(d) {
-						if (d.navigator_node_display) {
-							return d.navigator_node_concept;
-						} else {
-							return "";
-						}
-					});
-					node_concept_text.enter()
-					.append("text")
-					.style("font-weight","bold")
-					.style("fill-opacity", "0.0")
-					.attr("dx", function(d){
-						return -(d.navigator_node_concept.length * 3.5);
-					}).attr("dy", image_diameter)
-					.text(function(d) {
-						return d.navigator_node_concept;
-					});
-					force.start();
-				}
-
-				function paintTypeCluster(root) {
-					hiddenTypeCluster();
-					typeCluster.size([ root.children.length < 5 ? 240 : root.children.length * image_diameter * 1.5, 150  ])
-					var elementId;
-					var text_x;
-					var text_anchor;
-					var marker_direction;
-					var marker_position;
-					if (root.navigator_node_type === NAVIGATOR_NODE_IN_ENTITY_TYPE) {
-						text_x = -image_offset - image_padding;
-						text_anchor = "end";
-						elementId = "cluster_type_in_group";
-						marker_direction = "url(#arrow_in)";
-						marker_position = "marker-start";
-					} else if (root.navigator_node_type === NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
-						text_x = image_offset + image_padding;
-						text_anchor = "start";
-						elementId = "cluster_type_out_group";
-						marker_direction = "url(#arrow_out)";
-						marker_position = "marker-end";
-					}
-					if (svg.select("#" + elementId)[0][0] === null) {
-						var typeGroup = container.append("g").attr("id",
-								elementId)
-						var typeNodes = typeCluster.nodes(root);
-						var typeLinks = typeCluster.links(typeNodes);
-						var xOffset = selectNode.x - root.y;
-						var yOffset = selectNode.y - root.x;
-
-						typeNode = typeGroup.selectAll("image").data(typeNodes);
-						typeNode
-								.enter()
-								.append("g")
-								.style('font', '12px sans-serif')
-								.attr(
-										'transform',
-										function(node) {
-											node.x = node.x + yOffset;
-											node.y = node.y + xOffset;
-											if (root.navigator_node_type === NAVIGATOR_NODE_IN_ENTITY_TYPE) {
-												if (node.name !== 'root') {
-													node.y = selectNode.x
-															+ (selectNode.x - node.y);
-												}
-											}
-											return 'translate(' + node.y + ','
-													+ node.x + ')';
-										});
-
-						typeNode.each(function(d, i) {
-							if (d.navigator_node_concept !== 'root') {
-								d3.select(this).append("image").attr("width",
-										image_diameter).attr("height",
-										image_diameter).attr("x", "-8px")
-										.attr("y", "-8px").attr("identifier",
-												function(d) {
-													return getIdentifier(d);
-												}).attr("xlink:href",
-												function(d) {
-													return getImage(d);
-												}).on("click", click).on(
-												"mouseover", type_mouseover)
-										.on("mouseout", type_mouseout);
-							}
-						});
-
-						for ( var i = 0; i < typeLinks.length; i++) {
-							var d = typeLinks[i];
-							if (node.name !== 'root') {
-								if (root.navigator_node_type === NAVIGATOR_NODE_IN_ENTITY_TYPE) {
-									d.source.y = d.source.y - image_offset
-											- image_padding;
-									d.target.y = d.target.y + image_offset
-											+ image_padding;
-								} else if (root.navigator_node_type === NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
-									d.source.y = d.source.y + image_padding;
-									d.target.y = d.target.y - image_offset
-											- image_padding;
-								}
-							}
-						}
-						typeLink = typeGroup.selectAll(".link").data(typeLinks);
-						typeLink.enter().append("path").style("fill", "none")
-								.style("stroke-width", 1).style("stroke",
-										"#ccc").attr(marker_position,
-										marker_direction).attr("d", diagonal);
-
-						typeNode.append("text").attr("dx", function(node) {
-							return text_x;
-						}).attr("dy", 4).style("text-anchor", function(d) {
-							return text_anchor;
-						}).text(function(d) {
-							if (d.navigator_node_concept !== 'root') {
-								return d.navigator_node_label;
-							}
-						});
-
-						typeLink.enter().append("text").style("font-weight",
-								"bold").style("fill-opacity", "0.0").text(
-								function(d) {
-									return d.target.navigator_line_label;
-								}).attr("x", function(d) {
-							return (d.source.y + d.target.y) / 2;
-						}).attr("y", function(d) {
-							return (d.source.x + d.target.x) / 2;
-						});
-					} else {
-						svg.select("#" + elementId).remove();
-					}
-				}
-
-				function menuClick(arc) {
-					if ('detail' === arc.data.name) {
-						hiddenTypeCluster();
-						if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
-							amalto.navigator.Navigator.openRecord(
-									selectNode.navigator_node_ids,
-									selectNode.navigator_node_concept);
-							if (showNode !== undefined) {
-								svg.selectAll(
-										".image_" + getIdentifier(showNode))
-										.attr("xlink:href",function(node) {
-											if (node.expanded != undefined && !node.expanded) {
-												return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
-											} else {
-												return NAVIGATOR_NODE_IMAGE_DATA;
-											}
-										});
-							}
-							svg
-									.selectAll(
-											".image_"
-													+ getIdentifier(selectNode))
-									.attr("xlink:href",function(node) {
-										if (node.expanded != undefined && !node.expanded) {
-											return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
-										} else {
-											return NAVIGATOR_NODE_IMAGE_SELECTED_DATA;
-										}
-									});
-							showNode = selectNode;
-						}
-					} else if ('in' === arc.data.name) {
-						if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
-							Ext.Ajax
-									.request({
-										url : restServiceUrl
-												+ '/data/'
-												+ cluster
-												+ '/inBoundTypes/'
-												+ selectNode.navigator_node_concept
-												+ '/'
-												+ selectNode.navigator_node_ids,
-										method : 'GET',
-										params : {
-											language : language
-										},
-										success : function(response, options) {
-											var newNodes = eval('('
-													+ response.responseText
-													+ ')');
-											regenerateDuplicateTypeName(newNodes);
-											var root = {
-												"navigator_node_concept" : "root",
-												"navigator_node_type" : NAVIGATOR_NODE_IN_ENTITY_TYPE,
-												"children" : newNodes
-											};
-											paintTypeCluster(root);
-										},
-										failure : function(response, options) {
-											Ext.MessageBox.alert('Error', response.responseText);
-										}
-									});
-						}
-					} else if ('out' === arc.data.name) {
-						if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
-							Ext.Ajax
-									.request({
-										url : restServiceUrl
-												+ '/data/'
-												+ cluster
-												+ '/outBoundTypes/'
-												+ selectNode.navigator_node_concept
-												+ '/'
-												+ selectNode.navigator_node_ids,
-										method : 'GET',
-										params : {
-											language : language
-										},
-										success : function(response, options) {
-											var newNodes = eval('('
-													+ response.responseText
-													+ ')');
-											regenerateDuplicateTypeName(newNodes);
-											var root = {
-												"navigator_node_concept" : "root",
-												"navigator_node_type" : NAVIGATOR_NODE_OUT_ENTITY_TYPE,
-												"children" : newNodes
-											};
-											paintTypeCluster(root);
-										},
-										failure : function(response, options) {
-											Ext.MessageBox.alert('Error', response.responseText);
-										}
-									});
-						}
-					} else if ('settings' === arc.data.name) {
-						hiddenTypeCluster();
-						if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
-							var settingWindow = new Ext.Window(
-									{
-										id : 'settingWindow',
-										title : message
-												.getMsg("setting_window_title"),
-										width : 300,
-										height : 131,
-										modal : true,
-										layout : 'form',
-										bodyStyle : "padding:10px",
-										draggable:false,
-										resizable : false,
-										layout : 'fit',
-										items : [ {
-											id : 'settingForm',
-											xtype : 'form',
-											labelWidth : 60,
-											labelAlign : 'right',
-											buttonAlign : 'center',
-											items : [ {
-												xtype : 'numberfield',
-												id : 'pageSize',
-												fieldLabel : message
-														.getMsg("setting_window_page_label"),
-												width : 'auto',
-												value : pageSize
-											} ],
-											buttons : [
-													{
-														xtype : 'button',
-														text : message
-																.getMsg("setting_window_button_ok"),
-														handler : function() {
-															pageSize = Number(Ext
-																	.getCmp('pageSize').value);
-															Ext
-																	.getCmp(
-																			'settingWindow')
-																	.close();
-														}
-													},
-													{
-														xtype : 'button',
-														text : message
-																.getMsg("setting_window_button_cancel"),
-														handler : function() {
-															Ext
-																	.getCmp(
-																			'settingWindow')
-																	.close();
-														}
-													} ]
-										} ]
-									});
-							Ext.getCmp('settingWindow').show();
-						}
-					}
-				}
-
-				function click(d, i) {
-					hiddenTypeCluster();
-					if (NAVIGATOR_NODE_IN_ENTITY_TYPE == d.navigator_node_type) {
-						if (selectNode.page === undefined) {
-							selectNode.page = new Object();
-							selectNode.nodeChildren = new Array();
-							selectNode.linkChildren = new Array();
-						}
-						if (selectNode.page[d.navigator_node_label] === undefined) {
-							var pageObject = new Object();
-							pageObject.start = 0
-							selectNode.page[d.navigator_node_label] = pageObject;
-						}
-						if ((selectNode.page[d.navigator_node_label].start == 0 || selectNode.page[d.navigator_node_label].start < (selectNode.page[d.navigator_node_label].total + pageSize))) {
-							Ext.Ajax
-									.request({
-										url : restServiceUrl + '/data/'
-												+ cluster + '/inBoundRecords/'
-												+ d.navigator_node_concept,
-										method : 'GET',
-										params : {
-											foreignKeyPath : d.navigator_node_foreignkey_path,
-											foreignKeyValue : d.navigator_node_foreignkey_value,
-											filterValue : filterValue,
-											start : selectNode.page[d.navigator_node_label].start,
-											limit : pageSize,
-											language : language
-										},
-										success : function(response, options) {
-											selectNode.expanded = true;
-											var resultObject = eval('('
-													+ response.responseText
-													+ ')');
-											if (selectNode.page[d.navigator_node_label].start == 0) {
-												selectNode.page[d.navigator_node_label].total = resultObject.totalCount;
-											}
-											var newNodes = resultObject.result;
-											for ( var i = 0; i < newNodes.length; i++) {
-												var node = newNodes[i];
-												var nodeLabel = handleMultiLanguageLabel(node.navigator_node_label);
-												var newNode = {
-													x : selectNode.x
-															+ getRandomInt(-15,
-																	15),
-													y : selectNode.y
-															+ getRandomInt(-15,
-																	15),
-													navigator_node_ids : node.navigator_node_ids,
-													navigator_node_concept : node.navigator_node_concept,
-													navigator_node_type : node.navigator_node_type,
-													navigator_node_relation : NAVIGATOR_NODE_IN_ENTITY_TYPE,
-													navigator_node_label : nodeLabel,
-													navigator_node_short_label : generateNodeLabel(nodeLabel),
-													navigator_node_expand : false,
-													navigator_node_display : true
-												};
-												nodes.push(newNode);
-												selectNode.nodeChildren.push(newNode);
-												var newLink = {
-													source : selectNode,
-													target : newNode,
-													navigator_node_type : node.navigator_node_type,
-													navigator_line_label : d.navigator_line_label,
-													navigator_node_concept : node.navigator_node_concept,
-													navigator_line_display : true
-													
-												};
-												links.push(newLink);
-												selectNode.linkChildren.push(newLink);
-											}
-											paint();
-											selectNode.page[d.navigator_node_label].start = selectNode.page[d.navigator_node_label].start
-													+ pageSize;
-										},
-										failure : function(response, options) {
-											Ext.MessageBox.alert('Error', response.responseText);
-										}
-									});
-						}
-					} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == d.navigator_node_type) {
-						if (selectNode.page === undefined) {
-							selectNode.page = new Object();
-							selectNode.nodeChildren = new Array();
-							selectNode.linkChildren = new Array();
-						}
-						if (selectNode.page[d.navigator_node_label] === undefined) {
-							var pageObject = new Object();
-							pageObject.pageNumber = 1
-							pageObject.ids = d.navigator_node_ids;
-							selectNode.page[d.navigator_node_label] = pageObject;
-						}
-						var idArray = [];
-						for (i = 0; (i < pageSize && i < selectNode.page[d.navigator_node_label].ids.length); i++) {
-							idArray[i] = selectNode.page[d.navigator_node_label].ids[i];
-						}
-						if (idArray.length > 0) {
-							Ext.Ajax
-									.request({
-										url : restServiceUrl + '/data/'
-												+ cluster + '/records/'
-												+ d.navigator_node_concept,
-										method : 'GET',
-										params : {
-											ids : idArray,
-											language : language
-										},
-										success : function(response, options) {
-											selectNode.expanded = true;
-											var newNodes = eval('('
-													+ response.responseText
-													+ ')');
-											for ( var i = 0; i < newNodes.length; i++) {
-												var node = newNodes[i];
-												var nodeLabel = handleMultiLanguageLabel(node.navigator_node_label);
-												var newNode = {
-													x : selectNode.x
-															+ getRandomInt(-15,
-																	15),
-													y : selectNode.y
-															+ getRandomInt(-15,
-																	15),
-													navigator_node_ids : node.navigator_node_ids,
-													navigator_node_concept : d.navigator_node_concept,
-													navigator_node_type : node.navigator_node_type,
-													navigator_node_relation : NAVIGATOR_NODE_OUT_ENTITY_TYPE,
-													navigator_node_label : nodeLabel,
-													navigator_node_short_label : generateNodeLabel(nodeLabel),
-													navigator_node_expand : false,
-													navigator_node_display : true
-												};
-												selectNode.nodeChildren.push(newNode);
-												nodes.push(newNode);
-												var newLink = {
-													source : selectNode,
-													target : newNode,
-													navigator_node_type : node.navigator_node_type,
-													navigator_line_label : d.navigator_line_label,
-													navigator_node_concept : node.navigator_node_concept,
-													navigator_line_display : true
-												};
-												selectNode.linkChildren.push(newLink);
-												links.push(newLink);
-												selectNode.page[d.navigator_node_label].ids
-														.shift();
-											}
-											paint();
-										},
-										failure : function(response, options) {
-											Ext.MessageBox.alert('Error', response.responseText);
-										}
-									});
-						}
-					}
-				}
-
-				var dblclick = function(d, i) {
-//					d.fixed = false;
-					 if (d.nodeChildren) {
-						 d.expanded = false
-						 collapseNode(d);
-							svg
-							.selectAll(
-									".image_"
-											+ getIdentifier(d))
-							.attr("xlink:href",function(node) {
-								return getImage(node);
-							});
-					 } else {
-						 d.expanded = true
-						 svg
-							.selectAll(
-									".image_"
-											+ getIdentifier(d))
-							.attr("xlink:href",function(node) {
-								return getImage(node);
-							});
-						 expandNode(d);
-					}
-					paint();
-				}
-				
-				var expandNode = function(d) {
-					 if (d._nodeChildren != undefined && d._linkChildren != undefined && d.expanded == true) {
-						d.nodeChildren = d._nodeChildren;
-						d.linkChildren = d._linkChildren;
-						 for (var i=0;i<d.nodeChildren.length;i++) {
-							 svg.selectAll(".image_"+ getIdentifier(d.nodeChildren[i]))
-							.attr("xlink:href",function(node) {
-								return getImage(node);
-							});
-							nodes[d.nodeChildren[i].index].navigator_node_display = true;
-						 	expandNode(d.nodeChildren[i]);
-						 }
-						for (var j=0;j<d.linkChildren.length;j++) {
-							links[d.linkChildren[j].target.index - 1].navigator_line_display = true;
-						}
-					    d._nodeChildren = null;
-					 }
-				}
-				
-				var collapseNode = function(d) {
-					 if (d.nodeChildren != undefined) {
-						 d._nodeChildren = d.nodeChildren;
-						 d._linkChildren = d.linkChildren;
-						 for (var i=0;i<d.nodeChildren.length;i++) {
-							 nodes[d.nodeChildren[i].index].navigator_node_display = false;
-							 collapseNode(d.nodeChildren[i]);
-						 }
-						 for (var j=0;j<d.linkChildren.length;j++) {
-							 links[d.linkChildren[j].target.index - 1].navigator_line_display = false;
-						 }
-						 d.nodeChildren = null;
-						 d.linkChildren = null;
-					 }
-				}
-
-				var getRandomInt = function(min, max) {
-					return Math.floor(Math.random() * (max - min + 1) + min);
-				}
-
-				function showMenu(d, i) {
-					if (d3.event.defaultPrevented) return;
-					hiddenTypeCluster();
-					var elementId = "menu_group";
-					var arcs = container.append("g").attr("id", elementId)
-							.selectAll("g").data(piedata).enter().append("g")
-							.attr("transform",
-									"translate(" + (d.x) + "," + (d.y) + ")");
-
-					var backgroundPath = arcs.append("path").attr("fill",
-							"#ddd").attr("d", arc);
-
-					var path = arcs.append("path").attr("fill", function(d, i) {
-						return color(i);
-					}).transition().ease("elastic").duration(750).attrTween(
-							"d", arcTween);
-					arcs.append("text").attr("transform", function(d) {
-						return "translate(" + arc.centroid(d) + ")";
-					}).attr("text-anchor", "middle").text(function(d) {
-						return d.data.label;
-					});
-					arcs.on("click", menuClick);
-					// arcs.on("mouseout", menuMouseout);
-					selectNode = d;
-				}
-
-				function arcTween(d) {
-					var i = d3.interpolate({
-						value : 0
-					}, d);
-					return function(t) {
-						return arc(i(t));
-					};
-				}
-
-				function mouseover(d, i) {
-					d3.select(this).transition().duration(750)
-					.attr("width", 20).attr("height", 20);
-					link_text.style("fill-opacity", function(link) {
-						if (link.navigator_line_display) {
-							if (link.source === d || link.target === d) {
-								return 1.0;
-							} else {
-								return 0.0;
-							}
-						}
-					});
-					node_text.text(function(node){
-						if (node.navigator_node_display) {
-							if (node == d) {
-								return node.navigator_node_label;
-							} else {
-								return node.navigator_node_short_label
-							}
-						}
-					});
-					node_concept_text.style("fill-opacity", function(node) {
-						if (node.navigator_node_display) {
-							if (node == d) {
-								return 1.0;
-							} else {
-								return 0.0;
-							}
-						}
-					});
-				}
-
-				function type_mouseover(d, i) {
-					typeLink.style("fill-opacity", function(link) {
-						if (link.source === d || link.target === d) {
-							return 1.0;
-						} else {
-							return 0.0;
-						}
-					});
-				}
-
-				function mouseout(d, i) {
-					d3.select(this).transition().duration(250).attr("width",
-							image_diameter).attr("height", image_diameter);
-					link_text.style("fill-opacity", "0.0");
-					node_concept_text.style("fill-opacity", "0.0");
-					node_text.text(function(node){
-						if (node.navigator_node_display) {
-							return node.navigator_node_short_label;
-						}
-					});
-				}
-
-				function type_mouseout(d, i) {
-					typeLink.style("fill-opacity", "0.0");
-				}
-
-				function tick() {
-					node
-							.forEach(function(d, i) {
-								d.x = d.x - image_diameter / 2 < 0 ? image_diameter / 2
-										: d.x;
-								d.x = d.x + image_diameter / 2 > width ? width
-										- image_diameter / 2 : d.x;
-								d.y = d.y - image_diameter / 2 < 0 ? image_diameter / 2
-										: d.y;
-								d.y = d.y + image_diameter / 2 + image_offset > height ? height
-										- image_diameter / 2 - image_offset
-										: d.y;
-							});
-					link.attr(
-							"x1",
-							function(d) {
-								var mid_x = (d.source.x + d.target.x) / 2;
-								return d.source.x < mid_x ? d.source.x
-										+ image_offset : d.source.x
-										- image_offset;
-							}).attr(
-							"y1",
-							function(d) {
-								var mid_y = (d.source.y + d.target.y) / 2;
-								return d.source.y < mid_y ? d.source.y
-										+ image_offset : d.source.y
-										- image_offset;
-							}).attr(
-							"x2",
-							function(d) {
-								var mid_x = (d.source.x + d.target.x) / 2;
-								return d.target.x < mid_x ? d.target.x
-										+ image_offset : d.target.x
-										- image_offset;
-							}).attr(
-							"y2",
-							function(d) {
-								var mid_y = (d.source.y + d.target.y) / 2;
-								return d.target.y < mid_y ? d.target.y
-										+ image_offset : d.target.y
-										- image_offset;
-							})
-					node.attr("x", function(d) {
-						return d.x - image_offset;
-					}).attr("y", function(d) {
-						return d.y - image_offset;
-					});
-					link_text.attr("x", function(d) {
-						return (d.source.x + d.target.x) / 2;
-					}).attr("y", function(d) {
-						return (d.source.y + d.target.y) / 2;
-					});
-					node_text.attr("x", function(d) {
-						return d.x;
-					}).attr("y", function(d) {
-						return d.y + image_diameter / 2;
-					});
-					node_concept_text.attr("x", function(d) {
-						return d.x;
-					}).attr("y", function(d) {
-						return d.y + image_diameter / 2;
-					});
-				}
-
-//				function zoomed() {
-//					svg.attr("transform", "translate(" + d3.event.translate
-//							+ ")scale(" + d3.event.scale + ")");
-//				}
-
-				function init(id, concept, cluster) {
-					generateArrowMarker();
-					var ids = new Array(id);
-					Ext.Ajax
-							.request({
-								url : restServiceUrl + '/data/' + cluster
-										+ '/records/' + concept,
-								method : 'GET',
-								params : {
-									ids : ids,
-									language : language
-								},
-								success : function(response, options) {
-									nodes = eval('(' + response.responseText
-											+ ')');
-									nodes[0].navigator_node_label = handleMultiLanguageLabel(nodes[0].navigator_node_label);
-									nodes[0].navigator_node_short_label = generateNodeLabel(nodes[0].navigator_node_label);
-									nodes[0].children = new Array();
-									nodes[0].navigator_node_expand = true;
-									nodes[0].navigator_node_display = true;
-									links = [];
-									force = d3.layout.force().nodes(nodes)
-											.links(links).size(
-													[ width, height ])
-											.linkDistance(120).charge([ -400 ]);
-									drag = force.drag().on("dragstart",
-											function(d, i) {
-												d.fixed = true;
-												hiddenTypeCluster();
-											});
-
-									links = force.links();
-									nodes = force.nodes();
-									link = container.append("g").attr("id",
-											"navigator_data_link_group")
-											.selectAll(".link");
-									node = container.append("g").attr("id",
-											"navigator_data_node_group")
-											.selectAll("image");
-									link_text = container.append("g").attr(
-											"id", "navigator_text_link_group")
-											.selectAll(".linetext");
-									node_text = container.append("g").attr(
-											"id", "navigator_text_node_group")
-											.selectAll(".nodetext");
-									node_concept_text = container.append("g").attr(
-											"id", "navigator_concept_text_node_group")
-											.selectAll(".nodetext");
-									force.on("tick", tick);
-									paint();
-								},
-								failure : function(response, options) {
-									Ext.MessageBox.alert('Error', response.responseText);
-								}
-							});
-				}
-
-				function getColor(o) {
-					if (NAVIGATOR_NODE_IN_ENTITY_TYPE == o.navigator_node_type) {
-						return NAVIGATOR_NOD_COLOR_INBOUND;
-					} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == o.navigator_node_type) {
-						return NAVIGATOR_NOD_COLOR_OUTBOUND;
-					} else {
-						return NAVIGATOR_NOD_COLOR_DATA;
-					}
-				}
-
-				function getImage(o) {
-					if (NAVIGATOR_NODE_IN_ENTITY_TYPE == o.navigator_node_type) {
-						return NAVIGATOR_NODE_IMAGE_INBOUND;
-					} else if (NAVIGATOR_NODE_OUT_ENTITY_TYPE == o.navigator_node_type) {
-						return NAVIGATOR_NODE_IMAGE_OUTBOUND;
-					} else if (o.expanded != undefined && o.expanded == false) {
-						return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
-					} else if (showNode != undefined && getIdentifier(o) == getIdentifier(showNode)) {
-						return NAVIGATOR_NODE_IMAGE_SELECTED_DATA;
-					} else {
-						return NAVIGATOR_NODE_IMAGE_DATA;
-					}
-				}
-
-				function getIdentifier(o) {
-					var identifier;
-					if (o.navigator_node_concept !== undefined) {
-						identifier = 'navigator_' + o.navigator_node_concept;
-					}
-					if (o.navigator_node_ids !== undefined) {
-						identifier = identifier + '_' + o.navigator_node_ids;
-					}
-					return identifier.replace(/[ ]/g, "_");
-				}
-
-				function hiddenTypeCluster() {
-					if (selectNode !== undefined) {
-						svg.select("#cluster_type_in_group").remove();
-						svg.select("#cluster_type_out_group").remove();
-						svg.select("#menu_group").remove();
-					}
-				}
-
-				function handleMultiLanguageLabel(values) {
-					var label = '';
-					for (var i=0;i<values.length;i++) {
-						if (label != '') {
-							label = label + '.';
-						}
-						var value = values[i];
-						if (value != null) {
-							value = amalto.navigator.Navigator
-							.getMultiLanguageValue(value, language);
-						}
-						if (!(value == undefined || value == null || value == '')) {
-							label = label + value;
-						}
-					}
-					return label;
-				}
-				
-				function generateNodeLabel(value) {
-					if (value != null) {
-						if (value.length > nodeLabelLength) {
-							return value.substr(0,nodeLabelLength) + '...'
-						} else {
-							return value;
-						}
-					} else {
-						return '';
-					}
-				}
-
-				function generateArrowMarker() {
-					var arrowMarker_in = container.append("marker").attr("id",
-							"arrow_in").attr("markerUnits", "strokeWidth")
-							.attr("markerWidth", "10").attr("markerHeight",
-									"10").attr("viewBox", "0 0 12 12").attr(
-									"refX", "6").attr("refY", "6").attr(
-									"orient", "auto");
-
-					var arrow_path_in = "M2,6 L10,2 L6,6 L10,10 L2,6";
-					arrowMarker_in.append("path").attr("d", arrow_path_in)
-							.style("stroke-width", 1).style("fill", "#ccc");
-					var arrowMarker_out = container.append("marker").attr("id",
-							"arrow_out").attr("markerUnits", "strokeWidth")
-							.attr("markerWidth", "10").attr("markerHeight",
-									"10").attr("viewBox", "0 0 12 12").attr(
-									"refX", "6").attr("refY", "6").attr(
-									"orient", "auto");
-
-					var arrow_path_out = "M2,2 L10,6 L2,10 L6,6 L2,2";
-					arrowMarker_out.append("path").attr("d", arrow_path_out)
-							.style("stroke-width", 1).style("fill", "#ccc");
-				}
-				
-				function regenerateDuplicateTypeName(nodeList) {
-					var nodeLabelList = new Array();
-					var nodeMap = new Object();
-					for (var i=0;i<nodeList.length;i++) {
-						var newNode = nodeList[i];
-						if (nodeMap[newNode.navigator_node_label] != undefined) {
-							nodeMap[newNode.navigator_node_label].push(newNode);
-						} else {
-							nodeMap[newNode.navigator_node_label] = new Array();
-							nodeMap[newNode.navigator_node_label].push(newNode);
-							nodeLabelList.push(newNode.navigator_node_label);
-						}
-					} 
-					
-					for (var i=0;i<nodeLabelList.length;i++) {
-						var nodeLabel = nodeLabelList[i];
-						if (nodeMap[nodeLabel].length > 1) {
-							var duplicateNodeList = nodeMap[nodeLabel];
-							for (var j=0;j<duplicateNodeList.length;j++) {
-								duplicateNodeList[j].navigator_node_label = duplicateNodeList[j].navigator_node_label + "#" + duplicateNodeList[j].navigator_line_label
-							}
-						}
-					}
+				init();
+			});
+		},
+	
+		resize : function() {
+			if (svg != undefined) {
+				svg.attr("width",Ext.get("navigator").dom.style.width)
+				.attr("height",Ext.get("navigator").dom.style.height);
 			}
 
-			});
-	
-	
-}
+			if (rect != undefined) {
+				rect.attr("width",Ext.get("navigator").dom.style.width)
+				.attr("height",Ext.get("navigator").dom.style.height);
+			}
+		}
+	}
+}();
