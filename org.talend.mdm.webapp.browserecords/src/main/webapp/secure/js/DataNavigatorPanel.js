@@ -82,20 +82,20 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		link.enter()
 		.append("line")
 		.style("stroke-width", 1)
-		.style("stroke", "#ccc");
-//		.attr("marker-start",function(link, i) {
-//			if (link.target.navigator_node_relation == NAVIGATOR_NODE_IN_ENTITY_TYPE) {
-//				return "url(#arrow_in)";
-//			} else {
-//				return "";
-//			}
-//		}).attr("marker-end",function(link, i) {
-//			if (link.target.navigator_node_relation == NAVIGATOR_NODE_OUT_ENTITY_TYPE) {
-//				return "url(#arrow_out)";
-//			} else {
-//				return "";
-//			}
-//		});
+		.style("stroke", "#ccc")
+		.attr("marker-start",function(link, i) {
+			if (link.target.navigator_node_relation == NAVIGATOR_NODE_IN_ENTITY_TYPE && !(os.isWin7 && browser.isIE)) {
+				return "url(#arrow_in)";
+			} else {
+				return "";
+			}
+		}).attr("marker-end",function(link, i) {
+			if (link.target.navigator_node_relation == NAVIGATOR_NODE_OUT_ENTITY_TYPE && !(os.isWin7 && browser.isIE)) {
+				return "url(#arrow_out)";
+			} else {
+				return "";
+			}
+		});
 		
 		node.attr("width", function(d) {
 			if (d.navigator_node_display) {
@@ -983,6 +983,42 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		arrowMarker_out.append("path").attr("d", arrow_path_out)
 				.style("stroke-width", 1).style("fill", "#ccc");
 	}
+	
+	var os = (function() {
+		var UserAgent = navigator.userAgent.toLowerCase();
+		return {
+		    isWin2K     : /windows nt 5.0/.test(UserAgent),
+		    isXP      : /windows nt 5.1/.test(UserAgent),
+		    isVista     : /windows nt 6.0/.test(UserAgent),
+		    isWin7     : /windows nt 6.1/.test(UserAgent),
+		    isWin8     : /windows nt 6.2/.test(UserAgent),
+		    isWin81     : /windows nt 6.3/.test(UserAgent)
+		};
+	}());
+	
+	var browser = (function() {
+		var UserAgent = navigator.userAgent.toLowerCase();
+		return {
+			isUc   : /ucweb/.test(UserAgent),
+		    isChrome : /chrome/.test(UserAgent.substr(-33,6)),
+		    isFirefox : /firefox/.test(UserAgent),
+		    isOpera  : /opera/.test(UserAgent),
+		    isSafire : /safari/.test(UserAgent) && !/chrome/.test(UserAgent),
+		    is360   : /360se/.test(UserAgent),
+		    isBaidu  : /bidubrowser/.test(UserAgent),
+		    isSougou : /metasr/.test(UserAgent),
+		    isIE   : /msie/.test(UserAgent),
+		    isIE6   : /msie 6.0/.test(UserAgent),
+		    isIE7   : /msie 7.0/.test(UserAgent),
+		    isIE8   : /msie 8.0/.test(UserAgent),
+		    isIE9   : /msie 9.0/.test(UserAgent),
+		    isIE10  : /msie 10.0/.test(UserAgent),
+		    isIE11  : /msie 11.0/.test(UserAgent),
+		    isLB   : /lbbrowser/.test(UserAgent),
+		　　　isWX   : /micromessenger/.test(UserAgent),
+		    isQQ   : /qqbrowser/.test(UserAgent)
+		};
+	}());
 	
 	return {
 		initUI : function(restServiceUrlParameter, idParameter, conceptParameter,clusterParameter, languageParameter) {
