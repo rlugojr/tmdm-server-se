@@ -84,13 +84,13 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		.style("stroke-width", 1)
 		.style("stroke", "#ccc")
 		.attr("marker-start",function(link, i) {
-			if (link.target.navigator_node_relation == NAVIGATOR_NODE_IN_ENTITY_TYPE && !(os.isWin7 && browser.isIE)) {
+			if (link.target.navigator_node_relation == NAVIGATOR_NODE_IN_ENTITY_TYPE && isSupportArrow()) {
 				return "url(#arrow_in)";
 			} else {
 				return "";
 			}
 		}).attr("marker-end",function(link, i) {
-			if (link.target.navigator_node_relation == NAVIGATOR_NODE_OUT_ENTITY_TYPE && !(os.isWin7 && browser.isIE)) {
+			if (link.target.navigator_node_relation == NAVIGATOR_NODE_OUT_ENTITY_TYPE && isSupportArrow()) {
 				return "url(#arrow_out)";
 			} else {
 				return "";
@@ -982,6 +982,10 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		var arrow_path_out = "M2,2 L10,6 L2,10 L6,6 L2,2";
 		arrowMarker_out.append("path").attr("d", arrow_path_out)
 				.style("stroke-width", 1).style("fill", "#ccc");
+	}
+	
+	function isSupportArrow() {
+		return !((os.isWin7 || os.isWin8 || os.isWin81) && browser.isIE)
 	}
 	
 	var os = (function() {
