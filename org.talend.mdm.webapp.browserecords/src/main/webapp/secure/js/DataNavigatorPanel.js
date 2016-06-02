@@ -12,7 +12,6 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 	var NAVIGATOR_NODE_IMAGE_DATA = "secure/img/navigator_data.png";
 	var NAVIGATOR_NODE_IMAGE_SELECTED_DATA = "secure/img/navigator_selected_data.png";
 	var NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA = "secure/img/navigator_collapsed_data.png";
-	var pageSize = 5;
 	var filterValue = '';
 	var nodeLabelLength=20;
 	var image_diameter = 16;
@@ -388,61 +387,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		} else if ('settings' === arc.data.name) {
 			hiddenTypeCluster();
 			if (NAVIGATOR_NODE_VALUE_TYPE == selectNode.navigator_node_type) {
-				var settingWindow = new Ext.Window(
-						{
-							id : 'settingWindow',
-							title : message
-									.getMsg("setting_window_title"),
-							width : 300,
-							height : 131,
-							modal : true,
-							layout : 'form',
-							bodyStyle : "padding:10px",
-							draggable:false,
-							resizable : false,
-							layout : 'fit',
-							items : [ {
-								id : 'settingForm',
-								xtype : 'form',
-								labelWidth : 60,
-								labelAlign : 'right',
-								buttonAlign : 'center',
-								items : [ {
-									xtype : 'numberfield',
-									id : 'pageSize',
-									fieldLabel : message
-											.getMsg("setting_window_page_label"),
-									width : 'auto',
-									value : pageSize
-								} ],
-								buttons : [
-										{
-											xtype : 'button',
-											text : message
-													.getMsg("setting_window_button_ok"),
-											handler : function() {
-												pageSize = Number(Ext
-														.getCmp('pageSize').value);
-												Ext
-														.getCmp(
-																'settingWindow')
-														.close();
-											}
-										},
-										{
-											xtype : 'button',
-											text : message
-													.getMsg("setting_window_button_cancel"),
-											handler : function() {
-												Ext
-														.getCmp(
-																'settingWindow')
-														.close();
-											}
-										} ]
-							} ]
-						});
-				Ext.getCmp('settingWindow').show();
+				amalto.navigator.Navigator.showSettingWindow();
 			}
 		}
 	}
@@ -460,7 +405,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 				pageObject.start = 0
 				selectNode.page[d.navigator_node_concept] = pageObject;
 			}
-			if ((selectNode.page[d.navigator_node_concept].start == 0 || selectNode.page[d.navigator_node_concept].start < (selectNode.page[d.navigator_node_concept].total + pageSize))) {
+			if ((selectNode.page[d.navigator_node_concept].start == 0 || selectNode.page[d.navigator_node_concept].start < (selectNode.page[d.navigator_node_concept].total + amalto.navigator.Navigator.getPageSize()))) {
 				Ext.Ajax
 						.request({
 							url : restServiceUrl + '/data/'
@@ -472,7 +417,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 								foreignKeyValue : d.navigator_node_foreignkey_value,
 								filterValue : filterValue,
 								start : selectNode.page[d.navigator_node_concept].start,
-								limit : pageSize,
+								limit : amalto.navigator.Navigator.getPageSize(),
 								language : language
 							},
 							success : function(response, options) {
@@ -520,7 +465,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 								}
 								paint();
 								selectNode.page[d.navigator_node_concept].start = selectNode.page[d.navigator_node_concept].start
-										+ pageSize;
+										+ amalto.navigator.Navigator.getPageSize();
 							},
 							failure : function(response, options) {
 								Ext.MessageBox.alert('Error', response.responseText);
@@ -540,7 +485,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 				selectNode.page[d.navigator_node_concept] = pageObject;
 			}
 			var idArray = [];
-			for (i = 0; (i < pageSize && i < selectNode.page[d.navigator_node_concept].ids.length); i++) {
+			for (i = 0; (i < amalto.navigator.Navigator.getPageSize() && i < selectNode.page[d.navigator_node_concept].ids.length); i++) {
 				idArray[i] = selectNode.page[d.navigator_node_concept].ids[i];
 			}
 			if (idArray.length > 0) {

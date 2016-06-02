@@ -17,8 +17,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
+import org.talend.mdm.webapp.base.client.i18n.BaseMessagesFactory;
 import org.talend.mdm.webapp.base.client.util.FormatUtil;
 import org.talend.mdm.webapp.base.client.util.MultilanguageMessageParser;
+import org.talend.mdm.webapp.base.client.widget.PagingToolBarEx;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
@@ -31,23 +33,35 @@ import org.talend.mdm.webapp.browserecords.shared.Constants;
 import org.talend.mdm.webapp.browserecords.shared.ViewBean;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.HorizontalPanel;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.Window;
+import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.Field;
+import com.extjs.gxt.ui.client.widget.form.NumberField;
+import com.extjs.gxt.ui.client.widget.form.Validator;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.TableData;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 public class NavigatorPanel extends ContentPanel {
-
+    
+    private String NAVIGATOR_PAGESIZE = "browseRecord_pagesize"; //$NON-NLS-1$
+    
     private BrowseRecordsServiceAsync service = (BrowseRecordsServiceAsync) Registry.get(BrowseRecords.BROWSERECORDS_SERVICE);
 
     private ContentPanel navigatorPanel;
@@ -60,8 +74,12 @@ public class NavigatorPanel extends ContentPanel {
 
     private boolean isHierarchyCall = false;
 
-    String operation = ItemDetailToolBar.VIEW_OPERATION;
-
+    private String operation = ItemDetailToolBar.VIEW_OPERATION;
+    
+    private int pageSize = 5;
+    
+    private Window settingWindow;
+    
     public NavigatorPanel() {
         setId(MessagesFactory.getMessages().navigator_panel_label());
         initPanel();
@@ -82,6 +100,54 @@ public class NavigatorPanel extends ContentPanel {
         centerData.setMaxSize(7000);
         initNavigatorPanel();
         add(navigatorPanel, centerData);
+        
+        if (Cookies.getCookie(NAVIGATOR_PAGESIZE) != null) {
+            pageSize = Integer.parseInt(Cookies.getCookie(NAVIGATOR_PAGESIZE));
+        }
+        
+        settingWindow = new Window();
+        settingWindow.setHeading(MessagesFactory.getMessages().setting_window_title());
+        settingWindow.setWidth(300);
+        settingWindow.setHeight(131);
+        settingWindow.setResizable(false);
+        settingWindow.setDraggable(false);
+        settingWindow.setLayout(new FitLayout());
+        settingWindow.setModal(true);
+        settingWindow.setBlinkModal(true);
+        
+        HorizontalPanel horizontalPanel = new HorizontalPanel();
+        TableData layoutData = new TableData();
+        layoutData.setPadding(10);
+        Label pageSizeLabel = new Label(MessagesFactory.getMessages().page_size_field_label());
+        final NumberField pageSizeField = new NumberField();
+        pageSizeField.setValue(pageSize);
+        pageSizeField.setValidator(validator);
+        pageSizeField.setWidth(150);
+        horizontalPanel.add(pageSizeLabel,layoutData);
+        horizontalPanel.add(pageSizeField,layoutData);
+        Button okButton = new Button(MessagesFactory.getMessages().ok_btn());
+        okButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
+
+            @Override
+            public void componentSelected(ButtonEvent ce) {
+                NavigatorPanel.this.pageSize = pageSizeField.getValue().intValue();
+                Cookies.setCookie(NAVIGATOR_PAGESIZE, String.valueOf(NavigatorPanel.this.pageSize));
+                settingWindow.close();
+            }
+        });
+        Button cancelButton = new Button(MessagesFactory.getMessages().cancel_btn());
+        cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
+
+            @Override
+            public void componentSelected(ButtonEvent ce) {
+                pageSizeField.setValue(pageSize);
+                settingWindow.close();
+            }
+        });
+        settingWindow.add(horizontalPanel);
+        settingWindow.setButtonAlign(HorizontalAlignment.CENTER);
+        settingWindow.addButton(okButton);
+        settingWindow.addButton(cancelButton);
     }
 
     private void initNavigatorPanel() {
@@ -104,7 +170,6 @@ public class NavigatorPanel extends ContentPanel {
         detailPanel = new ContentPanel();
         detailPanel.setLayout(new FitLayout());
         detailPanel.setHeading(MessagesFactory.getMessages().navigator_detailPanel_label());
-
     }
 
     public void updateDetailPanel(final String ids, final String concept) {
@@ -169,6 +234,40 @@ public class NavigatorPanel extends ContentPanel {
             }
         });
     }
+    
+    public int getPageSize() {
+        return this.pageSize;
+    }
+    
+    public void showSettingWindow() {
+        settingWindow.show();
+    }
+    
+    private Validator validator = new Validator() {
+
+        @Override
+        public String validate(Field<?> field, String value) {
+            String valueStr = value == null ? "" : value.toString(); //$NON-NLS-1$
+            boolean success = false;
+            try {
+                success = validatePageSize(Integer.parseInt(valueStr));
+            } catch (NumberFormatException e) {
+                success = false;
+            }
+            if (!success) {
+                return BaseMessagesFactory.getMessages().page_size_notice();
+            }
+            return null;
+        }
+    };
+
+    private boolean validatePageSize(int pageSizeNumber) {
+        if (pageSizeNumber <= 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
     public static String getMultiLanguageValue(String value, String language) {
         LinkedHashMap<String, String> languageValueMap = new LinkedHashMap<String, String>();
@@ -206,13 +305,19 @@ public class NavigatorPanel extends ContentPanel {
         $wnd.amalto.navigator = $wnd.amalto.navigator || {};
         $wnd.amalto.navigator.Navigator = $wnd.amalto.navigator.Navigator || {};
         $wnd.amalto.navigator.Navigator.openRecord = function(ids, concept) {
-            instance
-                    .@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::updateDetailPanel(Ljava/lang/String;Ljava/lang/String;)(
-                            ids, concept);
+            instance.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::updateDetailPanel(Ljava/lang/String;Ljava/lang/String;)(ids, concept);
         }
                 
         $wnd.amalto.navigator.Navigator.getMultiLanguageValue = function(value, language) {
             return @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getMultiLanguageValue(Ljava/lang/String;Ljava/lang/String;)(value, language);
+        }
+        
+        $wnd.amalto.navigator.Navigator.getPageSize = function() {
+            return instance.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getPageSize()();
+        }
+        
+        $wnd.amalto.navigator.Navigator.showSettingWindow = function() {
+            instance.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::showSettingWindow()();
         }
     }-*/;
 

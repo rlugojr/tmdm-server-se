@@ -72,6 +72,8 @@ public interface BrowseRecordsMessages extends Messages {
     String import_btn();
 
     String export_btn();
+    
+    String page_size_field_label();
 
     String page_size_label();
 
@@ -560,4 +562,6 @@ public interface BrowseRecordsMessages extends Messages {
     String navigator_panel_label();
 
     String navigator_detailPanel_label();
+    
+    String setting_window_title();
 }
