@@ -20,7 +20,6 @@ import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.base.client.i18n.BaseMessagesFactory;
 import org.talend.mdm.webapp.base.client.util.FormatUtil;
 import org.talend.mdm.webapp.base.client.util.MultilanguageMessageParser;
-import org.talend.mdm.webapp.base.client.widget.PagingToolBarEx;
 import org.talend.mdm.webapp.base.shared.TypeModel;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecords;
 import org.talend.mdm.webapp.browserecords.client.BrowseRecordsServiceAsync;
@@ -130,9 +129,11 @@ public class NavigatorPanel extends ContentPanel {
 
             @Override
             public void componentSelected(ButtonEvent ce) {
-                NavigatorPanel.this.pageSize = pageSizeField.getValue().intValue();
-                Cookies.setCookie(NAVIGATOR_PAGESIZE, String.valueOf(NavigatorPanel.this.pageSize));
-                settingWindow.close();
+                if (pageSizeField.isValid()) {
+                    NavigatorPanel.this.pageSize = pageSizeField.getValue().intValue();
+                    Cookies.setCookie(NAVIGATOR_PAGESIZE, String.valueOf(NavigatorPanel.this.pageSize));
+                    settingWindow.close();
+                }
             }
         });
         Button cancelButton = new Button(MessagesFactory.getMessages().cancel_btn());
