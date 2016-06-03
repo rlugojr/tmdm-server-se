@@ -38,9 +38,11 @@ import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.Window;
@@ -244,8 +246,18 @@ public class NavigatorPanel extends ContentPanel {
         settingWindow.show();
     }
     
+    public void sessionExpired() {
+        MessageBox.alert(BaseMessagesFactory.getMessages().warning_title(), BaseMessagesFactory.getMessages()
+                .session_timeout_error(), new Listener<MessageBoxEvent>() {
+            public void handleEvent(MessageBoxEvent be) {
+                Cookies.removeCookie("JSESSIONID"); //$NON-NLS-1$
+                Cookies.removeCookie("JSESSIONIDSSO"); //$NON-NLS-1$
+                com.google.gwt.user.client.Window.Location.replace(GWT.getHostPageBaseURL());
+            }
+        });
+    }
+    
     private Validator validator = new Validator() {
-
         @Override
         public String validate(Field<?> field, String value) {
             String valueStr = value == null ? "" : value.toString(); //$NON-NLS-1$
@@ -269,7 +281,7 @@ public class NavigatorPanel extends ContentPanel {
             return true;
         }
     }
-
+    
     public static String getMultiLanguageValue(String value, String language) {
         LinkedHashMap<String, String> languageValueMap = new LinkedHashMap<String, String>();
         LinkedHashMap<String, String> temp_languageValueMap = MultilanguageMessageParser.getLanguageValueMap(value);
@@ -313,6 +325,9 @@ public class NavigatorPanel extends ContentPanel {
             return @org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getMultiLanguageValue(Ljava/lang/String;Ljava/lang/String;)(value, language);
         }
         
+        $wnd.amalto.navigator.Navigator.sessionExpired = function() {
+            instance.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::sessionExpired()();
+        }
         $wnd.amalto.navigator.Navigator.getPageSize = function() {
             return instance.@org.talend.mdm.webapp.browserecords.client.widget.NavigatorPanel::getPageSize()();
         }

@@ -349,7 +349,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 						paintTypeCluster(root);
 					},
 					failure : function(response, options) {
-						Ext.MessageBox.alert('Error', response.responseText);
+						handleFailure(response);
 					}
 				});
 			}
@@ -380,7 +380,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 								paintTypeCluster(root);
 							},
 							failure : function(response, options) {
-								Ext.MessageBox.alert('Error', response.responseText);
+								handleFailure(response);
 							}
 						});
 			}
@@ -468,7 +468,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 										+ amalto.navigator.Navigator.getPageSize();
 							},
 							failure : function(response, options) {
-								Ext.MessageBox.alert('Error', response.responseText);
+								handleFailure(response);
 							}
 						});
 			}
@@ -542,7 +542,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 								paint();
 							},
 							failure : function(response, options) {
-								Ext.MessageBox.alert('Error', response.responseText);
+								handleFailure(response);
 							}
 						});
 			}
@@ -828,7 +828,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 						paint();
 					},
 					failure : function(response, options) {
-						Ext.MessageBox.alert('Error', response.responseText);
+						handleFailure(response);
 					}
 				});
 	}
@@ -964,10 +964,28 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		    isIE10  : /msie 10.0/.test(UserAgent),
 		    isIE11  : /msie 11.0/.test(UserAgent),
 		    isLB   : /lbbrowser/.test(UserAgent),
-		ã€€ã€€ã€€isWX   : /micromessenger/.test(UserAgent),
+		¡¡¡¡¡¡isWX   : /micromessenger/.test(UserAgent),
 		    isQQ   : /qqbrowser/.test(UserAgent)
 		};
 	}());
+	
+	function handleFailure(response) {
+		if (sessionExpired(response)) {
+			amalto.navigator.Navigator.sessionExpired();
+		} else {
+			Ext.MessageBox.alert('Error', response.responseText);
+		}
+		
+	}
+	
+	function sessionExpired(response) {
+		var message = response.responseText;
+		if (message.indexOf("This request requires HTTP authentication") != -1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 	
 	return {
 		initUI : function(restServiceUrlParameter, idParameter, conceptParameter,clusterParameter, languageParameter) {
