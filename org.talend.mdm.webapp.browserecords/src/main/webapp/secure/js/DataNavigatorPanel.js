@@ -826,10 +826,23 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		});
 	}
 
-//	function zoomed() {
-//		svg.attr("transform", "translate(" + d3.event.translate
-//				+ ")scale(" + d3.event.scale + ")");
-//	}
+	function zoomed() {
+		container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+	}
+	
+	function dragstarted(d) {
+        d3.event.sourceEvent.stopPropagation();
+        d3.select(this).classed("dragging", true);
+        force.start();
+    }
+
+    function dragged(d) {
+    	d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+    }
+
+    function dragended(d) {
+    	d3.select(this).classed("dragging", false);
+    }
 
 	function init() {
 		generateArrowMarker();
@@ -856,12 +869,14 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 								.links(links).size(
 										[ width, height ])
 								.linkDistance(120).charge([ -400 ]);
-						drag = force.drag().on("dragstart",
-								function(d, i) {
-									d.fixed = true;
-									hiddenTypeCluster();
-								});
-
+						drag = force.drag().origin(function(d) {
+							d.fixed = true;
+							hiddenTypeCluster();
+							return d;
+						}).on("dragstart", dragstarted)
+			            .on("drag", dragged)
+			            .on("dragend", dragended);
+					
 						links = force.links();
 						nodes = force.nodes();
 						link = container.append("g").attr("id",
@@ -1019,7 +1034,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		    isIE10  : /msie 10.0/.test(UserAgent),
 		    isIE11  : /msie 11.0/.test(UserAgent),
 		    isLB   : /lbbrowser/.test(UserAgent),
-		ã€€ã€€ã€€isWX   : /micromessenger/.test(UserAgent),
+		¡¡¡¡¡¡isWX   : /micromessenger/.test(UserAgent),
 		    isQQ   : /qqbrowser/.test(UserAgent)
 		};
 	}());
@@ -1055,11 +1070,13 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 					name : 'detail',
 					value : 25
 				} ];
-//						var zoom = d3.behavior.zoom().scaleExtent([ 1, 100 ]).on(
-//								"zoom", zoomed);
+				var zoom = d3.behavior.zoom()
+			    .center([width / 2, height / 2])
+			    .scaleExtent([1, 10])
+			    .on("zoom", zoomed);
 				svg = d3.select("#navigator").append("svg")
-					  .attr("width",Ext.get("navigator").dom.style.width)
-					  .attr("height", Ext.get("navigator").dom.style.height);
+					  .attr("width",2000)
+					  .attr("height", 2000).append("g").call(zoom).on('dblclick.zoom', null);
 				rect = svg.append("rect")
 					  .attr("width",Ext.get("navigator").dom.style.width)
 					  .attr("height",Ext.get("navigator").dom.style.height)
@@ -1089,11 +1106,6 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		},
 	
 		resize : function() {
-			if (svg != undefined) {
-				svg.attr("width",Ext.get("navigator").dom.style.width)
-				.attr("height",Ext.get("navigator").dom.style.height);
-			}
-
 			if (rect != undefined) {
 				rect.attr("width",Ext.get("navigator").dom.style.width)
 				.attr("height",Ext.get("navigator").dom.style.height);
