@@ -1034,7 +1034,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		    isIE10  : /msie 10.0/.test(UserAgent),
 		    isIE11  : /msie 11.0/.test(UserAgent),
 		    isLB   : /lbbrowser/.test(UserAgent),
-		¡¡¡¡¡¡isWX   : /micromessenger/.test(UserAgent),
+		    isWX   : /micromessenger/.test(UserAgent),
 		    isQQ   : /qqbrowser/.test(UserAgent)
 		};
 	}());
