@@ -413,6 +413,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 									+ d.navigator_node_concept,
 							method : 'GET',
 							params : {
+								foreignKeyConcept : selectNode.navigator_node_concept,
 								foreignKeyPath : d.navigator_node_foreignkey_path,
 								foreignKeyValue : d.navigator_node_foreignkey_value,
 								filterValue : filterValue,
