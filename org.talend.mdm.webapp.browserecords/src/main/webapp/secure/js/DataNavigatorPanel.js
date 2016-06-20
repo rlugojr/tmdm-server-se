@@ -17,6 +17,8 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 	var image_diameter = 16;
 	var image_offset = image_diameter / 2;
 	var image_padding = image_diameter / 4;
+	var class_index;
+	var class_array;
 	
 	var svg;
 	var rect;
@@ -113,7 +115,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		node.enter()
 		.append("image")
 		.attr("class", function(d) {
-			return "image_" + getIdentifier(d);
+			return "image_" + getClassIndex(d);
 		}).attr("width", image_diameter)
 		.attr("height",image_diameter)
 		.attr("identifier", function(d) {
@@ -304,7 +306,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 						selectNode.navigator_node_ids,
 						selectNode.navigator_node_concept);
 				if (showNode !== undefined) {
-					svg.selectAll(".image_" + getIdentifier(showNode))
+					svg.selectAll(".image_" + getClassIndex(showNode))
 					.attr("xlink:href",function(node) {
 						if (node.expanded != undefined && !node.expanded) {
 							return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
@@ -313,7 +315,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 						}
 					});
 				}
-				svg.selectAll(".image_" + getIdentifier(selectNode))
+				svg.selectAll(".image_" + getClassIndex(selectNode))
 				.attr("xlink:href",function(node) {
 					if (node.expanded != undefined && !node.expanded) {
 						return NAVIGATOR_NODE_IMAGE_COLLAPSED_DATA;
@@ -558,7 +560,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 				svg
 				.selectAll(
 						".image_"
-								+ getIdentifier(d))
+								+ getClassIndex(d))
 				.attr("xlink:href",function(node) {
 					return getImage(node);
 				});
@@ -567,7 +569,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 			 svg
 				.selectAll(
 						".image_"
-								+ getIdentifier(d))
+								+ getClassIndex(d))
 				.attr("xlink:href",function(node) {
 					return getImage(node);
 				});
@@ -581,7 +583,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 			d.nodeChildren = d._nodeChildren;
 			d.linkChildren = d._linkChildren;
 			 for (var i=0;i<d.nodeChildren.length;i++) {
-				 svg.selectAll(".image_"+ getIdentifier(d.nodeChildren[i]))
+				 svg.selectAll(".image_"+ getClassIndex(d.nodeChildren[i]))
 				.attr("xlink:href",function(node) {
 					return getImage(node);
 				});
@@ -778,6 +780,8 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 //	}
 
 	function init() {
+		class_index = 0;
+		class_array = new Array();
 		generateArrowMarker();
 		var ids = new Array(id);
 		Ext.Ajax
@@ -866,7 +870,18 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 		if (o.navigator_node_ids !== undefined) {
 			identifier = identifier + '_' + o.navigator_node_ids;
 		}
-		return identifier.replace(/[ ]/g, "_");
+		return identifier;
+	}
+	
+	function getClassIndex(o) {
+		var identifier = getIdentifier(o);
+		for (var i=0;i<class_array.length;i++) {
+			if (class_array[i] == identifier) {
+				return i;
+			}
+		}
+		class_array[class_index] = identifier;
+		return class_index++;
 	}
 
 	function hiddenTypeCluster() {

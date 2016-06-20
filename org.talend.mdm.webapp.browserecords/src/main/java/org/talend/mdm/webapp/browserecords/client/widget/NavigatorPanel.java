@@ -91,16 +91,18 @@ public class NavigatorPanel extends ContentPanel {
         setHeaderVisible(false);
         setLayout(new BorderLayout());
         setStyleAttribute("height", "100%"); //$NON-NLS-1$ //$NON-NLS-2$  
-        BorderLayoutData eastData = new BorderLayoutData(LayoutRegion.EAST, 400);
-        eastData.setSplit(true);
-        eastData.setFloatable(false);
-        initDetailPanel();
-        add(detailPanel, eastData);
-        BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER);
-        centerData.setMargins(new Margins(0, 5, 0, 0));
-        centerData.setMaxSize(7000);
+        BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST,800);
+        westData.setMargins(new Margins(0, 5, 0, 0));
+        westData.setSplit(true);
+        westData.setFloatable(false);
+        westData.setMinSize(0);
+        westData.setMaxSize(7000);
         initNavigatorPanel();
-        add(navigatorPanel, centerData);
+        add(navigatorPanel, westData);
+        
+        BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER);
+        initDetailPanel();
+        add(detailPanel, centerData);
         
         if (Cookies.getCookie(NAVIGATOR_PAGESIZE) != null) {
             pageSize = Integer.parseInt(Cookies.getCookie(NAVIGATOR_PAGESIZE));
