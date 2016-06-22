@@ -1264,6 +1264,42 @@ public class Util {
     public static String getDefaultSystemLocale() {
         return MDMConfiguration.getConfiguration().getProperty("system.locale.default");//$NON-NLS-1$
     }
+    
+    public static String formatIdsByBracket(String ids, int idSize) {
+        if (ids != null && idSize > 0) {
+            List<String> idsList = new ArrayList<String>();
+            String[] idsArray = new String[idSize];
+            if (idSize == 1) {
+                idsArray[0] = ids;
+            } else {
+                boolean startWithDot = ids.startsWith("."); //$NON-NLS-1$
+                boolean endWithDot = ids.endsWith("."); //$NON-NLS-1$
+                String[] tempIdArray = startWithDot ? ids.substring(1).split("\\.") : ids.split("\\."); //$NON-NLS-1$ //$NON-NLS-2$
+                for (int i = 0; i < tempIdArray.length; i++) {
+                    if (i < idSize) {
+                        idsArray[i] = tempIdArray[i];
+                    } else {
+                        idsArray[idSize - 1] = idsArray[idSize - 1] + "." + tempIdArray[i]; //$NON-NLS-1$
+                    }
+                }
+                if (startWithDot) {
+                    idsArray[0] = "." + idsArray[0]; //$NON-NLS-1$
+                }
+                if (endWithDot) {
+                    idsArray[idsArray.length - 1] = idsArray[idsArray.length - 1] + "."; //$NON-NLS-1$
+                }
+            }
+            StringBuilder idString = new StringBuilder();
+            for (String id : idsArray) {
+                idString.append("["); //$NON-NLS-1$
+                idString.append(id);
+                idString.append("]"); //$NON-NLS-1$
+            }
+            return idString.toString();
+        } else {
+            return null;
+        }
+    }
 
     public static class BeforeDeleteResult {
 
