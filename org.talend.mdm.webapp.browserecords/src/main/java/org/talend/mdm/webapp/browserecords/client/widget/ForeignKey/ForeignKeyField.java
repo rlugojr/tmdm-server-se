@@ -57,8 +57,6 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
 
     protected Image selectButton;
 
-    private ForeignKeyListWindow foreignKeyListWindow;
-
     protected String foreignConceptName;
 
     protected boolean showInput;
@@ -76,7 +74,6 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
         this.selectButton = new Image(Icons.INSTANCE.link());
         this.showInput = true;
         this.showSelectButton = !dataType.isReadOnly();
-        this.generateForeignKeyListWindow();
         this.setFireChangeEventOnSetValue(true);
     }
 
@@ -151,30 +148,6 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
         iconTD.appendChild(iconBody);
         wrap.appendChild(tbody);
         return wrap;
-    }
-
-    private void generateForeignKeyListWindow() {
-        String[] foreignKeyPathArray = foreignKeyPath.split("/"); //$NON-NLS-1$
-        if (foreignKeyPathArray.length > 0) {
-            foreignConceptName = foreignKeyPathArray[0];
-            service.getEntityModel(foreignConceptName, Locale.getLanguage(), new SessionAwareAsyncCallback<EntityModel>() {
-
-                @Override
-                public void onSuccess(EntityModel entityModel) {
-                    foreignKeyListWindow = new ForeignKeyListWindow(foreignKeyPath, foreignKeyInfo, getDataCluster(),
-                            entityModel, ForeignKeyField.this);
-                    foreignKeyListWindow.setSize(550, 350);
-                    foreignKeyListWindow.setResizable(true);
-                    foreignKeyListWindow.setModal(true);
-                    foreignKeyListWindow.setBlinkModal(true);
-                    foreignKeyListWindow.setHeading(MessagesFactory.getMessages().fk_RelatedRecord());
-                }
-            });
-        }
-    }
-
-    protected void showForeignKeyListWindow() {
-        foreignKeyListWindow.show();
     }
 
     public TypeModel getDataType() {
@@ -265,9 +238,25 @@ public class ForeignKeyField extends TextField<ForeignKeyBean> {
 
             @Override
             public void onClick(ClickEvent ce) {
-                if (foreignKeyListWindow != null) {
-                    foreignKeyListWindow.setForeignKeyFilterValue(parseForeignKeyFilter());
-                    showForeignKeyListWindow();
+                String[] foreignKeyPathArray = foreignKeyPath.split("/"); //$NON-NLS-1$
+                if (foreignKeyPathArray.length > 0) {
+                    foreignConceptName = foreignKeyPathArray[0];
+                    service.getEntityModel(foreignConceptName, Locale.getLanguage(),
+                            new SessionAwareAsyncCallback<EntityModel>() {
+
+                                @Override
+                                public void onSuccess(EntityModel entityModel) {
+                                    ForeignKeyListWindow foreignKeyListWindow = new ForeignKeyListWindow(foreignKeyPath,
+                                            foreignKeyInfo, getDataCluster(), entityModel, ForeignKeyField.this);
+                                    foreignKeyListWindow.setForeignKeyFilterValue(parseForeignKeyFilter());
+                                    foreignKeyListWindow.setSize(550, 350);
+                                    foreignKeyListWindow.setResizable(true);
+                                    foreignKeyListWindow.setModal(true);
+                                    foreignKeyListWindow.setBlinkModal(true);
+                                    foreignKeyListWindow.setHeading(MessagesFactory.getMessages().fk_RelatedRecord());
+                                    foreignKeyListWindow.show();
+                                }
+                            });
                 }
             }
         });
