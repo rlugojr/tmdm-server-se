@@ -200,11 +200,13 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 				.links(links).size(
 						[ width, height ])
 				.linkDistance(120).charge([ -400 ]);
-		drag = force.drag().on("dragstart",
-				function(d, i) {
-					d.fixed = true;
-					hiddenTypeCluster();
-				});
+		drag = force.drag().origin(function(d) {
+			d.fixed = true;
+			hiddenTypeCluster();
+			return d;
+		}).on("dragstart", dragstarted)
+        .on("drag", dragged)
+        .on("dragend", dragended);
 
 		links = force.links();
 		nodes = force.nodes();
@@ -250,6 +252,7 @@ amalto.itemsbrowser.NavigatorPanel = function() {
 				navigator_node_display : true
 			};
 			selectNode.nodeChildren.push(newNode);
+			newNode.parentNode = selectNode;
 			nodes.push(newNode);
 			var newLink = {
 				source : selectNode,
@@ -799,6 +802,14 @@ amalto.itemsbrowser.NavigatorPanel = function() {
         d3.event.sourceEvent.stopPropagation();
         d3.select(this).classed("dragging", true);
         force.start();
+    }
+
+    function dragged(d) {
+    	d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+    }
+
+    function dragended(d) {
+    	d3.select(this).classed("dragging", false);
     }
 
 	function getImage(o) {
