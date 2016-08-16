@@ -830,6 +830,62 @@ public class BrowseRecordsActionTest extends TestCase {
     }
 
     /**
+     * test the extractUsingTransformerThroughView method checking if wsItem's xml is covered by job's xml value
+     * TMDM-9241 'Running the view result through a Process' doesn't work on occurence field
+     */
+    public void testExtractUsingTransformerThroughView() throws Exception {
+        Method[] methods = BrowseRecordsAction.class.getDeclaredMethods();
+        String[] ids = { "1" };
+        Date insertDate = new Date();
+        String content = "<Agency><AgencyId>1</AgencyId><Name>1</Name>"
+                + "<Etablissement><IdEtablissement>1</IdEtablissement><Adresse>1</Adresse></Etablissement>"
+                + "<Etablissement><IdEtablissement>2</IdEtablissement><Adresse>2</Adresse></Etablissement>"
+                + "<Etablissement><IdEtablissement>3</IdEtablissement><Adresse>3</Adresse></Etablissement><Region>1</Region></Agency>";
+        WSItem wsItem = new WSItem(new WSDataClusterPK("ModelTest"), "ModelTest", "Agency", ids, insertDate.getTime(), "1",
+                content);
+        getViewBean("Agency", "ModelTest.xsd");
+        String[] businessElements = { "Agency/AgencyId", "Agency/Name", "Agency/Etablissement", "Agency/Region" };
+        WSWhereCondition[] conditions = {};
+        WSView view = new WSView("Browse_items_Agency", "[EN:Agency]", businessElements, conditions, businessElements,
+                "LookupLocation", new WSBoolean(true));
+        XtentisPort port = PowerMockito.mock(XtentisPort.class);
+        PowerMockito.spy(com.amalto.webapp.core.util.Util.class);
+        PowerMockito.doReturn(port).when(com.amalto.webapp.core.util.Util.class, "getPort");
+        Mockito.when(port.getView(Mockito.any(WSGetView.class))).thenReturn(view);
+        WSTransformerV2PK[] wst = { new WSTransformerV2PK("LookupLocation") };
+        WSTransformerV2PKArray array = new WSTransformerV2PKArray();
+        array.setWsTransformerV2PK(wst);
+        Mockito.when(port.getTransformerV2PKs(Mockito.any(WSGetTransformerV2PKs.class))).thenReturn(array);
+        String result = "<results>\n<Agency>\n<Region>Lausanne</Region>"
+                + "\n<Etablissement><Adresse>Paris</Adresse></Etablissement>"
+                + "\n<Etablissement><Adresse>Ville1</Adresse></Etablissement>" + "\n</Agency>\n</results>";
+        WSByteArray byteArray = new WSByteArray(result.getBytes("utf-8"));
+        WSTransformerContextPipelinePipelineItem[] entries = { new WSTransformerContextPipelinePipelineItem("output",
+                new WSTypedContent(null, byteArray, "text/xml; charset=utf-8")) };
+        WSTransformerContextPipeline line = new WSTransformerContextPipeline(entries);
+        WSTransformerContext context = new WSTransformerContext(null, line, null);
+        Mockito.when(port.executeTransformerV2(Mockito.any(WSExecuteTransformerV2.class))).thenReturn(context);
+        ItemBean itemBean = new ItemBean();
+        itemBean.setItemXml(content);
+
+        for (Method method : methods) {
+            if ("extractUsingTransformerThroughView".equals(method.getName())) {
+                method.setAccessible(true);
+                Object para[] = { "Agency", "Browse_items_Agency", ids, "ModelTest", "ModelTest", DataModelHelper.getEleDecl(),
+                		itemBean };
+                method.invoke(action, para);
+                String expectedMsg = "<Agency><AgencyId>1</AgencyId><Name>1</Name>"
+                        + "<Etablissement><IdEtablissement>1</IdEtablissement><Adresse>Paris</Adresse></Etablissement>"
+                        + "<Etablissement><IdEtablissement>2</IdEtablissement><Adresse>Ville1</Adresse></Etablissement>"
+                        + "<Etablissement><IdEtablissement>3</IdEtablissement><Adresse>3</Adresse></Etablissement>"
+                        + "<Region>Lausanne</Region></Agency>";
+                assertEquals(expectedMsg, itemBean.getItemXml().replaceAll("\r", "").replaceAll("\n", ""));
+                break;
+            }
+        }
+    }
+
+    /**
      * the code comes from
      * org.talend.mdm.webapp.browserecords.server.actions.BrowseRecordsAction.builderNode(Map<String, Integer>, Element,
      * EntityModel, String, String, boolean, StringBuffer, boolean, String) <li>change findTypeModelByTypePath to
