@@ -302,10 +302,18 @@ public class ItemTreeHandler implements IsSerializable {
     }
 
     protected String getLookUpFieldValue(ItemBean itemBean, String path, String elValue) {
-        if (itemBean != null && itemBean.getOriginalLookupFieldMap() != null
-                && itemBean.getOriginalLookupFieldMap().keySet().contains(path)) {
-            if (elValue.equals(itemBean.get(path))) {
-                return itemBean.getOriginalLookupFieldMap().get(path);
+        if (itemBean != null && itemBean.getOriginalLookupFieldDisplayValueMap() != null
+                && itemBean.getOriginalLookupFieldDisplayValueMap().containsKey(path)) {
+            List<String> displayValueList = itemBean.getOriginalLookupFieldDisplayValueMap().get(path);
+            List<String> valueList = itemBean.getOriginalLookupFieldValueMap().get(path);
+            if (displayValueList.size() > 0) {
+                String displayValue = displayValueList.get(0);
+                displayValueList.remove(0);
+                String value = valueList.get(0);
+                valueList.remove(0);
+                if (elValue.equals(displayValue)) {
+                    return value;
+                }
             }
         }
         return elValue;

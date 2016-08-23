@@ -37,7 +37,9 @@ public class ItemBean extends org.talend.mdm.webapp.base.client.model.ItemBean {
 
     private String label;
 
-    private Map<String, String> originalLookupFieldMap;
+    private Map<String, List<String>> originalLookupFieldDisplayValueMap;
+
+    private Map<String, List<String>> originalLookupFieldValueMap;
 
     public String getLabel() {
         if (label == null) {
@@ -130,12 +132,20 @@ public class ItemBean extends org.talend.mdm.webapp.base.client.model.ItemBean {
         }
     }
 
-    public Map<String, String> getOriginalLookupFieldMap() {
-        return originalLookupFieldMap;
+    public Map<String, List<String>> getOriginalLookupFieldDisplayValueMap() {
+        return originalLookupFieldDisplayValueMap;
     }
 
-    public void setOriginalLookupFieldMap(Map<String, String> originalLookupFieldMap) {
-        this.originalLookupFieldMap = originalLookupFieldMap;
+    public void setOriginalLookupFieldDisplayValueMap(Map<String, List<String>> originalLookupFieldDisplayValueMap) {
+        this.originalLookupFieldDisplayValueMap = originalLookupFieldDisplayValueMap;
+    }
+
+    public Map<String, List<String>> getOriginalLookupFieldValueMap() {
+        return originalLookupFieldValueMap;
+    }
+
+    public void setOriginalLookupFieldValueMap(Map<String, List<String>> originalLookupFieldValueMap) {
+        this.originalLookupFieldValueMap = originalLookupFieldValueMap;
     }
 
     @Override
