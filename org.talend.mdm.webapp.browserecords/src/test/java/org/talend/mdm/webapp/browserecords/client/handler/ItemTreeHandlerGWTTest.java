@@ -93,132 +93,6 @@ public class ItemTreeHandlerGWTTest extends GWTTestCase {
 
     }
 
-    public void testSerializeItemContainsLookupField() {
-        ItemBean itemBean = new ItemBean();
-        itemBean.set("Product/Name", "lookupValue");
-        itemBean.setOriginalLookupFieldDisplayValueMap(new HashMap<String, List<String>>());
-        itemBean.setOriginalLookupFieldValueMap(new HashMap<String, List<String>>());
-        itemBean.getOriginalLookupFieldDisplayValueMap().put("Product/Name", new ArrayList<String>());
-        itemBean.getOriginalLookupFieldValueMap().put("Product/Name", new ArrayList<String>());
-        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Name").add("lookupValue");
-        itemBean.getOriginalLookupFieldValueMap().get("Product/Name").add("originalValue");
-        ViewBean viewBean = new ViewBean();
-        EntityModel entity = CommonUtilTestData.getEntityModel(ClientResourceData.getModelProduct());
-        viewBean.setBindingEntityModel(entity);
-
-        ItemNodeModel nodeModel = CommonUtilTestData.getItemNodeModel(ClientResourceData.getRecordProduct1(), entity);
-        assertNotNull(nodeModel);
-        assertTrue(nodeModel.getChildren().size() > 0);
-
-        for (ModelData eachNodeModel : nodeModel.getChildren()) {
-            ItemNodeModel myNodeModel = (ItemNodeModel) eachNodeModel;
-            if (myNodeModel.getTypePath().equals("Product/Price")) {
-                myNodeModel.setObjectValue("150");// update
-            } else if (myNodeModel.getTypePath().equals("Product/Picture")) {
-                myNodeModel.setObjectValue(null);// delete
-            } else if (myNodeModel.getTypePath().equals("Product/Name")) {
-                myNodeModel.setObjectValue("lookupValue");
-            }
-        }
-
-        ItemNodeModel featuresNodeModel = new ItemNodeModel("Features");
-        featuresNodeModel.setTypePath("Product/Features");
-        ItemNodeModel colorsNodeModel = new ItemNodeModel("Colors");
-        colorsNodeModel.setTypePath("Product/Features/Colors");
-        ItemNodeModel colorNodeModel = new ItemNodeModel("Color");
-        colorNodeModel.setTypePath("Product/Features/Colors/Color");
-        colorNodeModel.setObjectValue("White");
-        featuresNodeModel.add(colorsNodeModel);
-        colorsNodeModel.add(colorNodeModel);
-        nodeModel.add(featuresNodeModel);
-
-        ItemTreeHandler itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
-        String actualXml = itemHandler.serializeItem();
-        String expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>originalValue</Name><Features><Colors><Color>White</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
-        assertEquals(expectedXml, actualXml);
-
-        for (ModelData eachNodeModel : nodeModel.getChildren()) {
-            ItemNodeModel myNodeModel = (ItemNodeModel) eachNodeModel;
-            if (myNodeModel.getTypePath().equals("Product/Name")) {
-                myNodeModel.setObjectValue("newValue");
-            }
-        }
-
-        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
-        actualXml = itemHandler.serializeItem();
-        expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>newValue</Name><Features><Colors><Color>White</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
-        assertEquals(expectedXml, actualXml);
-
-        itemBean = new ItemBean();
-        itemBean.set("Product/Name", "Talend");
-        itemBean.setOriginalLookupFieldDisplayValueMap(new HashMap<String, List<String>>());
-        itemBean.setOriginalLookupFieldValueMap(new HashMap<String, List<String>>());
-        itemBean.getOriginalLookupFieldDisplayValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
-        itemBean.getOriginalLookupFieldValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
-        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
-        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
-        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
-        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
-        viewBean = new ViewBean();
-        entity = CommonUtilTestData.getEntityModel(ClientResourceData.getModelProduct());
-        viewBean.setBindingEntityModel(entity);
-
-        nodeModel = CommonUtilTestData.getItemNodeModel(ClientResourceData.getRecordProduct1(), entity);
-
-        assertNotNull(nodeModel);
-        assertTrue(nodeModel.getChildren().size() > 0);
-
-        for (ModelData eachNodeModel : nodeModel.getChildren()) {
-            ItemNodeModel myNodeModel = (ItemNodeModel) eachNodeModel;
-            if (myNodeModel.getTypePath().equals("Product/Price")) {
-                myNodeModel.setObjectValue("150");// update
-            } else if (myNodeModel.getTypePath().equals("Product/Picture")) {
-                myNodeModel.setObjectValue(null);// delete
-            } else if (myNodeModel.getTypePath().equals("Product/Name")) {
-                myNodeModel.setObjectValue("Talend");
-            }
-        }
-
-        featuresNodeModel = new ItemNodeModel("Features");
-        featuresNodeModel.setTypePath("Product/Features");
-        colorsNodeModel = new ItemNodeModel("Colors");
-        colorsNodeModel.setTypePath("Product/Features/Colors");
-        colorNodeModel = new ItemNodeModel("Color");
-        colorNodeModel.setTypePath("Product/Features/Colors/Color");
-        colorNodeModel.setObjectValue("Blue");
-        ItemNodeModel colorNodeModel2 = new ItemNodeModel("Color");
-        colorNodeModel2.setTypePath("Product/Features/Colors/Color");
-        colorNodeModel2.setObjectValue("Blue");
-        featuresNodeModel.add(colorsNodeModel);
-        colorsNodeModel.add(colorNodeModel);
-        colorsNodeModel.add(colorNodeModel2);
-
-        nodeModel.add(featuresNodeModel);
-        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
-        actualXml = itemHandler.serializeItem();
-        expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>Talend</Name><Features><Colors><Color>Yellow</Color><Color>Yellow</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
-        System.out.println(actualXml);
-        assertEquals(expectedXml, actualXml);
-
-        itemBean = new ItemBean();
-        itemBean.set("Product/Name", "Talend");
-        itemBean.setOriginalLookupFieldDisplayValueMap(new HashMap<String, List<String>>());
-        itemBean.setOriginalLookupFieldValueMap(new HashMap<String, List<String>>());
-        itemBean.getOriginalLookupFieldDisplayValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
-        itemBean.getOriginalLookupFieldValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
-        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
-        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
-        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
-        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
-        colorNodeModel.setObjectValue("Red");
-        colorNodeModel2.setObjectValue("Red");
-        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
-        actualXml = itemHandler.serializeItem();
-        expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>Talend</Name><Features><Colors><Color>Red</Color><Color>Red</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
-        assertEquals(expectedXml, actualXml);
-
-    }
-
     public void testSerializeItemWhenSaveForHiddenElements() {
 
         // element "Description" is hidden
@@ -405,14 +279,17 @@ public class ItemTreeHandlerGWTTest extends GWTTestCase {
     public void testSerializeItemContainsLookupField() {
         ItemBean itemBean = new ItemBean();
         itemBean.set("Product/Name", "lookupValue");
-        itemBean.setOriginalLookupFieldMap(new HashMap<String, String>());
-        itemBean.getOriginalLookupFieldMap().put("Product/Name", "originalValue");
+        itemBean.setOriginalLookupFieldDisplayValueMap(new HashMap<String, List<String>>());
+        itemBean.setOriginalLookupFieldValueMap(new HashMap<String, List<String>>());
+        itemBean.getOriginalLookupFieldDisplayValueMap().put("Product/Name", new ArrayList<String>());
+        itemBean.getOriginalLookupFieldValueMap().put("Product/Name", new ArrayList<String>());
+        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Name").add("lookupValue");
+        itemBean.getOriginalLookupFieldValueMap().get("Product/Name").add("originalValue");
         ViewBean viewBean = new ViewBean();
         EntityModel entity = CommonUtilTestData.getEntityModel(ClientResourceData.getModelProduct());
         viewBean.setBindingEntityModel(entity);
 
         ItemNodeModel nodeModel = CommonUtilTestData.getItemNodeModel(ClientResourceData.getRecordProduct1(), entity);
-
         assertNotNull(nodeModel);
         assertTrue(nodeModel.getChildren().size() > 0);
 
@@ -427,25 +304,19 @@ public class ItemTreeHandlerGWTTest extends GWTTestCase {
             }
         }
 
-        // add
         ItemNodeModel featuresNodeModel = new ItemNodeModel("Features");
         featuresNodeModel.setTypePath("Product/Features");
-
         ItemNodeModel colorsNodeModel = new ItemNodeModel("Colors");
         colorsNodeModel.setTypePath("Product/Features/Colors");
-
         ItemNodeModel colorNodeModel = new ItemNodeModel("Color");
         colorNodeModel.setTypePath("Product/Features/Colors/Color");
         colorNodeModel.setObjectValue("White");
-
         featuresNodeModel.add(colorsNodeModel);
         colorsNodeModel.add(colorNodeModel);
-
         nodeModel.add(featuresNodeModel);
 
-        ItemTreeHandler itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.InUse);
+        ItemTreeHandler itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
         String actualXml = itemHandler.serializeItem();
-
         String expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>originalValue</Name><Features><Colors><Color>White</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
         assertEquals(expectedXml, actualXml);
 
@@ -456,10 +327,77 @@ public class ItemTreeHandlerGWTTest extends GWTTestCase {
             }
         }
 
-        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.InUse);
+        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
         actualXml = itemHandler.serializeItem();
-
         expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>newValue</Name><Features><Colors><Color>White</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
+        assertEquals(expectedXml, actualXml);
+
+        itemBean = new ItemBean();
+        itemBean.set("Product/Name", "Talend");
+        itemBean.setOriginalLookupFieldDisplayValueMap(new HashMap<String, List<String>>());
+        itemBean.setOriginalLookupFieldValueMap(new HashMap<String, List<String>>());
+        itemBean.getOriginalLookupFieldDisplayValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
+        itemBean.getOriginalLookupFieldValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
+        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
+        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
+        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
+        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
+        viewBean = new ViewBean();
+        entity = CommonUtilTestData.getEntityModel(ClientResourceData.getModelProduct());
+        viewBean.setBindingEntityModel(entity);
+
+        nodeModel = CommonUtilTestData.getItemNodeModel(ClientResourceData.getRecordProduct1(), entity);
+
+        assertNotNull(nodeModel);
+        assertTrue(nodeModel.getChildren().size() > 0);
+
+        for (ModelData eachNodeModel : nodeModel.getChildren()) {
+            ItemNodeModel myNodeModel = (ItemNodeModel) eachNodeModel;
+            if (myNodeModel.getTypePath().equals("Product/Price")) {
+                myNodeModel.setObjectValue("150");// update
+            } else if (myNodeModel.getTypePath().equals("Product/Picture")) {
+                myNodeModel.setObjectValue(null);// delete
+            } else if (myNodeModel.getTypePath().equals("Product/Name")) {
+                myNodeModel.setObjectValue("Talend");
+            }
+        }
+
+        featuresNodeModel = new ItemNodeModel("Features");
+        featuresNodeModel.setTypePath("Product/Features");
+        colorsNodeModel = new ItemNodeModel("Colors");
+        colorsNodeModel.setTypePath("Product/Features/Colors");
+        colorNodeModel = new ItemNodeModel("Color");
+        colorNodeModel.setTypePath("Product/Features/Colors/Color");
+        colorNodeModel.setObjectValue("Blue");
+        ItemNodeModel colorNodeModel2 = new ItemNodeModel("Color");
+        colorNodeModel2.setTypePath("Product/Features/Colors/Color");
+        colorNodeModel2.setObjectValue("Blue");
+        featuresNodeModel.add(colorsNodeModel);
+        colorsNodeModel.add(colorNodeModel);
+        colorsNodeModel.add(colorNodeModel2);
+
+        nodeModel.add(featuresNodeModel);
+        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
+        actualXml = itemHandler.serializeItem();
+        expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>Talend</Name><Features><Colors><Color>Yellow</Color><Color>Yellow</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
+        System.out.println(actualXml);
+        assertEquals(expectedXml, actualXml);
+
+        itemBean = new ItemBean();
+        itemBean.set("Product/Name", "Talend");
+        itemBean.setOriginalLookupFieldDisplayValueMap(new HashMap<String, List<String>>());
+        itemBean.setOriginalLookupFieldValueMap(new HashMap<String, List<String>>());
+        itemBean.getOriginalLookupFieldDisplayValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
+        itemBean.getOriginalLookupFieldValueMap().put("Product/Features/Colors/Color", new ArrayList<String>());
+        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
+        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
+        itemBean.getOriginalLookupFieldDisplayValueMap().get("Product/Features/Colors/Color").add("Blue");
+        itemBean.getOriginalLookupFieldValueMap().get("Product/Features/Colors/Color").add("Yellow");
+        colorNodeModel.setObjectValue("Red");
+        colorNodeModel2.setObjectValue("Red");
+        itemHandler = new ItemTreeHandler(nodeModel, viewBean, itemBean, ItemTreeHandlingStatus.ToSave);
+        actualXml = itemHandler.serializeItem();
+        expectedXml = "<Product xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>Talend</Name><Features><Colors><Color>Red</Color><Color>Red</Color></Colors></Features><Availability>false</Availability><Price>150</Price><OnlineStore>@@http://</OnlineStore><Picture/></Product>";
         assertEquals(expectedXml, actualXml);
     }
 }

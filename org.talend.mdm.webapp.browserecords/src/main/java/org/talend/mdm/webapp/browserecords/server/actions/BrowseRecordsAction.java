@@ -432,8 +432,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             WSItem wsItem = CommonUtil.getPort()
                     .getItem(new WSGetItem(new WSItemPK(wsDataClusterPK, itemBean.getConcept(), ids)));
             itemBean.setItemXml(wsItem.getContent());
-            extractUsingTransformerThroughView(concept, viewPK, ids, dataModel, dataCluster, DataModelHelper.getEleDecl(),
-                    itemBean);
+            extractUsingTransformerThroughView(viewPK, DataModelHelper.getEleDecl(), itemBean);
             itemBean.set("time", wsItem.getInsertionTime()); //$NON-NLS-1$
             if (wsItem.getTaskId() != null && !"".equals(wsItem.getTaskId()) && !"null".equals(wsItem.getTaskId())) { //$NON-NLS-1$ //$NON-NLS-2$
                 itemBean.setTaskId(wsItem.getTaskId());
