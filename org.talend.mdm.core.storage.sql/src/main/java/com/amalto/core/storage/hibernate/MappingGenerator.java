@@ -367,7 +367,7 @@ public class MappingGenerator extends DefaultMetadataVisitor<Element> {
         lazy.setValue("proxy"); //$NON-NLS-1$
         propertyElement.getAttributes().setNamedItem(lazy);
         Attr joinAttribute = document.createAttribute("fetch"); //$NON-NLS-1$
-        joinAttribute.setValue("join"); //$NON-NLS-1$
+        joinAttribute.setValue("select"); //$NON-NLS-1$
         propertyElement.getAttributes().setNamedItem(joinAttribute);
         // foreign-key="..."
         String fkConstraintName = resolver.getFkConstraintName(referencedField);
