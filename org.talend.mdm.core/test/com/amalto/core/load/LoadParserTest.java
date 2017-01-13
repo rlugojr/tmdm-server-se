@@ -938,6 +938,11 @@ public class LoadParserTest extends TestCase {
             return true;
         }
 
+        @Override
+        public boolean isNeedToSave() {
+            return false;
+        }
+
         public boolean isStateSaved() {
             return savedState;
         }

@@ -9,15 +9,18 @@
  */
 package com.amalto.core.save.generator;
 
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.log4j.Logger;
+import org.talend.mdm.commmon.util.webapp.XSystemObjects;
+
 import com.amalto.core.objects.ItemPOJO;
 import com.amalto.core.objects.ItemPOJOPK;
 import com.amalto.core.objects.datacluster.DataClusterPOJOPK;
 import com.amalto.core.server.api.XmlServer;
 import com.amalto.core.storage.record.DataRecord;
 import com.amalto.core.util.Util;
-import org.apache.log4j.Logger;
-import org.talend.mdm.commmon.util.webapp.XSystemObjects;
-import java.util.Properties;
 
 @SuppressWarnings("nls")
 class InMemoryAutoIncrementGenerator implements AutoIdGenerator {
@@ -29,6 +32,8 @@ class InMemoryAutoIncrementGenerator implements AutoIdGenerator {
     private static final String AUTO_INCREMENT = "AutoIncrement";
 
     private static final String[] IDS = new String[] { AUTO_INCREMENT }; 
+
+    private static final AtomicBoolean NEED_TO_SAVE = new AtomicBoolean(false);
 
     private static Properties CONFIGURATION = null;
 
@@ -52,6 +57,7 @@ class InMemoryAutoIncrementGenerator implements AutoIdGenerator {
         num++;
         if (!DataRecord.ValidateRecord.get()) {// don't actually save if for Record Validation
             CONFIGURATION.setProperty(key, String.valueOf(num));
+            NEED_TO_SAVE.set(true);
         }
         return String.valueOf(num);
     }
@@ -96,5 +102,10 @@ class InMemoryAutoIncrementGenerator implements AutoIdGenerator {
         } catch (Exception e) {
             LOGGER.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    @Override
+    public boolean isNeedToSave() {
+        return NEED_TO_SAVE.getAndSet(false);
     }
 }

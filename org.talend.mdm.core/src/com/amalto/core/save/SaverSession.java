@@ -13,7 +13,6 @@ package com.amalto.core.save;
 import java.util.*;
 
 import org.talend.mdm.commmon.metadata.FieldMetadata;
-import org.talend.mdm.commmon.util.core.EUUIDCustomType;
 import org.talend.mdm.commmon.util.webapp.XSystemObjects;
 
 import com.amalto.core.history.DeleteType;
@@ -229,11 +228,11 @@ public class SaverSession {
             if (needResetAutoIncrement) {
                 saverSource.initAutoIncrement();
             }
-            // Save current state of autoincrement when save is completed.
-            if (hasMetAutoIncrement) {
-                //  Make sure autoincrement counter is initialized before saving it
+            // Save current state of auto-increment when save is completed.
+            if (hasMetAutoIncrement = AutoIncrementGenerator.get().isNeedToSave()) {
+                //  Make sure auto-increment counter is initialized before saving it
                 //  FIXME caller should not take care of AutoIncrementGenerator's internal state
-                //  This is temporary mesure to avoid nested transaction issue when initialize inside 
+                //  This is temporary measure to avoid nested transaction issue when initialize inside
                 //  AutoIncrementGenerator.saveState()
                 if(!AutoIncrementGenerator.get().isInitialized()) {
                     AutoIncrementGenerator.get().init();
@@ -274,15 +273,6 @@ public class SaverSession {
      */
     public void save(String dataCluster, Document document) {
         synchronized (itemsToUpdate) {
-            if (!this.hasMetAutoIncrement) {
-                Collection<FieldMetadata> keyFields = document.getType().getKeyFields();
-                boolean hasAutoincrementKey = false;
-                for (FieldMetadata keyField : keyFields) {
-                    hasAutoincrementKey = EUUIDCustomType.AUTO_INCREMENT.getName().equals(keyField.getType().getName());
-                }
-                this.hasMetAutoIncrement = hasAutoincrementKey;
-            }
-
             List<Document> documentsToSave = itemsToUpdate.get(dataCluster);
             if (documentsToSave == null) {
                 documentsToSave = new ArrayList<Document>();

@@ -167,15 +167,16 @@ public class StorageAutoIncrementGenerator implements AutoIdGenerator {
                     integer ++;
                     entry.set(valueField, integer);
                     value = integer;
+                    break;
                 }
             }
         }
         if (value == null) { // No entry for current asked type, creates one
             DataRecord entry = new DataRecord((ComplexTypeMetadata) entryField.getType(), UnsupportedDataRecordMetadata.INSTANCE);
             entry.set(keyField, key);
-            entry.set(valueField, 0);
+            entry.set(valueField, 1);
             autoIncrementRecord.set(entryField, entry); // This add at end of collection is already present
-            value = getValue(autoIncrementType, autoIncrementRecord, key);
+            value = 1;
         }
         return value;
     }
@@ -188,6 +189,11 @@ public class StorageAutoIncrementGenerator implements AutoIdGenerator {
     @Override
     public boolean isInitialized() {
         return true;
+    }
+
+    @Override
+    public boolean isNeedToSave() {
+        return false;
     }
     
     @Override

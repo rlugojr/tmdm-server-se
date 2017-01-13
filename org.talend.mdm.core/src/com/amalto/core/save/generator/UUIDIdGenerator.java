@@ -33,4 +33,10 @@ public class UUIDIdGenerator implements AutoIdGenerator {
     public boolean isInitialized() {
         return true;
     }
+
+    @Override
+    public boolean isNeedToSave() {
+        return false;
+    }
+
 }

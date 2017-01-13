@@ -13,9 +13,6 @@ package com.amalto.core.save.generator;
 
 import com.amalto.core.server.api.XmlServer;
 
-/**
- *
- */
 public interface AutoIdGenerator {
     /**
      * <p>
@@ -49,4 +46,11 @@ public interface AutoIdGenerator {
      * @see #init()
      */
     boolean isInitialized();
+
+    /**
+     * Check if need to save state, and set it to false after check
+     * @return true if need to save
+     */
+    boolean isNeedToSave();
+
 }
