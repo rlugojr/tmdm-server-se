@@ -53,6 +53,7 @@ import com.amalto.core.history.DeleteType;
 import com.amalto.core.history.MutableDocument;
 import com.amalto.core.objects.UpdateReportPOJO;
 import com.amalto.core.query.user.UserQueryBuilder;
+import com.amalto.core.save.SaverSession.Committer;
 import com.amalto.core.save.context.DocumentSaver;
 import com.amalto.core.save.context.SaverContextFactory;
 import com.amalto.core.save.context.SaverSource;
@@ -405,7 +406,14 @@ public class DocumentSaveTest extends TestCase {
 
         TestSaverSource source = new TestSaverSource(repository, false, "", "metadata1.xsd");
 
-        SaverSession session = SaverSession.newSession(source);
+        SaverSession session = new SaverSession(source) {
+
+            @Override
+            public void end(Committer committer) {
+                super.end(committer);
+                getSaverSource().saveAutoIncrement();
+            }
+        };
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("test24.xml");
         DocumentSaverContext context = session.getContextFactory().create("MDM", "DStar", "Source", recordXml, true, true, true,
                 true, false);
@@ -415,6 +423,7 @@ public class DocumentSaveTest extends TestCase {
         MockCommitter committer = new MockCommitter();
         session.end(committer);
 
+        assertTrue(source.hasCalledInitAutoIncrement());
         assertTrue(source.hasSavedAutoIncrement());
         assertTrue(committer.hasSaved());
         Element committedElement = committer.getCommittedElement();
@@ -1886,7 +1895,14 @@ public class DocumentSaveTest extends TestCase {
         boolean newOutput = true;
         TestSaverSource source = new TestSaverSourceWithOutputReportItem(repository, false, "", isOK, newOutput);
 
-        SaverSession session = SaverSession.newSession(source);
+        SaverSession session = new SaverSession(source) {
+
+            @Override
+            public void end(Committer committer) {
+                super.end(committer);
+                getSaverSource().saveAutoIncrement();
+            }
+        };
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("autoIncrementPK.xml");
         DocumentSaverContext context = session.getContextFactory().create("MDM", "DStar", "Source", recordXml, true, true, true,
                 true, false);
@@ -1896,6 +1912,7 @@ public class DocumentSaveTest extends TestCase {
         MockCommitter committer = new MockCommitter();
         session.end(committer);
 
+        assertTrue(source.hasCalledInitAutoIncrement());
         assertTrue(source.hasSavedAutoIncrement());
         assertTrue(committer.hasSaved());
         Element committedElement = committer.getCommittedElement();
@@ -1913,7 +1930,14 @@ public class DocumentSaveTest extends TestCase {
         MockMetadataRepositoryAdmin.INSTANCE.register("DStar", repository);
         TestSaverSource source = new TestSaverSource(repository, false, "", "metadata1.xsd");
 
-        SaverSession session = SaverSession.newSession(source);
+        SaverSession session = new SaverSession(source) {
+
+            @Override
+            public void end(Committer committer) {
+                super.end(committer);
+                getSaverSource().saveAutoIncrement();
+            }
+        };
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("autoIncrementPK.xml");
         DocumentSaverContext context = session.getContextFactory().create("MDM", "DStar", "Source", recordXml, true, true, true,
                 true, false);
@@ -1922,7 +1946,7 @@ public class DocumentSaveTest extends TestCase {
         MockCommitter committer = new MockCommitter();
         session.end(committer);
 
-        assertTrue(AutoIncrementGenerator.get().isInitialized());
+        assertTrue(source.hasCalledInitAutoIncrement());
         assertTrue(source.hasSavedAutoIncrement());
         assertTrue(committer.hasSaved());
         Element committedElement = committer.getCommittedElement();
@@ -1945,7 +1969,14 @@ public class DocumentSaveTest extends TestCase {
         TransactionManager manager = ServerContext.INSTANCE.get().getTransactionManager();
         manager.create(com.amalto.core.storage.transaction.Transaction.Lifetime.LONG);
         manager.currentTransaction().begin();
-        SaverSession session = SaverSession.newSession(source);
+        SaverSession session = new SaverSession(source) {
+
+            @Override
+            public void end(Committer committer) {
+                super.end(committer);
+                getSaverSource().saveAutoIncrement();
+            }
+        };
         InputStream recordXml = DocumentSaveTest.class.getResourceAsStream("autoIncrementPK.xml");
         DocumentSaverContext context = session.getContextFactory().create("MDM", "DStar", "Source", recordXml, true, true, true,
                 true, false);
@@ -1954,7 +1985,8 @@ public class DocumentSaveTest extends TestCase {
         MockCommitter committer = new MockCommitter();
         session.end(committer);
         manager.currentTransaction().commit();
-        assertTrue(AutoIncrementGenerator.get().isInitialized());
+
+        assertTrue(source.hasCalledInitAutoIncrement());
         assertTrue(source.hasSavedAutoIncrement());
         assertTrue(committer.hasSaved());
         Element committedElement = committer.getCommittedElement();
@@ -3850,6 +3882,9 @@ public class DocumentSaveTest extends TestCase {
 
         @Override
         public String nextAutoIncrementId(String dataCluster, String dataModel, String conceptName) {
+            if (!hasCalledInitAutoIncrement) {
+                initAutoIncrement();
+            }
             int id = 0;
             if (AUTO_INCREMENT_ID_MAP.containsKey(conceptName)) {
                 id = AUTO_INCREMENT_ID_MAP.get(conceptName);
@@ -3861,6 +3896,10 @@ public class DocumentSaveTest extends TestCase {
 
         public boolean hasSavedAutoIncrement() {
             return hasSavedAutoIncrement;
+        }
+
+        public boolean hasCalledInitAutoIncrement() {
+            return hasCalledInitAutoIncrement;
         }
 
         public String getLastInvalidatedTypeCache() {
