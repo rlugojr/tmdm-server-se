@@ -300,7 +300,7 @@ public class StorageQueryTest extends StorageTestCase {
                                 employee1,
                                 "<Employee1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Holiday>2014-05-16T12:00:00</Holiday><birthday>2014-05-23T12:00:00</birthday><manager>[1][2014-05-01T12:00:00]</manager></Employee1>"));
         allRecords.add(factory.read(repository, entityA,
-                "<EntityA xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><IdA>100</IdA></EntityA>"));
+                "<EntityA xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><IdA>100</IdA><ContainedField1><text>text1</text></ContainedField1></EntityA>"));
         allRecords.add(factory.read(repository, entityB,
                 "<EntityB xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><IdB>B1</IdB><A_FK>[100]</A_FK></EntityB>"));
         allRecords
@@ -4745,6 +4745,14 @@ public class StorageQueryTest extends StorageTestCase {
         assertEquals("<$ExplicitProjection$><col0></col0></$ExplicitProjection$>", result);
     }
 
+    public void testGetFKRecordContainedTypeContent() throws Exception {
+        UserQueryBuilder qb = UserQueryBuilder.from(entityB);
+        StorageResults results = storage.fetch(qb.getSelect());
+        for (DataRecord result : results) {
+            assertEquals("text1", ((DataRecord)result.get("A_FK")).get(entityA.getField("ContainedField1/text")));
+        }
+    }
+    
     private static class TestUserDelegator implements SecuredStorage.UserDelegator {
 
         boolean isActive = true;

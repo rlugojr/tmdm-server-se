@@ -10,6 +10,7 @@
 package com.amalto.core.storage;
 
 import static org.junit.Assert.assertEquals;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -67,14 +68,30 @@ public class StorageMetadataUtilsTest {
 
     protected DataRecord createDataRecord(ComplexTypeMetadata type) throws Exception {
         Assert.assertNotNull(type);
-        DataRecordMetadataImpl recordMeta = new DataRecordMetadataImpl(System.currentTimeMillis(), "taskId");
+        DataRecordMetadataImpl recordMeta = new DataRecordMetadataImpl(System.currentTimeMillis(), "taskId"); //$NON-NLS-1$
         DataRecord record = new DataRecord(type, recordMeta);
         return record;
     }
 
     protected void setDataRecordField(DataRecord record, String name, Object value) throws Exception {
         FieldMetadata fieldMd = record.getType().getField(name);
-        Assert.assertNotNull("Unknown field " + name, fieldMd);
+        Assert.assertNotNull("Unknown field " + name, fieldMd); //$NON-NLS-1$
         record.set(fieldMd, value);
+    }
+
+    @Test
+    public void testGetIds() {
+        String ids = "[123], [456], [ab7]"; //$NON-NLS-1$        
+        List<String> idList = StorageMetadataUtils.getIds(ids);
+        
+        for (int i=0; i<idList.size(); i++) {
+            if (i==0) {
+                assertEquals("123", idList.get(i)); //$NON-NLS-1$
+            } else if (i==1) {
+                assertEquals("456", idList.get(i)); //$NON-NLS-1$
+            } else if (i==2) {
+                assertEquals("ab7", idList.get(i)); //$NON-NLS-1$
+            }
+        }
     }
 }
