@@ -443,7 +443,25 @@ public class LineageListPanel extends ContentPanel {
 
             @Override
             public void componentSelected(ButtonEvent buttonEvent) {
-                initDSC(LineageListPanel.this.taskId);
+                browseStagingRecordService.isTdsEnabled(new SessionAwareAsyncCallback<Boolean>() {
+
+                    @Override
+                    public void onSuccess(Boolean result) {
+                        if (result) {
+                            browseStagingRecordService.generateTdsUrl(LineageListPanel.this.taskId,
+                                    new SessionAwareAsyncCallback<String>() {
+
+                                        @Override
+                                        public void onSuccess(String url) {
+                                            openWindow(url);
+                                        }
+
+                                    });
+                        } else {
+                            initDSC(LineageListPanel.this.taskId);
+                        }
+                    }
+                });
             }
         });
         openTaskToolBar = new ToolBar();
@@ -594,5 +612,9 @@ public class LineageListPanel extends ContentPanel {
     private native boolean initDSC(String taskId)/*-{
 		$wnd.amalto.datastewardship.Datastewardship.taskItem(taskId);
 		return true;
+    }-*/;
+
+    private native void openWindow(String url)/*-{
+		window.open(url);
     }-*/;
 }

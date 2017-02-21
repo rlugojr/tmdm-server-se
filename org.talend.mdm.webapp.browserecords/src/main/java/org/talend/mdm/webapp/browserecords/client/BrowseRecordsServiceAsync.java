@@ -159,4 +159,8 @@ public interface BrowseRecordsServiceAsync {
 
     void getForeignKeySuggestion(BasePagingLoadConfigImpl config, TypeModel model, String foreignKeyFilterValue,
             String dataClusterPK, String language, AsyncCallback<List<ForeignKeyBean>> callback);
+
+    void isTdsEnabled(AsyncCallback<Boolean> callback);
+
+    void generateTdsUrl(String taskId, AsyncCallback<String> callback);
 }

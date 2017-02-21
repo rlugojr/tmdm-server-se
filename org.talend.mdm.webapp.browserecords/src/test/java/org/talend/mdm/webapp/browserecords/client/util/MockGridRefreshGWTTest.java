@@ -648,6 +648,14 @@ public class MockGridRefreshGWTTest extends GWTTestCase {
         @Override
         public void bulkUpdateItem(String baseUrl, String concept, String xml, String language, AsyncCallback<String> callback) {
         }
+
+        @Override
+        public void isTdsEnabled(AsyncCallback<Boolean> callback) {
+        }
+
+        @Override
+        public void generateTdsUrl(String taskId, AsyncCallback<String> callback) {
+        }
     }
 
     @Override

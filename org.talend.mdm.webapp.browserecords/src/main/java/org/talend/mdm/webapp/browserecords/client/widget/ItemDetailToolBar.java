@@ -796,7 +796,25 @@ public class ItemDetailToolBar extends ToolBar {
 
                                             @Override
                                             public void componentSelected(MenuEvent menuEvent) {
-                                                initDSC(itemBean.getTaskId());
+                                                getBrowseRecordsService().isTdsEnabled(new SessionAwareAsyncCallback<Boolean>() {
+
+                                                    @Override
+                                                    public void onSuccess(Boolean result) {
+                                                        if (result) {
+                                                            getBrowseRecordsService().generateTdsUrl(itemBean.getTaskId(),
+                                                                    new SessionAwareAsyncCallback<String>() {
+
+                                                                        @Override
+                                                                        public void onSuccess(String url) {
+                                                                            openWindow(url);
+                                                                        }
+
+                                                                    });
+                                                        } else {
+                                                            initDSC(itemBean.getTaskId());
+                                                        }
+                                                    }
+                                                });
                                             }
                                         });
                                         int explainMenuItemIndex = subActionsMenu.indexOf(explainMenuItem);
@@ -1189,7 +1207,7 @@ public class ItemDetailToolBar extends ToolBar {
                         }
                     } else {
                         MessageBox.alert(MessagesFactory.getMessages().warning_title(), MessagesFactory.getMessages()
-                                    .bulkUpdate_no_edit_info(), null);
+                                .bulkUpdate_no_edit_info(), null);
                     }
                 }
             });
