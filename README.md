@@ -2,7 +2,7 @@
 http://www.talend.com
 
 
-![alt text](http://www.talend.com/sites/all/themes/talend_responsive/images/logo.png "Talend")
+![alt text](https://www.talend.com/wp-content/uploads/2016/07/talend-logo.png "Talend")
 
 
 > Contents
@@ -11,7 +11,7 @@ This repository contains the source files for Talend MDM Server.
 
 ## Download
 
-You can download this product from the [Talend website](http://www.talend.com/download/talend-open-studio?qt-product_tos_download_new=4&utm_source=github&utm_campaign=tosmdm).
+You can download this product from the [Talend website](http://www.talend.com/download/talend-open-studio?qt-product_tos_download_new=4&utm_medium=communityext&utm_source=github&utm_campaign=tosmdm).
 
 
 ## Usage and Documentation
