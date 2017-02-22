@@ -1538,6 +1538,178 @@ public class StorageAdaptTest extends TestCase {
         deleteLiquibaseChangeLogFile();
     }
 
+    // TMDM-10533: [Impact Analysis] Deleting a mandatory field
+    public void test15_DeleteMandatoryField_ForNoData() throws Exception {
+        System.setProperty(LiquibaseSchemaAdapter.MDM_ROOT_URL, System.getProperty("user.dir"));
+
+        DataSourceDefinition dataSource = ServerContext.INSTANCE.get().getDefinition("H2-DS3", STORAGE_NAME);
+        Storage storage = new HibernateStorage("Person", StorageType.MASTER);
+        storage.init(dataSource);
+        String[] typeNames = { "Person" };
+        String[] tables = { "Person" };
+        String[] columns = { "X_ID", "X_FIRST_NAME", "X_SECOND_NAME", "X_FULL_NAME", "X_AGE", "X_MARRIED", "X_BIRTHDAY",
+                "X_TALEND_TIMESTAMP", "X_TALEND_TASK_ID" };
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        MetadataRepository repository1 = new MetadataRepository();
+        repository1.load(StorageAdaptTest.class.getResourceAsStream("schema12_2.xsd"));
+        storage.prepare(repository1, true);
+        try {
+            assertDatabaseChange(dataSource, tables, columns, new boolean[] { true });
+        } catch (SQLException e) {
+            assertNull(e);
+        }
+
+        MetadataRepository repository2 = new MetadataRepository();
+        repository2.load(StorageAdaptTest.class.getResourceAsStream("schema13_1.xsd"));
+        storage.adapt(repository2, false);
+
+        // tabale had changed
+        String[] updatedColumns = { "X_ID", "X_FULL_NAME", "X_TALEND_TIMESTAMP", "X_TALEND_TASK_ID" };
+        try {
+            assertDatabaseChange(dataSource, tables, updatedColumns, new boolean[] { true });
+        } catch (SQLException e) {
+            assertNull(e);
+        }
+
+        String input1 = "<Person><Id>1</Id><first_name>Jack</first_name><second_name>Chen</second_name><full_name>Jack Chen</full_name><age>11</age><married>true</married><birthday>2017-02-04</birthday></Person>";
+        try {
+            createRecord(storage, factory, repository2, typeNames, new String[] { input1 });
+        } catch (Exception e1) {
+            assertNotNull(e1);
+        }
+
+        // create record before change, second_name, married is null
+        String input2 = "<Person><Id>1</Id><full_name>Jack Chen</full_name></Person>";
+        try {
+            createRecord(storage, factory, repository2, typeNames, new String[] { input2 });
+        } catch (Exception e1) {
+            assertNull(e1);
+        }
+
+        storage.begin();
+        ComplexTypeMetadata objectType = repository2.getComplexType("Person");//$NON-NLS-1$
+        UserQueryBuilder qb = from(objectType);
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(1, results.getCount());
+            for (DataRecord result : results) {
+                assertEquals("1", result.get("Id"));
+            }
+        } finally {
+            results.close();
+        }
+        storage.commit();
+
+        storage.begin();
+        storage.delete(qb.getSelect());
+        storage.commit();
+
+        deleteLiquibaseChangeLogFile();
+    }
+
+    // TMDM-10533: [Impact Analysis] Deleting a mandatory field
+    public void test15_DeleteMandatoryField_ForWithData() throws Exception {
+        System.setProperty(LiquibaseSchemaAdapter.MDM_ROOT_URL, System.getProperty("user.dir"));
+
+        DataSourceDefinition dataSource = ServerContext.INSTANCE.get().getDefinition("H2-DS3", STORAGE_NAME);
+        Storage storage = new HibernateStorage("Person", StorageType.MASTER);
+        storage.init(dataSource);
+        String[] typeNames = { "Person" };
+        String[] tables = { "Person" };
+        String[] columns = { "X_ID", "X_FIRST_NAME", "X_SECOND_NAME", "X_FULL_NAME", "X_AGE", "X_MARRIED", "X_BIRTHDAY",
+                "X_TALEND_TIMESTAMP", "X_TALEND_TASK_ID" };
+        DataRecordReader<String> factory = new XmlStringDataRecordReader();
+        MetadataRepository repository1 = new MetadataRepository();
+        repository1.load(StorageAdaptTest.class.getResourceAsStream("schema12_2.xsd"));
+        storage.prepare(repository1, true);
+        try {
+            assertDatabaseChange(dataSource, tables, columns, new boolean[] { true });
+        } catch (SQLException e) {
+            assertNull(e);
+        }
+
+        // create record before change, second_name, married is null
+        String input1 = "<Person><Id>1</Id><first_name>Jack</first_name><second_name>Chen</second_name><full_name>Jack Chen</full_name><age>11</age><married>true</married><birthday>2017-02-04</birthday></Person>";
+        try {
+            createRecord(storage, factory, repository1, typeNames, new String[] { input1 });
+        } catch (Exception e1) {
+            assertNull(e1);
+        }
+
+        storage.begin();
+        ComplexTypeMetadata objectType = repository1.getComplexType("Person");//$NON-NLS-1$
+        UserQueryBuilder qb = from(objectType);
+        StorageResults results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(1, results.getCount());
+            for (DataRecord result : results) {
+                assertEquals("1", result.get("Id"));
+            }
+        } finally {
+            results.close();
+        }
+        storage.commit();
+
+        MetadataRepository repository2 = new MetadataRepository();
+        repository2.load(StorageAdaptTest.class.getResourceAsStream("schema13_1.xsd"));
+        storage.adapt(repository2, false);
+
+        // tabale had changed
+        String[] updatedColumns = { "X_ID", "X_FULL_NAME", "X_TALEND_TIMESTAMP", "X_TALEND_TASK_ID" };
+        try {
+            assertDatabaseChange(dataSource, tables, updatedColumns, new boolean[] { true });
+        } catch (SQLException e) {
+            assertNull(e);
+        }
+
+        storage.begin();
+        objectType = repository2.getComplexType("Person");//$NON-NLS-1$
+        qb = from(objectType);
+        results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(1, results.getCount());
+            for (DataRecord result : results) {
+                assertEquals(2, result.getSetFields().size());
+                assertEquals("1", result.get("Id"));
+            }
+        } finally {
+            results.close();
+        }
+        storage.commit();
+
+        String input2 = "<Person><Id>1</Id><first_name>Jack</first_name><second_name>Chen</second_name><full_name>Jack Chen</full_name><age>11</age><married>true</married><birthday>2017-02-04</birthday></Person>";
+        try {
+            createRecord(storage, factory, repository2, typeNames, new String[] { input2 });
+        } catch (Exception e1) {
+            assertNotNull(e1);
+        }
+
+        // create record before change, second_name, married is null
+        String input3 = "<Person><Id>2</Id><full_name>Jack Chen</full_name></Person>";
+        try {
+            createRecord(storage, factory, repository2, typeNames, new String[] { input3 });
+        } catch (Exception e1) {
+            assertNull(e1);
+        }
+
+        storage.begin();
+        objectType = repository2.getComplexType("Person");//$NON-NLS-1$
+        qb = from(objectType);
+        results = storage.fetch(qb.getSelect());
+        try {
+            assertEquals(2, results.getCount());
+        } finally {
+            results.close();
+        }
+        storage.commit();
+
+        storage.begin();
+        storage.delete(qb.getSelect());
+        storage.commit();
+
+        deleteLiquibaseChangeLogFile();
+    }
+
     private void assertColumnLengthChange(DataSourceDefinition dataSource, String tables, String columns, int expectedLength)
             throws SQLException {
         DataSource master = dataSource.getMaster();

@@ -162,18 +162,16 @@ public class LiquibaseSchemaAdapter  {
             MetadataVisitable element = removeAction.getElement();
             if (element instanceof FieldMetadata) {
                 FieldMetadata field = (FieldMetadata) element;
-                if (!field.isMandatory()) {
 
-                    String tableName = tableResolver.get(field.getContainingType().getEntity()).toLowerCase();
-                    String columnName = tableResolver.get(field);
+                String tableName = tableResolver.get(field.getContainingType().getEntity()).toLowerCase();
+                String columnName = tableResolver.get(field);
 
-                    List<String> columnList = dropColumnMap.get(tableName);
-                    if (columnList == null) {
-                        columnList = new ArrayList<String>();
-                    }
-                    columnList.add(columnName);
-                    dropColumnMap.put(tableName, columnList);
+                List<String> columnList = dropColumnMap.get(tableName);
+                if (columnList == null) {
+                    columnList = new ArrayList<String>();
                 }
+                columnList.add(columnName);
+                dropColumnMap.put(tableName, columnList);
             }
         }
 
