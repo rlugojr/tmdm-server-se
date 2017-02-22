@@ -796,25 +796,12 @@ public class ItemDetailToolBar extends ToolBar {
 
                                             @Override
                                             public void componentSelected(MenuEvent menuEvent) {
-                                                getBrowseRecordsService().isTdsEnabled(new SessionAwareAsyncCallback<Boolean>() {
-
-                                                    @Override
-                                                    public void onSuccess(Boolean result) {
-                                                        if (result) {
-                                                            getBrowseRecordsService().generateTdsUrl(itemBean.getTaskId(),
-                                                                    new SessionAwareAsyncCallback<String>() {
-
-                                                                        @Override
-                                                                        public void onSuccess(String url) {
-                                                                            openWindow(url);
-                                                                        }
-
-                                                                    });
-                                                        } else {
-                                                            initDSC(itemBean.getTaskId());
-                                                        }
-                                                    }
-                                                });
+                                                if (BrowseRecords.getSession().getAppHeader().isTdsEnabled()) {
+                                                    String baseUrl = BrowseRecords.getSession().getAppHeader().getTdsBaseUrl();
+                                                    openWindow(baseUrl + "#/accesstasks/" + itemBean.getTaskId());
+                                                } else {
+                                                    initDSC(itemBean.getTaskId());
+                                                }
                                             }
                                         });
                                         int explainMenuItemIndex = subActionsMenu.indexOf(explainMenuItem);

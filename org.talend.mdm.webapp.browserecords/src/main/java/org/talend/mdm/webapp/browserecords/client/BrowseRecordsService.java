@@ -159,8 +159,4 @@ public interface BrowseRecordsService extends RemoteService {
             String dataClusterPK, String language) throws ServiceException;
 
     String handleNavigatorNodeLabel(String jsonString, String language) throws ServiceException;
-
-    boolean isTdsEnabled() throws ServiceException;
-
-    String generateTdsUrl(String taskId) throws ServiceException;
 }

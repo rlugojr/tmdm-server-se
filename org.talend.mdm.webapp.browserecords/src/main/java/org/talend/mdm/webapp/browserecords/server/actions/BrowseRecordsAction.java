@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -1323,6 +1322,9 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             header.setUserProperties(LocalUser.getLocalUser().getUser().getProperties());
             header.setExportRecordsDefaultCount(Integer.parseInt(MDMConfiguration.getConfiguration().getProperty("max.export.browserecord", MDMConfiguration.MAX_EXPORT_COUNT)));
             header.setImportRecordsDefaultCount(Integer.parseInt(MDMConfiguration.getConfiguration().getProperty("max.import.browserecord", MDMConfiguration.MAX_IMPORT_COUNT)));
+            header.setTdsEnabled(MDMConfiguration.isTdsEnabled());
+            String tdsBaseUrl = MDMConfiguration.getConfiguration().getProperty(MDMConfiguration.TDS_URL);
+            header.setTdsBaseUrl(tdsBaseUrl.substring(0, tdsBaseUrl.indexOf("data-stewardship")));
             return header;
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
@@ -2601,19 +2603,6 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             LOG.error(e.getMessage(), e);
             throw new ServiceException(e.getLocalizedMessage());
         }
-    }
-
-    @Override
-    public boolean isTdsEnabled() {
-        return MDMConfiguration.isTdsEnabled();
-    }
-
-    @Override
-    public String generateTdsUrl(String taskId) {
-        Properties properties = MDMConfiguration.getConfiguration();
-        String baseUrl = properties.getProperty(MDMConfiguration.TDS_URL);
-        baseUrl = baseUrl.substring(0, baseUrl.indexOf("data-stewardship"));
-        return baseUrl + "#/accesstasks/" + taskId;
     }
 
     private EntityModel getForeignKeyEntityModel(String foregnKey, String entityName, String language) throws ServiceException {

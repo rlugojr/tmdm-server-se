@@ -457,8 +457,6 @@ public class ItemsToolBarGWTTest extends GWTTestCase {
 
         @Override
         public void getItemBeanById(String concept, String ids, String language, AsyncCallback<ItemBean> callback) {
-            // TODO Auto-generated method stub
-
         }
 
         @Override
@@ -477,20 +475,10 @@ public class ItemsToolBarGWTTest extends GWTTestCase {
 
         @Override
         public void handleNavigatorNodeLabel(String jsonString, String language, AsyncCallback<String> callback) {
-            // TODO Auto-generated method stub
-
         }
 
         @Override
         public void bulkUpdateItem(String baseUrl, String concept, String xml, String language, AsyncCallback<String> callback) {
-        }
-
-        @Override
-        public void isTdsEnabled(AsyncCallback<Boolean> callback) {
-        }
-
-        @Override
-        public void generateTdsUrl(String taskId, AsyncCallback<String> callback) {
         }
     }
 }
