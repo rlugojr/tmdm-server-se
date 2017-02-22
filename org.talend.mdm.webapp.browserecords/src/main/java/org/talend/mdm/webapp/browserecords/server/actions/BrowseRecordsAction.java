@@ -174,7 +174,6 @@ import com.amalto.webapp.core.util.DataModelAccessor;
 import com.amalto.webapp.core.util.Util;
 import com.amalto.webapp.core.util.Webapp;
 import com.amalto.webapp.core.util.XmlUtil;
-import com.extjs.gxt.ui.client.Style.SortDir;
 import com.sun.xml.xsom.XSAnnotation;
 import com.sun.xml.xsom.XSComplexType;
 import com.sun.xml.xsom.XSElementDecl;
@@ -1323,8 +1322,7 @@ public class BrowseRecordsAction implements BrowseRecordsService {
             header.setExportRecordsDefaultCount(Integer.parseInt(MDMConfiguration.getConfiguration().getProperty("max.export.browserecord", MDMConfiguration.MAX_EXPORT_COUNT)));
             header.setImportRecordsDefaultCount(Integer.parseInt(MDMConfiguration.getConfiguration().getProperty("max.import.browserecord", MDMConfiguration.MAX_IMPORT_COUNT)));
             header.setTdsEnabled(MDMConfiguration.isTdsEnabled());
-            String tdsBaseUrl = MDMConfiguration.getConfiguration().getProperty(MDMConfiguration.TDS_URL);
-            header.setTdsBaseUrl(tdsBaseUrl.substring(0, tdsBaseUrl.indexOf("data-stewardship")));
+            header.setTdsBaseUrl(MDMConfiguration.getConfiguration().getProperty(MDMConfiguration.TDS_ROOT_URL));
             return header;
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

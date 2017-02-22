@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.CellEditor;
+import javax.swing.plaf.basic.BasicFileChooserUI.SelectionListener;
+
 import org.talend.mdm.webapp.base.client.SessionAwareAsyncCallback;
 import org.talend.mdm.webapp.base.client.exception.ParserException;
 import org.talend.mdm.webapp.base.client.model.DataType;
@@ -57,50 +60,16 @@ import org.talend.mdm.webapp.browserecords.shared.ViewBean;
 
 import com.amalto.core.server.StorageAdmin;
 import com.amalto.core.storage.task.StagingConstants;
-import com.extjs.gxt.ui.client.Style.HideMode;
-import com.extjs.gxt.ui.client.data.BaseFilterPagingLoadConfig;
-import com.extjs.gxt.ui.client.data.BaseModelData;
-import com.extjs.gxt.ui.client.data.BasePagingLoadResult;
-import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.LoadEvent;
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.ModelKeyProvider;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
-import com.extjs.gxt.ui.client.data.PagingLoader;
-import com.extjs.gxt.ui.client.data.RpcProxy;
-import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.LoadListener;
-import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
-import com.extjs.gxt.ui.client.event.SelectionChangedListener;
-import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.mvc.AppEvent;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.form.Field;
-import com.extjs.gxt.ui.client.widget.grid.CellEditor;
-import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.ColumnData;
-import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.grid.filters.DateFilter;
-import com.extjs.gxt.ui.client.widget.grid.filters.Filter;
-import com.extjs.gxt.ui.client.widget.grid.filters.GridFilters;
-import com.extjs.gxt.ui.client.widget.grid.filters.ListFilter;
-import com.extjs.gxt.ui.client.widget.grid.filters.StringFilter;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.event.dom.client.LoadEvent;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.LoadListener;
 
 public class LineageListPanel extends ContentPanel {
 
@@ -446,7 +415,8 @@ public class LineageListPanel extends ContentPanel {
             public void componentSelected(ButtonEvent buttonEvent) {
                 if (header.isTdsEnabled()) {
                     String baseUrl = header.getTdsBaseUrl();
-                    openWindow(baseUrl + "#/accesstasks/" + LineageListPanel.this.taskId);
+                    openWindow(baseUrl + org.talend.mdm.webapp.browserecords.shared.Constants.TDS_ACCESSTASK
+                            + LineageListPanel.this.taskId);
                 } else {
                     initDSC(LineageListPanel.this.taskId);
                 }
