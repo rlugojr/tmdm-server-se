@@ -40,6 +40,10 @@ public class AppHeader implements IsSerializable {
 
     private int exportRecordsDefaultCount;
 
+    private boolean isTdsEnabled;
+
+    private String tdsBaseUrl;
+
     public AppHeader() {
 
     }
@@ -143,5 +147,21 @@ public class AppHeader implements IsSerializable {
 
     public void setExportRecordsDefaultCount(int exportRecordsDefaultCount) {
         this.exportRecordsDefaultCount = exportRecordsDefaultCount;
+    }
+
+    public boolean isTdsEnabled() {
+        return isTdsEnabled;
+    }
+
+    public void setTdsEnabled(boolean isTdsEnabled) {
+        this.isTdsEnabled = isTdsEnabled;
+    }
+
+    public String getTdsBaseUrl() {
+        return tdsBaseUrl;
+    }
+
+    public void setTdsBaseUrl(String tdsBaseUrl) {
+        this.tdsBaseUrl = tdsBaseUrl;
     }
 }

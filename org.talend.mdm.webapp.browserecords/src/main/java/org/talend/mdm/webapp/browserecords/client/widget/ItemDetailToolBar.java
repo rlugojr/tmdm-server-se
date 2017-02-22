@@ -796,7 +796,12 @@ public class ItemDetailToolBar extends ToolBar {
 
                                             @Override
                                             public void componentSelected(MenuEvent menuEvent) {
-                                                initDSC(itemBean.getTaskId());
+                                                if (BrowseRecords.getSession().getAppHeader().isTdsEnabled()) {
+                                                    String baseUrl = BrowseRecords.getSession().getAppHeader().getTdsBaseUrl();
+                                                    openWindow(baseUrl + "#/accesstasks/" + itemBean.getTaskId());
+                                                } else {
+                                                    initDSC(itemBean.getTaskId());
+                                                }
                                             }
                                         });
                                         int explainMenuItemIndex = subActionsMenu.indexOf(explainMenuItem);

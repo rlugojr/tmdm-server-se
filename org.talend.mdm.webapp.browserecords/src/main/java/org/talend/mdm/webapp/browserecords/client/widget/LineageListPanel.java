@@ -432,6 +432,7 @@ public class LineageListPanel extends ContentPanel {
     }
 
     private ContentPanel generateGrid() {
+        final AppHeader header = (AppHeader) BrowseRecords.getSession().get(UserSession.APP_HEADER);
         gridContainer = new ContentPanel(new FitLayout());
 
         Button taskButton = new Button();
@@ -443,8 +444,14 @@ public class LineageListPanel extends ContentPanel {
 
             @Override
             public void componentSelected(ButtonEvent buttonEvent) {
-                initDSC(LineageListPanel.this.taskId);
+                if (header.isTdsEnabled()) {
+                    String baseUrl = header.getTdsBaseUrl();
+                    openWindow(baseUrl + "#/accesstasks/" + LineageListPanel.this.taskId);
+                } else {
+                    initDSC(LineageListPanel.this.taskId);
+                }
             }
+
         });
         openTaskToolBar = new ToolBar();
         openTaskToolBar.add(taskButton);
@@ -495,7 +502,6 @@ public class LineageListPanel extends ContentPanel {
 
         {
             grid.setStateful(true);
-            AppHeader header = (AppHeader) BrowseRecords.getSession().get(UserSession.APP_HEADER);
             ViewBean vb = (ViewBean) BrowseRecords.getSession().get(UserSession.CURRENT_VIEW);
             grid.setStateId(header.getDatamodel() + "." + entityModel.getConceptName() + "." + vb.getViewPK()); //$NON-NLS-1$//$NON-NLS-2$
         }
@@ -594,5 +600,9 @@ public class LineageListPanel extends ContentPanel {
     private native boolean initDSC(String taskId)/*-{
 		$wnd.amalto.datastewardship.Datastewardship.taskItem(taskId);
 		return true;
+    }-*/;
+
+    private native void openWindow(String url)/*-{
+		window.open(url);
     }-*/;
 }
