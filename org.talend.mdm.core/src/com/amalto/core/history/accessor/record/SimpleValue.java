@@ -42,15 +42,18 @@ class SimpleValue implements Setter, Getter {
             return StringUtils.EMPTY;
         }
         if (element.field instanceof ReferenceFieldMetadata) {
-            DataRecord referencedRecord = (DataRecord) record.get(element.field);
-            if (referencedRecord == null) {
-                return StringUtils.EMPTY;
+            if (record.get(element.field) != null && "class com.amalto.core.storage.record.DataRecord".equals(record.get(element.field).getClass().toString())) { //$NON-NLS-1$
+                DataRecord referencedRecord = (DataRecord) record.get(element.field);
+                if (referencedRecord == null) {
+                    return StringUtils.EMPTY;
+                }
+                StringBuilder builder = new StringBuilder();
+                for (FieldMetadata keyField : ((ReferenceFieldMetadata) element.field).getReferencedType().getKeyFields()) {
+                    builder.append('[').append(referencedRecord.get(keyField)).append(']');
+                }
+                return builder.toString();
             }
-            StringBuilder builder = new StringBuilder();
-            for (FieldMetadata keyField : ((ReferenceFieldMetadata) element.field).getReferencedType().getKeyFields()) {
-                builder.append('[').append(referencedRecord.get(keyField)).append(']');
-            }
-            return builder.toString();
+            return StringUtils.EMPTY;
         } else {
             Object o = record.get(element.field);
             return String.valueOf(StorageMetadataUtils.toString(o, element.field));
